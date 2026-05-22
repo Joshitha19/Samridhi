@@ -1,0 +1,2607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Samridhi | AI-Based Credibility System for Smart Loan Approval</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- React & Recharts Dependencies -->
+  <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-is@18.2.0/umd/react-is.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
+  
+  <!-- Recharts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.7/Recharts.min.js" crossorigin></script>
+
+  <!-- Tailwind CSS v3 Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            samridhi: {
+              bg: '#0A0A0F',
+              surface: '#12121A',
+              card: '#1A1A26',
+              border: '#2A2A3E',
+              primary: '#6C63FF',
+              secondary: '#00D4FF',
+              success: '#00E676',
+              warning: '#FFB300',
+              danger: '#FF5252',
+              textPrimary: '#F0F0FF',
+              textMuted: '#8888AA',
+            }
+          },
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style type="text/css">
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0A0A0F;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2A2A3E;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #6C63FF;
+    }
+
+    /* Keyframes and Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.15; filter: blur(20px); }
+      50% { opacity: 0.3; filter: blur(30px); }
+    }
+    .glow-pulse-primary {
+      animation: pulseGlow 4s infinite ease-in-out;
+    }
+
+    /* Custom utilities for gradients and borders */
+    .border-gradient-purple-cyan {
+      border-image: linear-gradient(to right, #6C63FF, #00D4FF) 1;
+    }
+    
+    /* Backdrop blur fallback */
+    .blur-nav {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+  </style>
+</head>
+<body class="bg-samridhi-bg text-samridhi-textPrimary font-sans antialiased overflow-x-hidden">
+  
+  <div id="root"></div>
+
+  <!-- React JSX Code -->
+  <script type="text/babel">
+    const { useState, useEffect, useReducer, useMemo } = React;
+
+    // Destructure Recharts components
+    const {
+      ResponsiveContainer,
+      AreaChart,
+      Area,
+      BarChart,
+      Bar,
+      XAxis,
+      YAxis,
+      CartesianGrid,
+      Tooltip,
+      Legend
+    } = window.Recharts;
+
+    // --- CUSTOM SVG ICONS PACKAGE ---
+    const Icons = {
+      Home: ({ className = "w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      ),
+      Features: ({ className = "w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+        </svg>
+      ),
+      HowItWorks: ({ className = "w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+        </svg>
+      ),
+      User: ({ className = "w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      ),
+      Bell: ({ className = "w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+      ),
+      Apply: ({ className = "w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      ),
+      Score: ({ className = "w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      ),
+      Transactions: ({ className = "w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      Offers: ({ className = "w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+        </svg>
+      ),
+      Logout: ({ className = "w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+      ),
+      ArrowUp: ({ className = "w-4 h-4" }) => (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+        </svg>
+      ),
+      ArrowRight: ({ className = "w-4 h-4" }) => (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+        </svg>
+      ),
+      Check: ({ className = "w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+      ),
+      Lock: ({ className = "w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      ),
+      Mail: ({ className = "w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      ),
+      ChevronRight: ({ className = "w-4 h-4" }) => (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      ),
+      Upload: ({ className = "w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+        </svg>
+      ),
+      Edit: ({ className = "w-4 h-4" }) => (
+        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+        </svg>
+      )
+    };
+
+    // --- REUSABLE GAUGE COMPONENT ---
+    const CircularGauge = ({ score = 72, size = 170, strokeWidth = 10 }) => {
+      const radius = 45;
+      const circumference = 2 * Math.PI * radius;
+      const strokeDashoffset = circumference - (circumference * score) / 100;
+      
+      // Determine colors and classification
+      let color = '#FF5252'; // Red
+      let statusText = 'HIGH RISK';
+      let statusBg = 'bg-samridhi-danger/10';
+      let statusBorder = 'border-samridhi-danger/30';
+
+      if (score > 40 && score <= 70) {
+        color = '#FFB300'; // Yellow
+        statusText = 'MEDIUM RISK';
+        statusBg = 'bg-samridhi-warning/10';
+        statusBorder = 'border-samridhi-warning/30';
+      } else if (score > 70) {
+        color = '#00E676'; // Green
+        statusText = 'LOW RISK';
+        statusBg = 'bg-samridhi-success/10';
+        statusBorder = 'border-samridhi-success/30';
+      }
+
+      return (
+        <div className="flex flex-col items-center justify-center">
+          <div className="relative" style={{ width: size, height: size }}>
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
+              {/* Back track */}
+              <circle
+                className="text-samridhi-border"
+                strokeWidth={strokeWidth}
+                stroke="currentColor"
+                fill="transparent"
+                r={radius}
+                cx="60"
+                cy="60"
+              />
+              {/* Animated value track */}
+              <circle
+                stroke={color}
+                strokeWidth={strokeWidth}
+                fill="transparent"
+                r={radius}
+                cx="60"
+                cy="60"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                className="transition-all duration-700 ease-out"
+                style={{
+                  filter: `drop-shadow(0 0 5px ${color}60)`
+                }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-4xl font-extrabold text-samridhi-textPrimary leading-none">{score}</span>
+              <span className="text-[10px] tracking-wider text-samridhi-textMuted font-bold uppercase mt-1">Score</span>
+            </div>
+          </div>
+          <div className="mt-3">
+            <span className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-widest ${statusBg} ${statusBorder} border`} style={{ color }}>
+              {statusText}
+            </span>
+          </div>
+        </div>
+      );
+    };
+
+    // --- MOCK CONSTANTS ---
+    const FEATURES_DATA = [
+      {
+        title: "Skill Credibility Index",
+        description: "Bypasses standard reports by verifying code repos, freelancing credentials, and professional certificates.",
+        icon: (
+          <svg className="w-6 h-6 text-samridhi-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        )
+      },
+      {
+        title: "UPI Analysis",
+        description: "Scans transactional recency, inflow-outflow consistency, and utility patterns to map digital solvency.",
+        icon: (
+          <svg className="w-6 h-6 text-samridhi-secondary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          </svg>
+        )
+      },
+      {
+        title: "Credibility Score 0-100",
+        description: "Consolidates multidimensional behavior metrics into a single real-time trust rating.",
+        icon: (
+          <svg className="w-6 h-6 text-samridhi-success" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+        )
+      },
+      {
+        title: "Risk Classification",
+        description: "Tiers loan applicants instantly using advanced AI clusters to identify credit-invisible opportunities.",
+        icon: (
+          <svg className="w-6 h-6 text-samridhi-warning" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        )
+      },
+      {
+        title: "Smart Loan Recommender",
+        description: "AI-matching engine pairs your credibility metrics with ideal micro-loans, starting from low interest rates.",
+        icon: (
+          <svg className="w-6 h-6 text-samridhi-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+          </svg>
+        )
+      },
+      {
+        title: "Explainable AI (XAI)",
+        description: "Glass-box transparency detailing the exact parameters determining credit scores, ensuring fair evaluations.",
+        icon: (
+          <svg className="w-6 h-6 text-samridhi-secondary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+        )
+      }
+    ];
+
+    const HOW_IT_WORKS_STEPS = [
+      { step: "01", title: "Data Collection", desc: "Integrate UPI transaction logs, GitHub/LinkedIn repos, and certification platforms securely." },
+      { step: "02", title: "Preprocessing", desc: "Cleans data anomalies, structures timelines, and categorizes income patterns." },
+      { step: "03", title: "Feature Engineering", desc: "Builds 25+ features covering cash stability, gig-ratings, and skill metrics." },
+      { step: "04", title: "ML Scored Underwriting", desc: "Predicts credit trustworthiness through non-traditional neural scoring models." },
+      { step: "05", title: "Credit Approval Decision", desc: "Pairs applicants with low-interest institutional capital partners instantly." }
+    ];
+
+    const STATS = [
+      { val: "190M+", label: "Credit-Invisible Indians" },
+      { val: "25+", label: "Alternative Features Scanned" },
+      { val: "0 - 100", label: "Algorithmic Trust Rating" },
+      { val: "3", label: "Targeted Risk Categories" }
+    ];
+
+    const MOCK_LOAN_OFFERS = [
+      {
+        id: "rec-1",
+        lender: "Samridhi Capital Fund",
+        name: "Freelancer Cashflow Advance",
+        amount: "₹1,50,000",
+        interestRate: "9.5% p.a.",
+        tenure: "12 Months",
+        eligibility: "Requires Score > 70",
+        tag: "Best for Gig Workers",
+        type: "Freelancer"
+      },
+      {
+        id: "rec-2",
+        lender: "Nutan Micro-Finance",
+        name: "Student Skill-Growth Credit",
+        amount: "₹45,000",
+        interestRate: "7.8% p.a.",
+        tenure: "6 Months",
+        eligibility: "Requires Score > 60 & Verified Certification",
+        tag: "Low Interest",
+        type: "Student"
+      },
+      {
+        id: "rec-3",
+        lender: "Pragati Cooperative",
+        name: "Micro-business Expansion Line",
+        amount: "₹3,00,000",
+        interestRate: "11.2% p.a.",
+        tenure: "18 Months",
+        eligibility: "Requires Score > 65",
+        tag: "High Capital",
+        type: "Entrepreneur"
+      },
+      {
+        id: "rec-4",
+        lender: "Shakti Credit Corp",
+        name: "Salaried Quick Advance",
+        amount: "₹1,00,000",
+        interestRate: "10.0% p.a.",
+        tenure: "12 Months",
+        eligibility: "Requires Salary Slip Verification Line",
+        tag: "Fast Approval",
+        type: "Salaried"
+      }
+    ];
+
+    // --- REDUCER SETUP ---
+    const REDUCER_INITIAL_STATE = {
+      loans: [
+        { id: 'l-1', lender: "Samridhi Capital Fund", amount: 50000, rate: "9.5%", emi: "₹4,380", status: "Active", date: "2026-04-15" },
+        { id: 'l-2', lender: "Nutan Micro-Finance", amount: 15000, rate: "8.0%", emi: "₹2,560", status: "Completed", date: "2026-01-20" }
+      ],
+      transactions: [
+        { id: 't-1', date: "2026-05-20", merchant: "Amazon Web Services", amount: -3499, category: "Business Hosting", type: "Debit" },
+        { id: 't-2', date: "2026-05-18", merchant: "Chai Point Bangalore", amount: -180, category: "Food & Beverage", type: "Debit" },
+        { id: 't-3', date: "2026-05-16", merchant: "Upwork Global Inc", amount: 38000, category: "Freelance Income", type: "Credit" },
+        { id: 't-4', date: "2026-05-12", merchant: "Swiggy Delivery", amount: -650, category: "Food & Beverage", type: "Debit" },
+        { id: 't-5', date: "2026-05-10", merchant: "Jio Infocomm Ltd", amount: -749, category: "Telecom Utility", type: "Debit" }
+      ],
+      skills: [
+        { id: 's-1', name: "AWS Solutions Architect", issuer: "Amazon Web Services", verified: true },
+        { id: 's-2', name: "React Frontend Engineer", issuer: "Meta (Coursera)", verified: true },
+        { id: 's-3', name: "Advanced Financial Analytics", issuer: "Wharton Online", verified: false },
+        { id: 's-4', name: "Professional English Writing", issuer: "British Council", verified: true }
+      ],
+      notifications: [
+        { id: 'n-1', text: "Your UPI analysis shows standard caching: Stability Index is HIGH (+15 score points).", read: false, date: "2 hrs ago" },
+        { id: 'n-2', text: "Skill Verification Successful: Meta React Certificate connected (+10 score points).", read: false, date: "1 day ago" },
+        { id: 'n-3', text: "Welcome to Samridhi! Complete your Profile to scan your Credit Index.", read: true, date: "3 days ago" }
+      ],
+      hasUnreadNotifications: true
+    };
+
+    function dashboardReducer(state, action) {
+      switch (action.type) {
+        case 'ADD_TRANSACTION':
+          return {
+            ...state,
+            transactions: [action.payload, ...state.transactions].slice(0, 15) // cap at 15 items
+          };
+        case 'APPLY_LOAN':
+          return {
+            ...state,
+            loans: [action.payload, ...state.loans]
+          };
+        case 'TOGGLE_SKILL_VERIFICATION':
+          return {
+            ...state,
+            skills: state.skills.map(s => s.id === action.payload ? { ...s, verified: !s.verified } : s)
+          };
+        case 'ADD_NOTIFICATION':
+          return {
+            ...state,
+            notifications: [action.payload, ...state.notifications],
+            hasUnreadNotifications: true
+          };
+        case 'READ_ALL_NOTIFICATIONS':
+          return {
+            ...state,
+            notifications: state.notifications.map(n => ({ ...n, read: true })),
+            hasUnreadNotifications: false
+          };
+        case 'ADD_SKILL':
+          return {
+            ...state,
+            skills: [...state.skills, action.payload]
+          };
+        case 'RESET_STATE':
+          return REDUCER_INITIAL_STATE;
+        default:
+          return state;
+      }
+    }
+
+    // --- APP ROOT COMPONENT ---
+    function App() {
+      // Routing State: 'landing' | 'signin' | 'signup' | 'dashboard'
+      const [page, setPage] = useState('landing');
+      
+      // Authentication State
+      const [user, setUser] = useState(null);
+
+      // Dashboard Routing State: 'overview' | 'apply' | 'score' | 'transactions' | 'recommendations' | 'profile'
+      const [activeTab, setActiveTab] = useState('overview');
+
+      // State for notification popover
+      const [showNotifications, setShowNotifications] = useState(false);
+
+      // Reducer for complex mock data interactions
+      const [dashboardState, dispatch] = useReducer(dashboardReducer, REDUCER_INITIAL_STATE);
+
+      // Skill validation states
+      const [aadhaarVerified, setAadhaarVerified] = useState(true);
+      const [panVerified, setPanVerified] = useState(true);
+      const [upiLinked, setUpiLinked] = useState(true);
+      const [upiVerified, setUpiVerified] = useState(false);
+
+      // What-If score parameters state (in My Score Tab)
+      const [whatIfRepayActive, setWhatIfRepayActive] = useState(false);
+      const [whatIfLinkGithub, setWhatIfLinkGithub] = useState(false);
+      const [whatIfNewCert, setWhatIfNewCert] = useState(false);
+      const [whatIfConsistentUpi, setWhatIfConsistentUpi] = useState(false);
+
+      // Calculate score based on user profile and linked metrics
+      const calculatedScore = useMemo(() => {
+        // Base score depends slightly on user type
+        let score = 55;
+        if (user) {
+          if (user.type === 'Salaried') score = 65;
+          if (user.type === 'Freelancer') score = 58;
+          if (user.type === 'Entrepreneur') score = 62;
+          if (user.type === 'Student') score = 48;
+        }
+
+        // Add points for checked items
+        if (aadhaarVerified) score += 4;
+        if (panVerified) score += 3;
+        if (upiLinked) score += 10;
+        if (upiVerified) score += 15;
+
+        // Add points for verified skills
+        const verifiedSkillsCount = dashboardState.skills.filter(s => s.verified).length;
+        score += verifiedSkillsCount * 4;
+
+        // Add points for What-If variables (live simulation)
+        if (whatIfRepayActive) score += 6;
+        if (whatIfLinkGithub) score += 8;
+        if (whatIfNewCert) score += 5;
+        if (whatIfConsistentUpi) score += 7;
+
+        // Clamp between 0 and 100
+        return Math.min(100, Math.max(0, score));
+      }, [user, aadhaarVerified, panVerified, upiLinked, upiVerified, dashboardState.skills, whatIfRepayActive, whatIfLinkGithub, whatIfNewCert, whatIfConsistentUpi]);
+
+      // If user logs out
+      const handleLogout = () => {
+        setUser(null);
+        setPage('landing');
+        dispatch({ type: 'RESET_STATE' });
+        // Reset what-if options
+        setWhatIfRepayActive(false);
+        setWhatIfLinkGithub(false);
+        setWhatIfNewCert(false);
+        setWhatIfConsistentUpi(false);
+        // Reset UPI verifications
+        setUpiVerified(false);
+        setUpiLinked(false);
+      };
+
+      // Handle sign in submission
+      const handleSignIn = (email, password) => {
+        const username = email.split('@')[0].replace('.', ' ').toUpperCase() || 'SAMRIDHI USER';
+        let type = 'Freelancer';
+        if (email.toLowerCase().includes('student')) type = 'Student';
+        else if (email.toLowerCase().includes('entrepreneur')) type = 'Entrepreneur';
+        else if (email.toLowerCase().includes('salaried')) type = 'Salaried';
+
+        const mockUser = {
+          name: username,
+          email: email,
+          type: type,
+          upiVpa: `${email.split('@')[0].replace('.', '').toLowerCase()}@okaxis`, // default dynamic VPA
+        };
+        setUser(mockUser);
+        setUpiLinked(true);
+        setUpiVerified(false);
+        setPage('dashboard');
+        setActiveTab('overview');
+      };
+
+      // Handle sign up submission
+      const handleSignUp = (name, email, type, upiVpa) => {
+        const mockUser = {
+          name: name.toUpperCase(),
+          email: email,
+          type: type,
+          upiVpa: upiVpa || '',
+        };
+        setUser(mockUser);
+        setUpiLinked(upiVpa ? true : false);
+        setUpiVerified(false);
+        setPage('dashboard');
+        setActiveTab('overview');
+      };
+
+      // Smooth scroll triggers for landing page
+      const scrollToSection = (id) => {
+        if (page !== 'landing') {
+          setPage('landing');
+          setTimeout(() => {
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        } else {
+          const el = document.getElementById(id);
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col selection:bg-samridhi-primary/30 selection:text-samridhi-textPrimary">
+          {/* STICKY NAVBAR */}
+          {page !== 'dashboard' && (
+            <header className="sticky top-0 z-50 w-full bg-samridhi-bg/85 border-b border-samridhi-border blur-nav">
+              <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+                {/* Logo */}
+                <div 
+                  className="flex items-center space-x-2 cursor-pointer"
+                  onClick={() => setPage('landing')}
+                >
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center shadow-lg shadow-samridhi-primary/20">
+                    <span className="text-samridhi-bg font-extrabold text-lg">S</span>
+                  </div>
+                  <span className="text-2xl font-extrabold bg-gradient-to-r from-samridhi-primary to-samridhi-secondary bg-clip-text text-transparent tracking-wide">
+                    Samridhi
+                  </span>
+                </div>
+
+                {/* Nav Links */}
+                <nav className="hidden md:flex items-center space-x-8 text-sm font-semibold tracking-wide">
+                  <button 
+                    onClick={() => scrollToSection('home')} 
+                    className="text-samridhi-textPrimary hover:text-samridhi-secondary transition-colors"
+                  >
+                    Home
+                  </button>
+                  <button 
+                    onClick={() => scrollToSection('features')} 
+                    className="text-samridhi-textMuted hover:text-samridhi-textPrimary transition-colors"
+                  >
+                    Features
+                  </button>
+                  <button 
+                    onClick={() => scrollToSection('how-it-works')} 
+                    className="text-samridhi-textMuted hover:text-samridhi-textPrimary transition-colors"
+                  >
+                    How It Works
+                  </button>
+                </nav>
+
+                {/* CTA Buttons */}
+                <div className="flex items-center space-x-4">
+                  <button 
+                    onClick={() => setPage('signin')}
+                    className="text-sm font-bold text-samridhi-textPrimary hover:text-samridhi-primary transition-colors px-4 py-2"
+                  >
+                    Sign In
+                  </button>
+                  <button 
+                    onClick={() => setPage('signup')}
+                    className="text-sm font-bold bg-samridhi-primary hover:bg-samridhi-primary/90 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-samridhi-primary/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 active:scale-95"
+                  >
+                    Get Started
+                  </button>
+                </div>
+              </div>
+            </header>
+          )}
+
+          {/* PAGE CONTENT ROUTER */}
+          <main className="flex-1 flex flex-col">
+            {page === 'landing' && (
+              <LandingPageView 
+                setPage={setPage} 
+                scrollToSection={scrollToSection} 
+                calculatedScore={calculatedScore} 
+              />
+            )}
+            {page === 'signin' && (
+              <SignInPageView 
+                setPage={setPage} 
+                onSignIn={handleSignIn} 
+              />
+            )}
+            {page === 'signup' && (
+              <SignUpPageView 
+                setPage={setPage} 
+                onSignUp={handleSignUp} 
+              />
+            )}
+            {page === 'dashboard' && user && (
+              <DashboardView 
+                user={user} 
+                setUser={setUser}
+                activeTab={activeTab} 
+                setActiveTab={setActiveTab} 
+                calculatedScore={calculatedScore}
+                dashboardState={dashboardState}
+                dispatch={dispatch}
+                handleLogout={handleLogout}
+                showNotifications={showNotifications}
+                setShowNotifications={setShowNotifications}
+                aadhaarVerified={aadhaarVerified}
+                setAadhaarVerified={setAadhaarVerified}
+                panVerified={panVerified}
+                setPanVerified={setPanVerified}
+                upiLinked={upiLinked}
+                setUpiLinked={setUpiLinked}
+                upiVerified={upiVerified}
+                setUpiVerified={setUpiVerified}
+                whatIfRepayActive={whatIfRepayActive}
+                setWhatIfRepayActive={setWhatIfRepayActive}
+                whatIfLinkGithub={whatIfLinkGithub}
+                setWhatIfLinkGithub={setWhatIfLinkGithub}
+                whatIfNewCert={whatIfNewCert}
+                setWhatIfNewCert={setWhatIfNewCert}
+                whatIfConsistentUpi={whatIfConsistentUpi}
+                setWhatIfConsistentUpi={setWhatIfConsistentUpi}
+              />
+            )}
+          </main>
+
+          {/* FOOTER */}
+          {page !== 'dashboard' && (
+            <footer className="bg-[#07070B] border-t border-samridhi-border py-12 px-6">
+              <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-6 h-6 rounded bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center">
+                      <span className="text-samridhi-bg font-extrabold text-sm">S</span>
+                    </div>
+                    <span className="font-extrabold text-lg text-samridhi-textPrimary">Samridhi</span>
+                  </div>
+                  <p className="text-xs text-samridhi-textMuted mt-2 max-w-sm">
+                    Empowering the 190M+ credit-invisible populations of India through decentralized AI-driven credibility assessments and micro-loans.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-8 text-xs text-samridhi-textMuted font-medium">
+                  <a href="#" className="hover:text-samridhi-textPrimary">Privacy Policy</a>
+                  <a href="#" className="hover:text-samridhi-textPrimary">Terms of Underwriting</a>
+                  <a href="#" className="hover:text-samridhi-textPrimary">API Integrations</a>
+                  <a href="#" className="hover:text-samridhi-textPrimary">Institutional Lenders</a>
+                </div>
+              </div>
+              <div className="max-w-7xl mx-auto border-t border-samridhi-border/40 mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-samridhi-textMuted">
+                <span>&copy; 2026 Samridhi Inc. All rights reserved.</span>
+                <span>Powered by Explainable AI Underwriting Models</span>
+              </div>
+            </footer>
+          )}
+        </div>
+      );
+    }
+
+    // --- LANDING PAGE COMPONENT ---
+    function LandingPageView({ setPage, scrollToSection, calculatedScore }) {
+      const [demoScore, setDemoScore] = useState(72);
+
+      return (
+        <div className="flex-1 flex flex-col animate-fade-in" id="home">
+          
+          {/* HERO SECTION */}
+          <section className="relative py-20 px-6 overflow-hidden flex items-center justify-center min-h-[85vh]">
+            {/* Grid Glow background */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-samridhi-primary/10 via-transparent to-transparent pointer-events-none"></div>
+            <div className="absolute top-[20%] left-[10%] w-[350px] h-[350px] rounded-full bg-samridhi-primary/5 blur-[50px] glow-pulse-primary"></div>
+            <div className="absolute bottom-[10%] right-[10%] w-[300px] h-[300px] rounded-full bg-samridhi-secondary/5 blur-[60px] glow-pulse-primary"></div>
+
+            <div className="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+              
+              {/* Hero Left Content */}
+              <div className="lg:col-span-7 flex flex-col space-y-6 text-left">
+                <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 bg-samridhi-primary/10 border border-samridhi-primary/30 rounded-full w-fit">
+                  <span className="w-2 h-2 rounded-full bg-samridhi-secondary animate-ping"></span>
+                  <span className="text-xs font-extrabold text-samridhi-secondary uppercase tracking-widest">AI Scoring System Live</span>
+                </div>
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-samridhi-textPrimary leading-[1.1]">
+                  Smart Loan Approval <br />
+                  <span className="bg-gradient-to-r from-samridhi-primary to-samridhi-secondary bg-clip-text text-transparent">
+                    Powered by AI
+                  </span>
+                </h1>
+                <p className="text-base md:text-lg text-samridhi-textMuted max-w-xl leading-relaxed">
+                  More than <strong class="text-samridhi-textPrimary">190 million Indians</strong> have no credit bureau history. Samridhi analyzes digital UPI logs, verified credentials, and gig performance metrics to unlock financial mobility.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                  <button 
+                    onClick={() => setPage('signup')}
+                    className="px-8 py-3.5 bg-samridhi-primary hover:bg-samridhi-primary/90 text-white font-bold rounded-xl shadow-xl shadow-samridhi-primary/20 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center space-x-2"
+                  >
+                    <span>Check Credit Index</span>
+                    <Icons.ArrowRight className="w-5 h-5" />
+                  </button>
+                  <button 
+                    onClick={() => scrollToSection('features')}
+                    className="px-8 py-3.5 bg-samridhi-surface hover:bg-samridhi-card text-samridhi-textPrimary border border-samridhi-border font-bold rounded-xl transition-all duration-300 transform hover:-translate-y-0.5"
+                  >
+                    Explore Features
+                  </button>
+                </div>
+              </div>
+
+              {/* Hero Right Interactive Gauge */}
+              <div className="lg:col-span-5 flex flex-col items-center justify-center">
+                <div className="bg-samridhi-card border border-samridhi-border p-8 rounded-3xl w-full max-w-[380px] shadow-2xl relative">
+                  {/* Decorative glowing light */}
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-samridhi-secondary/10 to-transparent rounded-tr-3xl pointer-events-none"></div>
+                  
+                  <h3 className="text-center font-bold text-sm text-samridhi-textMuted tracking-wider uppercase mb-6">Interactive Credibility Preview</h3>
+                  
+                  <CircularGauge score={demoScore} size={180} />
+
+                  <div className="mt-8 space-y-4">
+                    <label className="flex items-center justify-between text-xs font-bold text-samridhi-textMuted">
+                      <span>Simulated Alternative Metrics</span>
+                      <span className="text-samridhi-secondary">{demoScore} Score</span>
+                    </label>
+                    <input 
+                      type="range" 
+                      min="10" 
+                      max="99" 
+                      value={demoScore} 
+                      onChange={(e) => setDemoScore(parseInt(e.target.value))}
+                      className="w-full h-1 bg-samridhi-border rounded-lg appearance-none cursor-pointer accent-samridhi-primary focus:outline-none"
+                    />
+                    <div className="grid grid-cols-3 gap-2 text-[10px] text-center font-bold text-samridhi-textMuted">
+                      <span className="text-samridhi-danger bg-samridhi-danger/5 py-1 rounded">0-40 Red</span>
+                      <span className="text-samridhi-warning bg-samridhi-warning/5 py-1 rounded">41-70 Yellow</span>
+                      <span className="text-samridhi-success bg-samridhi-success/5 py-1 rounded">71-100 Green</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          {/* STATS BAR */}
+          <section className="bg-samridhi-surface border-y border-samridhi-border py-12 px-6">
+            <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+              {STATS.map((st, i) => (
+                <div key={i} className="text-center flex flex-col space-y-2 border-r border-samridhi-border/40 last:border-none">
+                  <span className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-samridhi-primary to-samridhi-secondary bg-clip-text text-transparent">
+                    {st.val}
+                  </span>
+                  <span className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">
+                    {st.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* FEATURES GRID */}
+          <section className="py-20 px-6 relative" id="features">
+            <div className="max-w-7xl mx-auto flex flex-col space-y-12">
+              <div className="text-center flex flex-col space-y-4 max-w-2xl mx-auto">
+                <span className="text-xs font-extrabold text-samridhi-primary uppercase tracking-widest">Our Features</span>
+                <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">Alternative Underwriting Tools</h2>
+                <p className="text-sm text-samridhi-textMuted leading-relaxed">
+                  We look beyond bureaucratic parameters. Our modular algorithm maps economic capacity through modern digital indicators.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {FEATURES_DATA.map((feat, i) => (
+                  <div 
+                    key={i} 
+                    className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl hover:border-samridhi-secondary/50 hover:shadow-[0_0_20px_rgba(0,212,255,0.1)] transition-all duration-300 group"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-samridhi-surface flex items-center justify-center border border-samridhi-border group-hover:border-samridhi-secondary/30 transition-colors mb-5">
+                      {feat.icon}
+                    </div>
+                    <h3 className="text-lg font-bold mb-2 group-hover:text-samridhi-secondary transition-colors">{feat.title}</h3>
+                    <p className="text-xs text-samridhi-textMuted leading-relaxed">{feat.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* HOW IT WORKS SECTION */}
+          <section className="py-20 px-6 bg-samridhi-surface/40 border-y border-samridhi-border" id="how-it-works">
+            <div className="max-w-7xl mx-auto flex flex-col space-y-16">
+              <div className="text-center flex flex-col space-y-4 max-w-2xl mx-auto">
+                <span className="text-xs font-extrabold text-samridhi-secondary uppercase tracking-widest">AI Pipeline</span>
+                <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">How It Works</h2>
+                <p className="text-sm text-samridhi-textMuted leading-relaxed">
+                  The architecture behind Samridhi transforms alternate data points into real-time credit accessibility.
+                </p>
+              </div>
+
+              {/* Stepper Grid */}
+              <div className="relative">
+                {/* Horizontal progress bar for desktop */}
+                <div className="hidden lg:block absolute top-7 left-[8%] right-[8%] h-[2px] bg-gradient-to-r from-samridhi-primary/50 to-samridhi-secondary/50 z-0"></div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 relative z-10">
+                  {HOW_IT_WORKS_STEPS.map((st, i) => (
+                    <div key={i} className="flex flex-col items-center text-center space-y-4 group">
+                      <div className="w-14 h-14 rounded-full bg-samridhi-card border-2 border-samridhi-border group-hover:border-samridhi-primary flex items-center justify-center font-black text-sm text-samridhi-textMuted group-hover:text-samridhi-secondary transition-all duration-300 shadow-xl">
+                        {st.step}
+                      </div>
+                      <div className="flex flex-col space-y-2">
+                        <h4 className="font-extrabold text-sm text-samridhi-textPrimary">{st.title}</h4>
+                        <p className="text-[11px] text-samridhi-textMuted max-w-[200px] leading-relaxed mx-auto">{st.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* FINAL CTA SECTION */}
+          <section className="py-24 px-6 text-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-samridhi-primary/5 to-transparent"></div>
+            <div className="max-w-3xl mx-auto relative z-10 flex flex-col items-center space-y-8">
+              <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight">
+                Unlock Capital Instantly <br />
+                Without a Traditional Credit File
+              </h2>
+              <p className="text-sm md:text-base text-samridhi-textMuted max-w-xl leading-relaxed">
+                Connect your accounts, score your skills, and check eligibility for micro-loans in under five minutes.
+              </p>
+              <button 
+                onClick={() => setPage('signup')}
+                className="px-8 py-3.5 bg-gradient-to-r from-samridhi-primary to-samridhi-primary/80 hover:opacity-95 text-white font-bold rounded-xl shadow-xl shadow-samridhi-primary/30 transition-all duration-300 transform hover:-translate-y-0.5"
+              >
+                Create Account Now
+              </button>
+            </div>
+          </section>
+
+        </div>
+      );
+    }
+
+    // --- SIGN IN PAGE VIEW ---
+    function SignInPageView({ setPage, onSignIn }) {
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [error, setError] = useState('');
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!email || !password) {
+          setError('Please fill in all fields.');
+          return;
+        }
+        if (!email.includes('@')) {
+          setError('Please enter a valid email address.');
+          return;
+        }
+        setError('');
+        onSignIn(email, password);
+      };
+
+      return (
+        <div className="flex-1 flex items-center justify-center py-16 px-6 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#131124] via-samridhi-bg to-samridhi-bg">
+          <div className="w-full max-w-md bg-samridhi-card border border-samridhi-border p-8 rounded-3xl shadow-2xl relative overflow-hidden animate-fade-in">
+            {/* Header background accents */}
+            <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-samridhi-primary to-samridhi-secondary"></div>
+
+            <div className="flex flex-col items-center text-center mb-8">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center shadow-lg shadow-samridhi-primary/20 mb-4">
+                <span className="text-samridhi-bg font-extrabold text-xl">S</span>
+              </div>
+              <h2 className="text-2xl font-extrabold tracking-tight">Sign In to Samridhi</h2>
+              <p className="text-xs text-samridhi-textMuted mt-1">Unlock non-traditional loan rates powered by AI</p>
+            </div>
+
+            {error && (
+              <div className="mb-4 p-3.5 bg-samridhi-danger/10 border border-samridhi-danger/30 rounded-xl text-xs font-bold text-samridhi-danger flex items-center space-x-2">
+                <Icons.Lock className="w-4 h-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="flex flex-col space-y-1.5">
+                <label className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">Email Address</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-samridhi-textMuted">
+                    <Icons.Mail className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@example.com"
+                    className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary text-sm rounded-xl py-3 pl-10 pr-4 text-samridhi-textPrimary placeholder:text-samridhi-textMuted/50 focus:outline-none transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">Password</label>
+                  <a href="#" className="text-[11px] font-semibold text-samridhi-secondary hover:underline">Forgot password?</a>
+                </div>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-samridhi-textMuted">
+                    <Icons.Lock className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary text-sm rounded-xl py-3 pl-10 pr-4 text-samridhi-textPrimary placeholder:text-samridhi-textMuted/50 focus:outline-none transition-colors"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 bg-samridhi-primary hover:bg-samridhi-primary/95 text-white font-bold rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center space-x-2 mt-6 active:scale-95"
+              >
+                <span>Sign In</span>
+                <Icons.ArrowRight className="w-4 h-4" />
+              </button>
+            </form>
+
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-samridhi-border/60"></div>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-samridhi-card px-3 text-samridhi-textMuted font-bold">Or continue with</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                // Mock OAuth Integration
+                onSignIn('demo.freelancer@samridhi.in', 'password123');
+              }}
+              className="w-full py-2.5 bg-samridhi-surface hover:bg-samridhi-bg border border-samridhi-border text-xs font-bold rounded-xl transition-all flex items-center justify-center space-x-2.5 hover:text-samridhi-secondary"
+            >
+              {/* Google G logo */}
+              <svg className="w-4 h-4" viewBox="0 0 24 24">
+                <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.47 14.97 1 12 1 7.37 1 3.4 3.65 1.54 7.5l3.85 2.99C6.27 7.21 8.87 5.04 12 5.04z" />
+                <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.34H12v4.44h6.44c-.28 1.46-1.1 2.7-2.34 3.53l3.65 2.83c2.14-1.97 3.74-4.87 3.74-8.46z" />
+                <path fill="#FBBC05" d="M5.39 14.8c-.24-.72-.38-1.49-.38-2.3s.14-1.58.38-2.3L1.54 7.21C.56 9.17 0 11.33 0 13.5s.56 4.33 1.54 6.29l3.85-2.99z" />
+                <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.65-2.83c-1.1.74-2.5 1.18-4.31 1.18-3.13 0-5.73-2.17-6.68-5.45l-3.85 2.99C3.4 20.35 7.37 23 12 23z" />
+              </svg>
+              <span>Single Sign-On (Sandbox Dev)</span>
+            </button>
+
+            <div className="mt-8 text-center text-xs">
+              <span className="text-samridhi-textMuted">Don't have an account? </span>
+              <button 
+                onClick={() => setPage('signup')}
+                className="font-bold text-samridhi-secondary hover:underline bg-transparent border-none p-0 cursor-pointer"
+              >
+                Sign Up
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- SIGN UP PAGE VIEW ---
+    function SignUpPageView({ setPage, onSignUp }) {
+      const [name, setName] = useState('');
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [confirmPassword, setConfirmPassword] = useState('');
+      const [userType, setUserType] = useState('Freelancer');
+      const [upiVpa, setUpiVpa] = useState('');
+      const [error, setError] = useState('');
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!name || !email || !password || !confirmPassword) {
+          setError('Please fill in all fields.');
+          return;
+        }
+        if (password !== confirmPassword) {
+          setError('Passwords do not match.');
+          return;
+        }
+        if (password.length < 6) {
+          setError('Password must be at least 6 characters.');
+          return;
+        }
+        setError('');
+        onSignUp(name, email, userType, upiVpa);
+      };
+
+      return (
+        <div className="flex-1 flex items-center justify-center py-16 px-6 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#131124] via-samridhi-bg to-samridhi-bg">
+          <div className="w-full max-w-md bg-samridhi-card border border-samridhi-border p-8 rounded-3xl shadow-2xl relative overflow-hidden animate-fade-in">
+            {/* Header background accents */}
+            <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-samridhi-primary to-samridhi-secondary"></div>
+
+            <div className="flex flex-col items-center text-center mb-6">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center shadow-lg shadow-samridhi-primary/20 mb-4">
+                <span className="text-samridhi-bg font-extrabold text-xl">S</span>
+              </div>
+              <h2 className="text-2xl font-extrabold tracking-tight">Create Your Account</h2>
+              <p className="text-xs text-samridhi-textMuted mt-1">Join the 190M credit-invisible Indians building trust</p>
+            </div>
+
+            {error && (
+              <div className="mb-4 p-3.5 bg-samridhi-danger/10 border border-samridhi-danger/30 rounded-xl text-xs font-bold text-samridhi-danger flex items-center space-x-2 animate-pulse">
+                <Icons.Lock className="w-4 h-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="flex flex-col space-y-1.5">
+                <label className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">Full Name</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-samridhi-textMuted">
+                    <Icons.User className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. Samridhi Sharma"
+                    className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary text-sm rounded-xl py-3.5 pl-10 pr-4 text-samridhi-textPrimary placeholder:text-samridhi-textMuted/50 focus:outline-none transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col space-y-1.5">
+                <label className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">Email Address</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-samridhi-textMuted">
+                    <Icons.Mail className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@example.com"
+                    className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary text-sm rounded-xl py-3.5 pl-10 pr-4 text-samridhi-textPrimary placeholder:text-samridhi-textMuted/50 focus:outline-none transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col space-y-1.5">
+                  <label className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">Password</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary text-sm rounded-xl py-3 pl-4 text-samridhi-textPrimary placeholder:text-samridhi-textMuted/50 focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div className="flex flex-col space-y-1.5">
+                  <label className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">Confirm</label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary text-sm rounded-xl py-3 pl-4 text-samridhi-textPrimary placeholder:text-samridhi-textMuted/50 focus:outline-none transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col space-y-1.5">
+                <label className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">User Profile Type</label>
+                <select
+                  value={userType}
+                  onChange={(e) => setUserType(e.target.value)}
+                  className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary text-sm rounded-xl py-3 px-4 text-samridhi-textPrimary focus:outline-none transition-colors"
+                >
+                  <option value="Salaried">Salaried Employee</option>
+                  <option value="Freelancer">Freelancer / Gig Contractor</option>
+                  <option value="Student">Student (Vocational/Tech)</option>
+                  <option value="Entrepreneur">Micro-Entrepreneur / Merchant</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col space-y-1.5">
+                <label className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">UPI ID (VPA) for Cashflow Sync</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-samridhi-textMuted font-bold text-xs">
+                    ⚡
+                  </div>
+                  <input
+                    type="text"
+                    value={upiVpa}
+                    onChange={(e) => setUpiVpa(e.target.value)}
+                    placeholder="e.g. yourname@okaxis"
+                    className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary text-sm rounded-xl py-3.5 pl-10 pr-4 text-samridhi-textPrimary placeholder:text-samridhi-textMuted/50 focus:outline-none transition-colors"
+                  />
+                </div>
+                <p className="text-[10px] text-samridhi-textMuted leading-relaxed">Optional. Connects your transaction cashflow to calculate alternate credibility score.</p>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 bg-samridhi-primary hover:bg-samridhi-primary/95 text-white font-bold rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center space-x-2 mt-6 active:scale-95"
+              >
+                <span>Register & Calculate Score</span>
+                <Icons.ChevronRight className="w-4 h-4" />
+              </button>
+            </form>
+
+            <div className="mt-6 text-center text-xs">
+              <span className="text-samridhi-textMuted">Already have an account? </span>
+              <button 
+                onClick={() => setPage('signin')}
+                className="font-bold text-samridhi-secondary hover:underline bg-transparent border-none p-0 cursor-pointer"
+              >
+                Sign In
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- DASHBOARD LAYOUT & ROUTER ---
+    function DashboardView({
+      user,
+      setUser,
+      activeTab,
+      setActiveTab,
+      calculatedScore,
+      dashboardState,
+      dispatch,
+      handleLogout,
+      showNotifications,
+      setShowNotifications,
+      aadhaarVerified,
+      setAadhaarVerified,
+      panVerified,
+      setPanVerified,
+      upiLinked,
+      setUpiLinked,
+      upiVerified,
+      setUpiVerified,
+      whatIfRepayActive,
+      setWhatIfRepayActive,
+      whatIfLinkGithub,
+      setWhatIfLinkGithub,
+      whatIfNewCert,
+      setWhatIfNewCert,
+      whatIfConsistentUpi,
+      setWhatIfConsistentUpi
+    }) {
+
+      const unreadCount = dashboardState.notifications.filter(n => !n.read).length;
+
+      const handleReadNotifications = () => {
+        dispatch({ type: 'READ_ALL_NOTIFICATIONS' });
+        setShowNotifications(false);
+      };
+
+      return (
+        <div className="flex-1 flex flex-col md:flex-row bg-[#08080C] min-h-screen">
+          
+          {/* SIDEBAR */}
+          <aside className="w-full md:w-64 bg-samridhi-surface border-r border-samridhi-border/60 flex flex-col justify-between shrink-0">
+            <div>
+              {/* Profile Card Header */}
+              <div className="p-6 border-b border-samridhi-border/60">
+                <div className="flex items-center space-x-3 mb-3">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center font-bold text-lg text-samridhi-bg shadow-md">
+                    {user.name ? user.name[0] : 'U'}
+                  </div>
+                  <div className="overflow-hidden">
+                    <h4 className="font-extrabold text-sm text-samridhi-textPrimary truncate">{user.name || 'GUEST USER'}</h4>
+                    <p className="text-[10px] text-samridhi-textMuted truncate">{user.email}</p>
+                  </div>
+                </div>
+                
+                {/* User Type Badge */}
+                <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-samridhi-secondary/10 border border-samridhi-secondary/25 text-samridhi-secondary rounded-lg text-[10px] font-black tracking-wider uppercase">
+                  <span className="w-1.5 h-1.5 rounded-full bg-samridhi-secondary"></span>
+                  <span>{user.type}</span>
+                </div>
+              </div>
+
+              {/* Navigation Items */}
+              <nav className="p-4 space-y-1">
+                {[
+                  { id: 'overview', name: 'Overview', icon: <Icons.Home /> },
+                  { id: 'apply', name: 'Apply for Loan', icon: <Icons.Apply /> },
+                  { id: 'score', name: 'My Score Factors', icon: <Icons.Score /> },
+                  { id: 'transactions', name: 'Transaction Analysis', icon: <Icons.Transactions /> },
+                  { id: 'recommendations', name: 'Loan Recommendations', icon: <Icons.Offers /> },
+                  { id: 'profile', name: 'Profile Settings', icon: <Icons.User /> },
+                ].map((item) => {
+                  const isActive = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        setActiveTab(item.id);
+                        setShowNotifications(false);
+                      }}
+                      className={`w-full flex items-center space-x-3 px-4.5 py-3 rounded-xl text-xs font-bold transition-all ${
+                        isActive
+                          ? 'bg-samridhi-primary/10 border-l-4 border-samridhi-primary text-samridhi-textPrimary'
+                          : 'text-samridhi-textMuted hover:bg-samridhi-card/50 hover:text-samridhi-textPrimary border-l-4 border-transparent'
+                      }`}
+                    >
+                      <span className={isActive ? 'text-samridhi-primary' : 'text-samridhi-textMuted'}>
+                        {item.icon}
+                      </span>
+                      <span>{item.name}</span>
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* Logout Footer button */}
+            <div className="p-4 border-t border-samridhi-border/60">
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center space-x-3 px-4.5 py-3 rounded-xl text-xs font-bold text-samridhi-danger hover:bg-samridhi-danger/10 transition-all border border-transparent hover:border-samridhi-danger/20"
+              >
+                <Icons.Logout />
+                <span>Logout</span>
+              </button>
+            </div>
+          </aside>
+
+          {/* MAIN WORKSPACE CONTENT */}
+          <div className="flex-1 flex flex-col min-w-0">
+            
+            {/* TOP BAR */}
+            <header className="sticky top-0 z-20 h-16 bg-samridhi-surface border-b border-samridhi-border/60 px-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-extrabold uppercase tracking-widest text-samridhi-textMuted">
+                  Dashboard &gt; <span className="text-samridhi-textPrimary font-black">{activeTab}</span>
+                </h2>
+              </div>
+
+              {/* Notification bell and utilities */}
+              <div className="flex items-center space-x-4 relative">
+                
+                {/* Score summary on header */}
+                <div className="hidden sm:flex items-center space-x-2 bg-samridhi-card border border-samridhi-border px-3.5 py-1.5 rounded-xl">
+                  <span className="text-[10px] uppercase font-bold text-samridhi-textMuted tracking-wider">Index score</span>
+                  <span className="text-sm font-extrabold text-samridhi-secondary">{calculatedScore}</span>
+                </div>
+
+                <div className="relative">
+                  <button
+                    onClick={() => setShowNotifications(!showNotifications)}
+                    className="p-2 rounded-xl bg-samridhi-card border border-samridhi-border text-samridhi-textPrimary hover:border-samridhi-primary transition-all relative"
+                  >
+                    <Icons.Bell />
+                    {unreadCount > 0 && (
+                      <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-samridhi-danger animate-ping"></span>
+                    )}
+                  </button>
+
+                  {/* NOTIFICATIONS DROPDOWN PANEL */}
+                  {showNotifications && (
+                    <div className="absolute right-0 mt-3 w-80 bg-samridhi-card border border-samridhi-border rounded-2xl shadow-2xl z-30 overflow-hidden animate-fade-in">
+                      <div className="p-4 border-b border-samridhi-border flex items-center justify-between">
+                        <span className="text-xs font-black uppercase text-samridhi-textPrimary">System logs ({unreadCount})</span>
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={handleReadNotifications}
+                            className="text-[10px] font-bold text-samridhi-secondary hover:underline"
+                          >
+                            Mark all read
+                          </button>
+                        )}
+                      </div>
+                      <div className="max-h-72 overflow-y-auto divide-y divide-samridhi-border/40">
+                        {dashboardState.notifications.length === 0 ? (
+                          <div className="p-4 text-center text-xs text-samridhi-textMuted">No notifications found</div>
+                        ) : (
+                          dashboardState.notifications.map((n) => (
+                            <div key={n.id} className={`p-4 flex flex-col space-y-1 text-xs hover:bg-samridhi-surface/50 transition-colors ${!n.read ? 'bg-samridhi-primary/5' : ''}`}>
+                              <p className="text-samridhi-textPrimary leading-normal">{n.text}</p>
+                              <span className="text-[9px] font-bold text-samridhi-textMuted uppercase mt-1">{n.date}</span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                      <div className="p-2 border-t border-samridhi-border bg-samridhi-surface/40 text-center">
+                        <button 
+                          onClick={() => setShowNotifications(false)}
+                          className="text-[10px] font-bold text-samridhi-textMuted hover:text-samridhi-textPrimary py-1 w-full"
+                        >
+                          Close Notifications
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center font-bold text-xs text-samridhi-bg uppercase">
+                  {user.name ? user.name[0] : 'U'}
+                </div>
+              </div>
+            </header>
+
+            {/* TAB CONTAINER CONTENT */}
+            <div className="flex-1 p-6 overflow-y-auto">
+              
+              {/* TAB 1: OVERVIEW */}
+              {activeTab === 'overview' && (
+                <div className="space-y-6 animate-fade-in">
+                  
+                  {/* Row 1: Grid Score & Quick Stats */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    {/* Score Card (Col-4) */}
+                    <div className="lg:col-span-4 bg-samridhi-card border border-samridhi-border p-6 rounded-2xl flex flex-col items-center justify-center shadow-lg relative">
+                      <div className="absolute top-4 left-4">
+                        <span className="text-[10px] uppercase font-bold text-samridhi-textMuted tracking-wider">AI Score Gauge</span>
+                      </div>
+                      <CircularGauge score={calculatedScore} />
+                    </div>
+
+                    {/* Dashboard Welcome & Stats (Col-8) */}
+                    <div className="lg:col-span-8 flex flex-col justify-between space-y-6">
+                      
+                      {/* Greetings Header */}
+                      <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl flex flex-col justify-center h-full relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-samridhi-primary/5 to-transparent rounded-tr-2xl pointer-events-none"></div>
+                        <h2 className="text-xl md:text-2xl font-black text-samridhi-textPrimary">Welcome back, {user.name}!</h2>
+                        <p className="text-xs text-samridhi-textMuted mt-1 max-w-lg leading-relaxed">
+                          Your non-traditional AI credit file is calculated based on alternative cashflow parameters. Your profile is rated as <strong class="text-samridhi-secondary">{calculatedScore >= 71 ? 'LOW RISK' : 'STABLE'}</strong>. Let's maintain healthy digital transactions to qualify for lower rates.
+                        </p>
+                        
+                        <div className="mt-4 flex flex-wrap gap-3">
+                          <button
+                            onClick={() => setActiveTab('apply')}
+                            className="bg-samridhi-primary hover:bg-samridhi-primary/90 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-md transition-colors"
+                          >
+                            Apply for Loan
+                          </button>
+                          <button
+                            onClick={() => setActiveTab('recommendations')}
+                            className="bg-samridhi-surface hover:bg-samridhi-card border border-samridhi-border text-samridhi-textPrimary text-xs font-bold px-4 py-2.5 rounded-lg transition-all"
+                          >
+                            View Recommendations
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* quick stats */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="bg-samridhi-card border border-samridhi-border p-4 rounded-xl flex items-center justify-between">
+                          <div className="flex flex-col space-y-1">
+                            <span className="text-[10px] font-bold text-samridhi-textMuted uppercase tracking-wider">Monthly Income</span>
+                            <span className="text-base font-extrabold text-samridhi-textPrimary">₹45,000</span>
+                          </div>
+                          <div className="w-8 h-8 rounded-lg bg-samridhi-success/15 border border-samridhi-success/30 flex items-center justify-center text-samridhi-success font-black text-xs">
+                            <Icons.ArrowUp className="w-4 h-4" />
+                          </div>
+                        </div>
+
+                        <div className="bg-samridhi-card border border-samridhi-border p-4 rounded-xl flex items-center justify-between">
+                          <div className="flex flex-col space-y-1">
+                            <span className="text-[10px] font-bold text-samridhi-textMuted uppercase tracking-wider">UPI Transactions</span>
+                            <span className="text-base font-extrabold text-samridhi-textPrimary">{dashboardState.transactions.length} this month</span>
+                          </div>
+                          <div className="w-8 h-8 rounded-lg bg-samridhi-secondary/15 border border-samridhi-secondary/30 flex items-center justify-center text-samridhi-secondary font-black text-xs">
+                            ⚡
+                          </div>
+                        </div>
+
+                        <div className="bg-samridhi-card border border-samridhi-border p-4 rounded-xl flex items-center justify-between">
+                          <div className="flex flex-col space-y-1">
+                            <span className="text-[10px] font-bold text-samridhi-textMuted uppercase tracking-wider">Skills Certified</span>
+                            <span className="text-base font-extrabold text-samridhi-textPrimary">{dashboardState.skills.filter(s => s.verified).length} verified</span>
+                          </div>
+                          <div className="w-8 h-8 rounded-lg bg-samridhi-primary/15 border border-samridhi-primary/30 flex items-center justify-center text-samridhi-primary font-black text-xs">
+                            🎓
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* UPI TRANSACTION SIMULATOR AND RECENT TRANSACTIONS TABLE */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    {/* Recent Transactions list (Col-8) */}
+                    <div className="lg:col-span-8 bg-samridhi-card border border-samridhi-border p-6 rounded-2xl space-y-4">
+                      <div className="flex items-center justify-between border-b border-samridhi-border/40 pb-3">
+                        <h3 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider">Recent UPI Transaction Stream</h3>
+                        <span className="text-[10px] font-bold text-samridhi-textMuted uppercase">UPI Sync Engine</span>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs text-samridhi-textMuted">
+                          <thead>
+                            <tr className="border-b border-samridhi-border/60 text-samridhi-textPrimary font-extrabold uppercase">
+                              <th className="py-2.5">Date</th>
+                              <th className="py-2.5">Merchant</th>
+                              <th className="py-2.5">Category</th>
+                              <th className="py-2.5 text-right">Amount</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-samridhi-border/30">
+                            {dashboardState.transactions.map((tx, idx) => (
+                              <tr key={tx.id || idx} className="hover:bg-samridhi-surface/30 transition-colors">
+                                <td className="py-3 font-semibold">{tx.date}</td>
+                                <td className="py-3 text-samridhi-textPrimary font-semibold">{tx.merchant}</td>
+                                <td className="py-3">
+                                  <span className="px-2 py-0.5 bg-samridhi-surface border border-samridhi-border rounded text-[10px]">
+                                    {tx.category}
+                                  </span>
+                                </td>
+                                <td className={`py-3 text-right font-black ${tx.amount > 0 ? 'text-samridhi-success' : 'text-samridhi-textPrimary'}`}>
+                                  {tx.amount > 0 ? `+₹${tx.amount.toLocaleString()}` : `-₹${Math.abs(tx.amount).toLocaleString()}`}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* Live UPI Verification & Stream Injector Widget (Col-4) */}
+                    <div className="lg:col-span-4 space-y-6">
+                      
+                      {/* UPI ID Verification card */}
+                      <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl flex flex-col justify-between shadow-lg relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-samridhi-primary/5 to-transparent pointer-events-none"></div>
+                        <div>
+                          <div className="flex items-center justify-between border-b border-samridhi-border/40 pb-3 mb-4">
+                            <h4 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider">UPI KYC Authenticator</h4>
+                            <span className={`text-[9px] font-black px-2.5 py-1 rounded-full ${upiLinked && upiVerified ? 'bg-samridhi-success/15 text-samridhi-success border border-samridhi-success/20' : 'bg-samridhi-warning/15 text-samridhi-warning border border-samridhi-warning/20'}`}>
+                              {upiLinked && upiVerified ? 'VERIFIED' : 'PENDING'}
+                            </span>
+                          </div>
+                          
+                          <p className="text-[11px] text-samridhi-textMuted leading-relaxed mb-4">
+                            Linked UPI ID (VPA): <strong className="text-samridhi-textPrimary font-semibold">{user.upiVpa || 'Not linked'}</strong>.
+                            Pay ₹1.00 dynamically generated verification transaction to confirm identity details.
+                          </p>
+
+                          {upiLinked ? (
+                            <div className="space-y-4">
+                              {/* QR and Details */}
+                              <div className="flex flex-col sm:flex-row items-center gap-4 bg-samridhi-surface/50 p-4 border border-samridhi-border rounded-xl">
+                                {/* Dynamic QR Code from free API */}
+                                <div className="bg-white p-1.5 rounded-lg shrink-0 shadow-lg">
+                                  <img 
+                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=0A0A0F&data=${encodeURIComponent(`upi://pay?pa=samridhi@okaxis&pn=Samridhi%20AI&am=1.00&cu=INR&tn=Verification%20for%20${user.name}`)}`} 
+                                    alt="UPI QR Code"
+                                    className="w-20 h-20"
+                                  />
+                                </div>
+                                
+                                <div className="flex-1 space-y-2 text-xs w-full">
+                                  <div>
+                                    <span className="block text-[9px] text-samridhi-textMuted font-bold uppercase">UPI Deep Link</span>
+                                    <code className="text-[9px] text-samridhi-secondary block break-all font-mono bg-samridhi-bg p-1.5 rounded border border-samridhi-border max-h-16 overflow-y-auto mt-0.5">
+                                      {`upi://pay?pa=samridhi@okaxis&pn=Samridhi%20AI&am=1.00&cu=INR`}
+                                    </code>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                                {/* Deep link button (for mobile testing) */}
+                                <a 
+                                  href={`upi://pay?pa=samridhi@okaxis&pn=Samridhi%20AI&am=1.00&cu=INR&tn=Verification%20for%20${user.name}`}
+                                  className="flex-1 text-center bg-samridhi-primary hover:bg-samridhi-primary/90 text-white font-bold py-2 px-3 rounded-lg text-[10px] transition-all inline-block shadow-md hover:-translate-y-0.5 active:translate-y-0"
+                                >
+                                  Pay ₹1 on Mobile
+                                </a>
+                                
+                                <button
+                                  onClick={() => {
+                                    setUpiVerified(true);
+                                    dispatch({
+                                      type: 'ADD_NOTIFICATION',
+                                      payload: {
+                                        id: `n-${Date.now()}`,
+                                        text: `UPI account ${user.upiVpa} verified successfully via token auth. Dynamic score raised (+15 points).`,
+                                        read: false,
+                                        date: "Just now"
+                                      }
+                                    });
+                                  }}
+                                  disabled={upiVerified}
+                                  className={`flex-1 font-bold py-2 px-3 rounded-lg text-[10px] transition-all border ${
+                                    upiVerified
+                                      ? 'bg-samridhi-success/5 border-samridhi-success/20 text-samridhi-success cursor-not-allowed'
+                                      : 'bg-samridhi-success/20 hover:bg-samridhi-success/30 text-samridhi-success border-samridhi-success/40 hover:-translate-y-0.5 active:translate-y-0'
+                                  }`}
+                                >
+                                  {upiVerified ? 'Verified ✓' : 'Confirm Pay (Sim)'}
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-center py-4 border border-dashed border-samridhi-border rounded-xl">
+                              <p className="text-[10px] text-samridhi-textMuted mb-2">Please link your UPI ID in Profile Settings to run identity verification.</p>
+                              <button 
+                                onClick={() => setActiveTab('profile')}
+                                className="px-3 py-1.5 bg-samridhi-primary text-white text-[10px] font-bold rounded-lg hover:opacity-90 transition-opacity"
+                              >
+                                Go to Profile Settings
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* UPI Stream Simulator card */}
+                      <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl flex flex-col justify-between shadow-lg">
+                        <div>
+                          <h4 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider border-b border-samridhi-border/40 pb-3 mb-4">UPI Stream Simulator</h4>
+                          <p className="text-[11px] text-samridhi-textMuted leading-relaxed mb-4">
+                            Add a mock UPI transaction to simulate transaction patterns. AI underwriting evaluates cash stability trends in real-time.
+                          </p>
+                          
+                          {/* Interactive Form */}
+                          <div className="space-y-3 text-xs">
+                            <div>
+                              <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1">Merchant / Source</label>
+                              <input 
+                                type="text" 
+                                id="simMerchant"
+                                placeholder="e.g. Starbucks Cafe" 
+                                className="w-full bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary rounded-lg p-2.5 focus:border-samridhi-secondary focus:outline-none"
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1">Amount (₹)</label>
+                                <input 
+                                  type="number" 
+                                  id="simAmount"
+                                  placeholder="500" 
+                                  className="w-full bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary rounded-lg p-2.5 focus:border-samridhi-secondary focus:outline-none"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1">Category</label>
+                                <select 
+                                  id="simCategory"
+                                  className="w-full bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary rounded-lg p-2.5 focus:border-samridhi-secondary focus:outline-none"
+                                >
+                                  <option value="Food & Beverage">F&B Outflow</option>
+                                  <option value="Utility Bills">Utilities</option>
+                                  <option value="Business Expense">Business</option>
+                                  <option value="Freelance Income">Direct Inflow</option>
+                                  <option value="Travel Outflow">Transport</option>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            const merchant = document.getElementById('simMerchant').value || 'UPI Transaction';
+                            const amountVal = parseFloat(document.getElementById('simAmount').value) || 250;
+                            const category = document.getElementById('simCategory').value;
+                            const isInflow = category === 'Freelance Income';
+
+                            const newTx = {
+                              id: `sim-t-${Date.now()}`,
+                              date: new Date().toISOString().split('T')[0],
+                              merchant,
+                              amount: isInflow ? amountVal : -amountVal,
+                              category,
+                              type: isInflow ? 'Credit' : 'Debit'
+                            };
+
+                            dispatch({ type: 'ADD_TRANSACTION', payload: newTx });
+                            dispatch({ 
+                              type: 'ADD_NOTIFICATION', 
+                              payload: { 
+                                id: `n-${Date.now()}`, 
+                                text: `Simulated transaction added: ${merchant} for ${isInflow ? '+' : '-'}₹${amountVal}. Score recalculated.`, 
+                                read: false, 
+                                date: "Just now" 
+                              }
+                            });
+
+                            // Reset inputs
+                            document.getElementById('simMerchant').value = '';
+                            document.getElementById('simAmount').value = '';
+                          }}
+                          className="mt-6 w-full bg-samridhi-secondary hover:bg-samridhi-secondary/90 text-samridhi-bg font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center space-x-1.5"
+                        >
+                          <span>Inject & Parse Transaction</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* TAB 2: APPLY FOR LOAN */}
+              {activeTab === 'apply' && (
+                <div className="max-w-3xl mx-auto bg-samridhi-card border border-samridhi-border p-8 rounded-3xl space-y-8 animate-fade-in">
+                  <div className="border-b border-samridhi-border/40 pb-4">
+                    <h2 className="text-xl font-extrabold text-samridhi-textPrimary">Apply for Smart Micro-Credit</h2>
+                    <p className="text-xs text-samridhi-textMuted mt-1">Our AI evaluates your alternative metrics to generate instant interest rates and terms.</p>
+                  </div>
+
+                  {/* Interactive Loan Apply Wizard (Internal state routing) */}
+                  <LoanWizard calculatedScore={calculatedScore} dispatch={dispatch} user={user} />
+                </div>
+              )}
+
+              {/* TAB 3: MY SCORE FACTORS */}
+              {activeTab === 'score' && (
+                <div className="space-y-6 animate-fade-in">
+                  <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl space-y-4">
+                    <h2 className="text-lg font-extrabold text-samridhi-textPrimary">Explainable AI (XAI) Scoring Engine</h2>
+                    <p className="text-xs text-samridhi-textMuted leading-relaxed">
+                      Traditional models evaluate only historic banking bureau footprints. Samridhi analyzes alternate telemetry streams across 4 major dimensions. Below are your dynamic credit vectors contributing to your score of <strong class="text-samridhi-secondary">{calculatedScore}/100</strong>.
+                    </p>
+
+                    {/* Progress score grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                      
+                      {/* Metric 1 */}
+                      <div className="bg-samridhi-surface border border-samridhi-border/60 p-5 rounded-xl space-y-3">
+                        <div className="flex items-center justify-between text-xs font-bold">
+                          <span className="text-samridhi-textPrimary">Alternative Cashflow Recency (25%)</span>
+                          <span className="text-samridhi-secondary">{upiLinked ? '85/100' : '0/100'}</span>
+                        </div>
+                        <div className="w-full bg-samridhi-bg h-2 rounded-full overflow-hidden">
+                          <div className="bg-samridhi-secondary h-full transition-all duration-700" style={{ width: upiLinked ? '85%' : '0%' }}></div>
+                        </div>
+                        <p className="text-[10px] text-samridhi-textMuted leading-normal">
+                          {upiLinked 
+                            ? 'UPI linking confirmed. Evaluates transaction volume consistency over the past 30 days.'
+                            : 'UPI cashflow not connected. Connect banking details to raise alternative credibility metrics.'}
+                        </p>
+                      </div>
+
+                      {/* Metric 2 */}
+                      <div className="bg-samridhi-surface border border-samridhi-border/60 p-5 rounded-xl space-y-3">
+                        <div className="flex items-center justify-between text-xs font-bold">
+                          <span className="text-samridhi-textPrimary">Verified Professional Credentials (25%)</span>
+                          <span className="text-samridhi-primary">
+                            {Math.min(100, 45 + (dashboardState.skills.filter(s => s.verified).length * 15))}/100
+                          </span>
+                        </div>
+                        <div className="w-full bg-samridhi-bg h-2 rounded-full overflow-hidden">
+                          <div className="bg-samridhi-primary h-full transition-all duration-700" style={{ width: `${Math.min(100, 45 + (dashboardState.skills.filter(s => s.verified).length * 15))}%` }}></div>
+                        </div>
+                        <p className="text-[10px] text-samridhi-textMuted leading-normal">
+                          Analyzing {dashboardState.skills.filter(s => s.verified).length} active verified certificates. Certifications from AWS and Meta act as proxies for earning potential.
+                        </p>
+                      </div>
+
+                      {/* Metric 3 */}
+                      <div className="bg-samridhi-surface border border-samridhi-border/60 p-5 rounded-xl space-y-3">
+                        <div className="flex items-center justify-between text-xs font-bold">
+                          <span className="text-samridhi-textPrimary">Simulated Repayment Index (30%)</span>
+                          <span className="text-samridhi-success">80/100</span>
+                        </div>
+                        <div className="w-full bg-samridhi-bg h-2 rounded-full overflow-hidden">
+                          <div className="bg-samridhi-success h-full" style={{ width: '80%' }}></div>
+                        </div>
+                        <p className="text-[10px] text-samridhi-textMuted leading-normal">
+                          Historical data indicates no payment defaults inside Samridhi networks. Timely repayments provide high structural trust scores.
+                        </p>
+                      </div>
+
+                      {/* Metric 4 */}
+                      <div className="bg-samridhi-surface border border-samridhi-border/60 p-5 rounded-xl space-y-3">
+                        <div className="flex items-center justify-between text-xs font-bold">
+                          <span className="text-samridhi-textPrimary">KYC & Digital Footprint Stability (20%)</span>
+                          <span className="text-samridhi-warning">
+                            {((aadhaarVerified ? 50 : 0) + (panVerified ? 50 : 0))}/100
+                          </span>
+                        </div>
+                        <div className="w-full bg-samridhi-bg h-2 rounded-full overflow-hidden">
+                          <div className="bg-samridhi-warning h-full transition-all duration-700" style={{ width: `${(aadhaarVerified ? 50 : 0) + (panVerified ? 50 : 0)}%` }}></div>
+                        </div>
+                        <p className="text-[10px] text-samridhi-textMuted leading-normal">
+                          Matches Government registry verification and identity parameters (Aadhaar & PAN matching status).
+                        </p>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  {/* INTERACTIVE CREDIT SIMULATOR */}
+                  <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl space-y-4">
+                    <h3 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider border-b border-samridhi-border/40 pb-3">
+                      Credit Score Simulator (What-If Analysis)
+                    </h3>
+                    <p className="text-xs text-samridhi-textMuted leading-relaxed">
+                      Toggle the actions below to simulate how financial behaviors and additional digital assets will affect your real-time Samridhi AI Credibility Score:
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-3">
+                      
+                      <button
+                        onClick={() => setWhatIfRepayActive(!whatIfRepayActive)}
+                        className={`p-4 rounded-xl border text-left flex flex-col justify-between transition-all ${
+                          whatIfRepayActive 
+                            ? 'bg-samridhi-success/5 border-samridhi-success text-samridhi-textPrimary shadow-[0_0_10px_rgba(0,230,118,0.1)]' 
+                            : 'bg-samridhi-surface border-samridhi-border hover:border-samridhi-border/80 text-samridhi-textMuted'
+                        }`}
+                      >
+                        <span className="text-xs font-bold mb-1">Repay Active Microloan</span>
+                        <div className="flex items-center justify-between w-full mt-4">
+                          <span className={`text-[10px] font-black ${whatIfRepayActive ? 'text-samridhi-success' : 'text-samridhi-textMuted'}`}>+6 Points</span>
+                          <span className="text-[11px]">{whatIfRepayActive ? 'Active' : 'Simulate'}</span>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => setWhatIfLinkGithub(!whatIfLinkGithub)}
+                        className={`p-4 rounded-xl border text-left flex flex-col justify-between transition-all ${
+                          whatIfLinkGithub 
+                            ? 'bg-samridhi-primary/5 border-samridhi-primary text-samridhi-textPrimary shadow-[0_0_10px_rgba(108,99,255,0.1)]' 
+                            : 'bg-samridhi-surface border-samridhi-border hover:border-samridhi-border/80 text-samridhi-textMuted'
+                        }`}
+                      >
+                        <span className="text-xs font-bold mb-1">Link GitHub Account</span>
+                        <div className="flex items-center justify-between w-full mt-4">
+                          <span className={`text-[10px] font-black ${whatIfLinkGithub ? 'text-samridhi-primary' : 'text-samridhi-textMuted'}`}>+8 Points</span>
+                          <span className="text-[11px]">{whatIfLinkGithub ? 'Active' : 'Simulate'}</span>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => setWhatIfNewCert(!whatIfNewCert)}
+                        className={`p-4 rounded-xl border text-left flex flex-col justify-between transition-all ${
+                          whatIfNewCert 
+                            ? 'bg-samridhi-secondary/5 border-samridhi-secondary text-samridhi-textPrimary shadow-[0_0_10px_rgba(0,212,255,0.1)]' 
+                            : 'bg-samridhi-surface border-samridhi-border hover:border-samridhi-border/80 text-samridhi-textMuted'
+                        }`}
+                      >
+                        <span className="text-xs font-bold mb-1">Add Google UX Cert</span>
+                        <div className="flex items-center justify-between w-full mt-4">
+                          <span className={`text-[10px] font-black ${whatIfNewCert ? 'text-samridhi-secondary' : 'text-samridhi-textMuted'}`}>+5 Points</span>
+                          <span className="text-[11px]">{whatIfNewCert ? 'Active' : 'Simulate'}</span>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => setWhatIfConsistentUpi(!whatIfConsistentUpi)}
+                        className={`p-4 rounded-xl border text-left flex flex-col justify-between transition-all ${
+                          whatIfConsistentUpi 
+                            ? 'bg-samridhi-warning/5 border-samridhi-warning text-samridhi-textPrimary shadow-[0_0_10px_rgba(255,179,0,0.1)]' 
+                            : 'bg-samridhi-surface border-samridhi-border hover:border-samridhi-border/80 text-samridhi-textMuted'
+                        }`}
+                      >
+                        <span className="text-xs font-bold mb-1">30-Day Steady Deposits</span>
+                        <div className="flex items-center justify-between w-full mt-4">
+                          <span className={`text-[10px] font-black ${whatIfConsistentUpi ? 'text-samridhi-warning' : 'text-samridhi-textMuted'}`}>+7 Points</span>
+                          <span className="text-[11px]">{whatIfConsistentUpi ? 'Active' : 'Simulate'}</span>
+                        </div>
+                      </button>
+
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 4: TRANSACTION ANALYSIS */}
+              {activeTab === 'transactions' && (
+                <div className="space-y-6 animate-fade-in">
+                  
+                  {/* Summary row */}
+                  <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div className="space-y-1">
+                      <h2 className="text-lg font-extrabold text-samridhi-textPrimary">Digital Cashflow Telemetry</h2>
+                      <p className="text-xs text-samridhi-textMuted">Analytics generated from linked UPI handles and bank statement parsers.</p>
+                    </div>
+
+                    {/* Stats details */}
+                    <div className="flex gap-8 text-xs">
+                      <div>
+                        <span className="block text-samridhi-textMuted font-bold">Total Inflow (Month)</span>
+                        <span className="text-base font-extrabold text-samridhi-success">₹45,000</span>
+                      </div>
+                      <div>
+                        <span className="block text-samridhi-textMuted font-bold">Total Outflow (Month)</span>
+                        <span className="text-base font-extrabold text-samridhi-secondary">₹17,800</span>
+                      </div>
+                      <div>
+                        <span className="block text-samridhi-textMuted font-bold">Inflow Consistency</span>
+                        <span className="text-base font-extrabold text-samridhi-primary">94% Stable</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Charts Grid */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    {/* Area Chart: Monthly Trend (Col-7) */}
+                    <div className="lg:col-span-7 bg-samridhi-card border border-samridhi-border p-6 rounded-2xl space-y-4">
+                      <h3 className="text-sm font-extrabold uppercase tracking-wider text-samridhi-textPrimary">Income vs Expense Trend</h3>
+                      
+                      <div className="h-72 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart
+                            data={[
+                              { name: 'Dec', Income: 38000, Expense: 14000 },
+                              { name: 'Jan', Income: 42000, Expense: 18000 },
+                              { name: 'Feb', Income: 40000, Expense: 15000 },
+                              { name: 'Mar', Income: 45000, Expense: 16000 },
+                              { name: 'Apr', Income: 44000, Expense: 17000 },
+                              { name: 'May', Income: 45000, Expense: 17800 },
+                            ]}
+                            margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                          >
+                            <defs>
+                              <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#6C63FF" stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor="#6C63FF" stopOpacity={0}/>
+                              </linearGradient>
+                              <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#00D4FF" stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor="#00D4FF" stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid stroke="#2A2A3E" strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="name" stroke="#8888AA" fontSize={11} tickLine={false} />
+                            <YAxis stroke="#8888AA" fontSize={11} tickLine={false} />
+                            <Tooltip contentStyle={{ backgroundColor: '#1A1A26', borderColor: '#2A2A3E', borderRadius: '8px', color: '#F0F0FF' }} />
+                            <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: '11px' }} />
+                            <Area type="monotone" dataKey="Income" stroke="#6C63FF" fillOpacity={1} fill="url(#colorIncome)" strokeWidth={2} />
+                            <Area type="monotone" dataKey="Expense" stroke="#00D4FF" fillOpacity={1} fill="url(#colorExpense)" strokeWidth={2} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    {/* Bar Chart: Spending category (Col-5) */}
+                    <div className="lg:col-span-5 bg-samridhi-card border border-samridhi-border p-6 rounded-2xl space-y-4">
+                      <h3 className="text-sm font-extrabold uppercase tracking-wider text-samridhi-textPrimary">Category Expense Distribution</h3>
+                      
+                      <div className="h-72 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={[
+                              { category: 'Hosting', Amount: 3499 },
+                              { category: 'F&B', Amount: 4200 },
+                              { category: 'Utilities', Amount: 2600 },
+                              { category: 'Co-work', Amount: 5000 },
+                              { category: 'Transport', Amount: 2500 },
+                            ]}
+                            margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                          >
+                            <CartesianGrid stroke="#2A2A3E" strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="category" stroke="#8888AA" fontSize={11} tickLine={false} />
+                            <YAxis stroke="#8888AA" fontSize={11} tickLine={false} />
+                            <Tooltip contentStyle={{ backgroundColor: '#1A1A26', borderColor: '#2A2A3E', borderRadius: '8px', color: '#F0F0FF' }} cursor={{ fill: '#1E1E2E', opacity: 0.4 }} />
+                            <Bar dataKey="Amount" fill="#00D4FF" radius={[6, 6, 0, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* TAB 5: LOAN RECOMMENDATIONS */}
+              {activeTab === 'recommendations' && (
+                <div className="space-y-6 animate-fade-in">
+                  
+                  {/* Info Panel */}
+                  <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="space-y-1">
+                      <h2 className="text-lg font-extrabold text-samridhi-textPrimary">Decentralized Capital Recommendations</h2>
+                      <p className="text-xs text-samridhi-textMuted">Matched partners providing custom loan options based on your trust score of <strong class="text-samridhi-secondary">{calculatedScore}</strong>.</p>
+                    </div>
+
+                    <div className="inline-flex items-center space-x-2 bg-samridhi-primary/10 border border-samridhi-primary/30 px-3.5 py-1.5 rounded-xl text-xs font-bold text-samridhi-primary">
+                      <span>Capital Pools Sync: Online</span>
+                    </div>
+                  </div>
+
+                  {/* Tailored AI Underwriting Rationale Banner */}
+                  <div className="bg-samridhi-surface border border-samridhi-border p-6 rounded-2xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-samridhi-secondary/15 to-transparent rounded-tr-2xl pointer-events-none"></div>
+                    <h3 className="text-xs font-black uppercase text-samridhi-secondary tracking-widest mb-2 flex items-center gap-1.5">
+                      <span>⚡</span> AI Underwriting Rationale: {user.type} Profile
+                    </h3>
+                    {user.type === 'Student' && (
+                      <p className="text-xs text-samridhi-textMuted leading-relaxed">
+                        Your credit eligibility emphasizes <strong className="text-samridhi-textPrimary">vocational certification verification logs</strong> and <strong className="text-samridhi-textPrimary">GitHub project telemetry</strong>. Since you lack standard salary pay slips, your verified certifications act as proxies for earning potential. Keeping certifications active and linking project repositories will boost your borrowing limits.
+                      </p>
+                    )}
+                    {user.type === 'Freelancer' && (
+                      <p className="text-xs text-samridhi-textMuted leading-relaxed">
+                        Your credibility score evaluates your <strong className="text-samridhi-textPrimary">UPI invoice consistency index</strong> and <strong className="text-samridhi-textPrimary">Upwork/gig-platform ratings</strong>. Alternating high-value credit deposits with low-frequency utility payouts helps establish invoice stream stability. Connecting additional gig portfolios increases loan limits.
+                      </p>
+                    )}
+                    {user.type === 'Entrepreneur' && (
+                      <p className="text-xs text-samridhi-textMuted leading-relaxed">
+                        Your underwriting profile parses merchant <strong className="text-samridhi-textPrimary">transaction frequency</strong> and <strong className="text-samridhi-textPrimary">customer retention density</strong>. Stability is calculated based on daily cashflow velocity and operational recency. Maintaining steady digital ledger records on-platform maximizes micro-capital pool eligibility.
+                      </p>
+                    )}
+                    {user.type === 'Salaried' && (
+                      <p className="text-xs text-samridhi-textMuted leading-relaxed">
+                        Your eligibility assessment uses <strong className="text-samridhi-textPrimary">PAN/Aadhaar registry matches</strong> cross-referenced with <strong className="text-samridhi-textPrimary">direct bank payroll credits</strong>. Standard salary receipt consistency represents a low risk category, matching corporate group finance pools.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Recommendation Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {MOCK_LOAN_OFFERS.map((offer) => {
+                      // Match user classification criteria
+                      const isHighlyEligible = (user.type === offer.type) && (
+                        (user.type === 'Freelancer' && calculatedScore >= 70) ||
+                        (user.type === 'Student' && calculatedScore >= 60) ||
+                        (user.type === 'Entrepreneur' && calculatedScore >= 65) ||
+                        (user.type === 'Salaried' && calculatedScore >= 60)
+                      );
+
+                      return (
+                        <div 
+                          key={offer.id} 
+                          className={`bg-samridhi-card border p-6 rounded-2xl flex flex-col justify-between transition-all ${
+                            isHighlyEligible 
+                              ? 'border-samridhi-primary/45 shadow-[0_0_15px_rgba(108,99,255,0.08)]' 
+                              : 'border-samridhi-border'
+                          }`}
+                        >
+                          <div>
+                            {/* Card Header */}
+                            <div className="flex items-start justify-between mb-4">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] font-black uppercase text-samridhi-textMuted">{offer.lender}</span>
+                                  {isHighlyEligible && (
+                                    <span className="text-[9px] font-extrabold px-1.5 py-0.5 bg-samridhi-success/15 border border-samridhi-success/30 rounded text-samridhi-success uppercase">
+                                      Match: {user.type} Profile
+                                    </span>
+                                  )}
+                                </div>
+                                <h3 className="font-extrabold text-base text-samridhi-textPrimary mt-1">{offer.name}</h3>
+                              </div>
+                              <span className="text-[10px] font-bold px-2 py-0.5 bg-samridhi-surface border border-samridhi-border rounded-lg text-samridhi-secondary">
+                                {offer.tag}
+                              </span>
+                            </div>
+
+                            {/* Details Grid */}
+                            <div className="grid grid-cols-3 gap-2 py-3 border-y border-samridhi-border/40 text-xs">
+                              <div>
+                                <span className="block text-[10px] text-samridhi-textMuted uppercase font-bold">Capital limit</span>
+                                <span className="font-extrabold text-samridhi-textPrimary">{offer.amount}</span>
+                              </div>
+                              <div>
+                                <span className="block text-[10px] text-samridhi-textMuted uppercase font-bold">Interest Rate</span>
+                                <span className="font-extrabold text-samridhi-success">{offer.interestRate}</span>
+                              </div>
+                              <div>
+                                <span className="block text-[10px] text-samridhi-textMuted uppercase font-bold">Max Term</span>
+                                <span className="font-extrabold text-samridhi-textPrimary">{offer.tenure}</span>
+                              </div>
+                            </div>
+
+                            <p className="text-[11px] text-samridhi-textMuted mt-3">
+                              {offer.eligibility}
+                            </p>
+                          </div>
+
+                          <div className="mt-6 flex gap-3">
+                            <button
+                              onClick={() => {
+                                dispatch({
+                                  type: 'APPLY_LOAN',
+                                  payload: {
+                                    id: `l-sim-${Date.now()}`,
+                                    lender: offer.lender,
+                                    amount: parseInt(offer.amount.replace('₹', '').replace(',', '')),
+                                    rate: offer.interestRate,
+                                    emi: `₹${(parseInt(offer.amount.replace('₹', '').replace(',', '')) * 0.09).toFixed(0)}`,
+                                    status: "Active",
+                                    date: new Date().toISOString().split('T')[0]
+                                  }
+                                });
+                                dispatch({
+                                  type: 'ADD_NOTIFICATION',
+                                  payload: {
+                                    id: `n-${Date.now()}`,
+                                    text: `Applied successfully for ${offer.name} with ${offer.lender}. Active loans updated.`,
+                                    read: false,
+                                    date: "Just now"
+                                  }
+                                });
+                                setActiveTab('overview');
+                              }}
+                              className="w-full bg-samridhi-primary hover:bg-samridhi-primary/90 text-white font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center space-x-1.5"
+                            >
+                              <span>Instant Apply Offer</span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                </div>
+              )}
+
+              {/* TAB 6: PROFILE SETTINGS */}
+              {activeTab === 'profile' && (
+                <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
+                  
+                  {/* Account overview */}
+                  <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl space-y-6">
+                    <h2 className="text-lg font-extrabold text-samridhi-textPrimary">Profile Credentials & KYC Verification</h2>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      
+                      {/* Personal info form */}
+                      <div className="space-y-4 text-xs">
+                        <div>
+                          <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1">Full Name</label>
+                          <input
+                            type="text"
+                            value={user.name}
+                            onChange={(e) => setUser({ ...user, name: e.target.value.toUpperCase() })}
+                            className="w-full bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary rounded-lg p-2.5 focus:border-samridhi-primary focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1">Email Address</label>
+                          <input
+                            type="email"
+                            value={user.email}
+                            disabled
+                            className="w-full bg-samridhi-bg border border-samridhi-border text-samridhi-textMuted rounded-lg p-2.5 cursor-not-allowed opacity-60"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1">Earning Profile Sector</label>
+                          <select
+                            value={user.type}
+                            onChange={(e) => setUser({ ...user, type: e.target.value })}
+                            className="w-full bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary rounded-lg p-2.5 focus:border-samridhi-primary focus:outline-none"
+                          >
+                            <option value="Salaried">Salaried Employee</option>
+                            <option value="Freelancer">Freelancer / Gig Contractor</option>
+                            <option value="Student">Student (Vocational/Tech)</option>
+                            <option value="Entrepreneur">Micro-Entrepreneur / Merchant</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1">Linked UPI ID (VPA)</label>
+                          <input
+                            type="text"
+                            value={user.upiVpa || ''}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setUser({ ...user, upiVpa: val });
+                              setUpiLinked(val.trim() !== '');
+                            }}
+                            placeholder="e.g. yourname@okaxis"
+                            className="w-full bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary rounded-lg p-2.5 focus:border-samridhi-primary focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      {/* KYC Checklist */}
+                      <div className="space-y-4">
+                        <h4 className="font-extrabold text-xs text-samridhi-textPrimary uppercase tracking-wider">Government Registry Status</h4>
+                        
+                        <div className="space-y-3">
+                          <label className="flex items-center justify-between p-3.5 bg-samridhi-surface border border-samridhi-border rounded-xl cursor-pointer">
+                            <div className="flex items-center space-x-3">
+                              <input
+                                type="checkbox"
+                                checked={aadhaarVerified}
+                                onChange={(e) => setAadhaarVerified(e.target.checked)}
+                                className="rounded text-samridhi-primary border-samridhi-border focus:ring-samridhi-primary bg-samridhi-bg"
+                              />
+                              <span className="text-xs font-bold text-samridhi-textPrimary">Aadhaar Card Verified</span>
+                            </div>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${aadhaarVerified ? 'bg-samridhi-success/10 text-samridhi-success' : 'bg-samridhi-border text-samridhi-textMuted'}`}>
+                              {aadhaarVerified ? 'Connected' : 'Missing'}
+                            </span>
+                          </label>
+
+                          <label className="flex items-center justify-between p-3.5 bg-samridhi-surface border border-samridhi-border rounded-xl cursor-pointer">
+                            <div className="flex items-center space-x-3">
+                              <input
+                                type="checkbox"
+                                checked={panVerified}
+                                onChange={(e) => setPanVerified(e.target.checked)}
+                                className="rounded text-samridhi-primary border-samridhi-border focus:ring-samridhi-primary bg-samridhi-bg"
+                              />
+                              <span className="text-xs font-bold text-samridhi-textPrimary">Permanent Account (PAN)</span>
+                            </div>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${panVerified ? 'bg-samridhi-success/10 text-samridhi-success' : 'bg-samridhi-border text-samridhi-textMuted'}`}>
+                              {panVerified ? 'Connected' : 'Missing'}
+                            </span>
+                          </label>
+
+                          <label className="flex items-center justify-between p-3.5 bg-samridhi-surface border border-samridhi-border rounded-xl cursor-pointer">
+                            <div className="flex items-center space-x-3">
+                              <input
+                                type="checkbox"
+                                checked={upiLinked}
+                                onChange={(e) => setUpiLinked(e.target.checked)}
+                                className="rounded text-samridhi-primary border-samridhi-border focus:ring-samridhi-primary bg-samridhi-bg"
+                              />
+                              <span className="text-xs font-bold text-samridhi-textPrimary">UPI Aggregator Sync</span>
+                            </div>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${upiLinked ? 'bg-samridhi-success/10 text-samridhi-success' : 'bg-samridhi-border text-samridhi-textMuted'}`}>
+                              {upiLinked ? 'Synced (+10)' : 'Disconnected'}
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  {/* Skills credentials list */}
+                  <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl space-y-4">
+                    <div className="flex justify-between items-center border-b border-samridhi-border/40 pb-3">
+                      <h3 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider">Credential Verification List</h3>
+                      <button
+                        onClick={() => {
+                          const skillName = prompt("Enter verification certificate name:") || "";
+                          const issuer = prompt("Enter issuing organization (e.g. Google):") || "";
+                          if (skillName && issuer) {
+                            dispatch({
+                              type: 'ADD_SKILL',
+                              payload: {
+                                id: `s-added-${Date.now()}`,
+                                name: skillName,
+                                issuer,
+                                verified: true
+                              }
+                            });
+                            dispatch({
+                              type: 'ADD_NOTIFICATION',
+                              payload: {
+                                id: `n-${Date.now()}`,
+                                text: `Skill credential added: ${skillName}. Score updated by +4.`,
+                                read: false,
+                                date: "Just now"
+                              }
+                            });
+                          }
+                        }}
+                        className="text-[10px] bg-samridhi-primary hover:bg-samridhi-primary/90 text-white font-bold px-2.5 py-1.5 rounded-lg flex items-center space-x-1"
+                      >
+                        <span>Add Certificate Link</span>
+                      </button>
+                    </div>
+
+                    <div className="space-y-2">
+                      {dashboardState.skills.map((skill) => (
+                        <div key={skill.id} className="flex items-center justify-between p-4 bg-samridhi-surface border border-samridhi-border/60 rounded-xl">
+                          <div className="flex items-center space-x-3">
+                            <span className="text-xl">🎓</span>
+                            <div>
+                              <h5 className="text-xs font-bold text-samridhi-textPrimary">{skill.name}</h5>
+                              <p className="text-[10px] text-samridhi-textMuted">{skill.issuer}</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => {
+                              dispatch({ type: 'TOGGLE_SKILL_VERIFICATION', payload: skill.id });
+                              dispatch({
+                                type: 'ADD_NOTIFICATION',
+                                payload: {
+                                  id: `n-${Date.now()}`,
+                                  text: `Toggled verification for: ${skill.name}. Credibility indexes recalculated.`,
+                                  read: false,
+                                  date: "Just now"
+                                }
+                              });
+                            }}
+                            className={`px-3 py-1 text-[10px] font-black rounded-lg transition-all ${
+                              skill.verified 
+                                ? 'bg-samridhi-success/15 border border-samridhi-success/30 text-samridhi-success' 
+                                : 'bg-samridhi-bg border border-samridhi-border text-samridhi-textMuted hover:text-samridhi-textPrimary'
+                            }`}
+                          >
+                            {skill.verified ? 'Verified (+4)' : 'Verify Document'}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- LOAN WIZARD CONTROLLER ---
+    function LoanWizard({ calculatedScore, dispatch, user }) {
+      const [wizardStep, setWizardStep] = useState(1);
+      
+      // Form fields
+      const [loanAmount, setLoanAmount] = useState(75000);
+      const [loanTenure, setLoanTenure] = useState(12);
+      const [loanPurpose, setLoanPurpose] = useState('Business Tools');
+
+      // Processing simulated screens
+      const [processingProgress, setProcessingProgress] = useState(0);
+      const [processingMsg, setProcessingMsg] = useState('');
+
+      useEffect(() => {
+        if (wizardStep === 2) {
+          // Trigger parsing simulation
+          setProcessingProgress(0);
+          setProcessingMsg('Initializing UPI Stream Linker...');
+          
+          const interval = setInterval(() => {
+            setProcessingProgress((prev) => {
+              if (prev >= 100) {
+                clearInterval(interval);
+                setTimeout(() => setWizardStep(3), 600);
+                return 100;
+              }
+              const stepInc = Math.floor(Math.random() * 20) + 10;
+              const nextVal = Math.min(100, prev + stepInc);
+
+              if (nextVal < 40) setProcessingMsg('Parsing digital UPI transaction statements...');
+              else if (nextVal < 70) setProcessingMsg('Analyzing Cashflow Stability & Inflow intervals...');
+              else if (nextVal < 95) setProcessingMsg('Scanning government registry profiles (PAN/UIDAI)...');
+              else setProcessingMsg('Synthesizing dynamic credit metrics...');
+
+              return nextVal;
+            });
+          }, 300);
+
+          return () => clearInterval(interval);
+        }
+      }, [wizardStep]);
+
+      // Handle final decision terms
+      const interestRate = useMemo(() => {
+        if (calculatedScore >= 75) return 8.5; // Premium
+        if (calculatedScore >= 60) return 10.2; // Regular
+        if (calculatedScore >= 45) return 12.0; // Subprime
+        return 14.5;
+      }, [calculatedScore]);
+
+      const monthlyEMI = useMemo(() => {
+        const principal = loanAmount;
+        const annualRate = interestRate / 100;
+        const ratePerMonth = annualRate / 12;
+        const months = loanTenure;
+        // Simple EMI calculation formula
+        const emi = (principal * ratePerMonth * Math.pow(1 + ratePerMonth, months)) / (Math.pow(1 + ratePerMonth, months) - 1);
+        return Math.round(emi);
+      }, [loanAmount, loanTenure, interestRate]);
+
+      const isApproved = calculatedScore >= 41;
+
+      return (
+        <div className="space-y-6">
+          {/* STEP INDICATORS */}
+          <div className="flex items-center justify-between text-[11px] font-bold text-samridhi-textMuted uppercase tracking-wider border-b border-samridhi-border/30 pb-3 mb-6">
+            <span className={wizardStep === 1 ? 'text-samridhi-primary font-black' : ''}>1. Customize Capital</span>
+            <span>&gt;</span>
+            <span className={wizardStep === 2 ? 'text-samridhi-secondary font-black animate-pulse' : ''}>2. Parse Telemetry</span>
+            <span>&gt;</span>
+            <span className={wizardStep === 3 ? 'text-samridhi-success font-black' : ''}>3. Underwriting Decison</span>
+          </div>
+
+          {/* STEP 1: PARAMETERIZE */}
+          {wizardStep === 1 && (
+            <div className="space-y-6 animate-fade-in">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Sliders */}
+                <div className="space-y-5">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold text-samridhi-textMuted uppercase">
+                      <span>Loan capital Amount</span>
+                      <span className="text-samridhi-secondary font-black">₹{loanAmount.toLocaleString()}</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="10000" 
+                      max="300000" 
+                      step="5000"
+                      value={loanAmount} 
+                      onChange={(e) => setLoanAmount(parseInt(e.target.value))}
+                      className="w-full h-1.5 bg-samridhi-border rounded-lg appearance-none cursor-pointer accent-samridhi-primary focus:outline-none"
+                    />
+                    <div className="flex justify-between text-[9px] text-samridhi-textMuted font-bold">
+                      <span>₹10,000</span>
+                      <span>₹3,00,000</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold text-samridhi-textMuted uppercase">
+                      <span>Repayment tenure</span>
+                      <span className="text-samridhi-secondary font-black">{loanTenure} Months</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="3" 
+                      max="24" 
+                      step="3"
+                      value={loanTenure} 
+                      onChange={(e) => setLoanTenure(parseInt(e.target.value))}
+                      className="w-full h-1.5 bg-samridhi-border rounded-lg appearance-none cursor-pointer accent-samridhi-primary focus:outline-none"
+                    />
+                    <div className="flex justify-between text-[9px] text-samridhi-textMuted font-bold">
+                      <span>3 Months</span>
+                      <span>24 Months</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dropdown & Details */}
+                <div className="space-y-4">
+                  <div className="flex flex-col space-y-1.5 text-xs">
+                    <label className="font-bold text-samridhi-textMuted uppercase tracking-wider">Capital Purpose</label>
+                    <select
+                      value={loanPurpose}
+                      onChange={(e) => setLoanPurpose(e.target.value)}
+                      className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary rounded-xl py-3 px-4 text-samridhi-textPrimary focus:outline-none transition-colors"
+                    >
+                      <option value="Business Tools">Professional / Freelance tools (Laptop, Software licenses)</option>
+                      <option value="Inventory Expansion">Inventory purchase / Stock replenishment</option>
+                      <option value="Vocational Fees">Educational / Up-skilling vocational training fees</option>
+                      <option value="Working Capital">Daily working capital (Gig-worker cash buffer)</option>
+                    </select>
+                  </div>
+
+                  {/* Quick terms estimate based on user type */}
+                  <div className="bg-samridhi-surface border border-samridhi-border/60 p-4 rounded-xl text-xs space-y-2">
+                    <h4 className="font-bold text-samridhi-textPrimary">Underwriting Estimate</h4>
+                    <p className="text-[11px] text-samridhi-textMuted">
+                      Based on your current AI credit rating of <strong class="text-samridhi-secondary">{calculatedScore}</strong>, you qualify for an estimated interest rate of <strong class="text-samridhi-success">~{interestRate}% p.a.</strong>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-4 border-t border-samridhi-border/40">
+                <button
+                  onClick={() => setWizardStep(2)}
+                  className="px-6 py-2.5 bg-samridhi-primary hover:bg-samridhi-primary/90 text-white font-bold rounded-xl text-xs shadow-lg transition-colors flex items-center space-x-1"
+                >
+                  <span>Link Digital Telemetry</span>
+                  <Icons.ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: TELEMETRY PROCESSING */}
+          {wizardStep === 2 && (
+            <div className="py-12 flex flex-col items-center justify-center space-y-6 animate-fade-in text-center">
+              <div className="w-16 h-16 rounded-full border-4 border-t-samridhi-secondary border-samridhi-border animate-spin flex items-center justify-center mb-2">
+                <span className="text-xl">📊</span>
+              </div>
+              
+              <div className="w-full max-w-xs space-y-2">
+                <h4 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider">{processingProgress}% Complete</h4>
+                <div className="w-full bg-samridhi-bg h-2 rounded-full overflow-hidden border border-samridhi-border">
+                  <div className="bg-samridhi-secondary h-full transition-all duration-300" style={{ width: `${processingProgress}%` }}></div>
+                </div>
+              </div>
+
+              <p className="text-xs text-samridhi-textMuted font-bold italic animate-pulse">
+                {processingMsg}
+              </p>
+            </div>
+          )}
+
+          {/* STEP 3: CONTRACT DECISION */}
+          {wizardStep === 3 && (
+            <div className="space-y-6 animate-fade-in">
+              {isApproved ? (
+                /* APPROVED SCREEN */
+                <div className="space-y-6">
+                  <div className="bg-samridhi-success/5 border border-samridhi-success/35 p-6 rounded-2xl flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
+                    <div className="w-12 h-12 rounded-full bg-samridhi-success/20 flex items-center justify-center text-2xl text-samridhi-success shrink-0">
+                      ✓
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-black uppercase text-samridhi-success tracking-widest bg-samridhi-success/10 px-2.5 py-0.5 rounded">Decision: Approved</span>
+                      <h3 className="font-extrabold text-base text-samridhi-textPrimary mt-1.5">Capital Offer Generated Successfully</h3>
+                      <p className="text-[11px] text-samridhi-textMuted leading-relaxed mt-1">
+                        Our alternative risk assessment models evaluate you as a qualified credit-invisible prospect. Institutional capital matching has succeeded.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Contract terms card */}
+                  <div className="bg-samridhi-surface border border-samridhi-border p-6 rounded-2xl space-y-4">
+                    <h4 className="font-black text-xs text-samridhi-textPrimary uppercase tracking-wider border-b border-samridhi-border/40 pb-2.5">Credit Agreement Summary</h4>
+                    
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                      <div>
+                        <span className="block text-[10px] text-samridhi-textMuted uppercase font-bold">Principal Capital</span>
+                        <span className="font-black text-sm text-samridhi-textPrimary">₹{loanAmount.toLocaleString()}</span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-samridhi-textMuted uppercase font-bold">Interest Rate</span>
+                        <span className="font-black text-sm text-samridhi-success">{interestRate}% p.a.</span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-samridhi-textMuted uppercase font-bold">Repayment Term</span>
+                        <span className="font-black text-sm text-samridhi-textPrimary">{loanTenure} Months</span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-samridhi-textMuted uppercase font-bold">Estimated EMI</span>
+                        <span className="font-black text-sm text-samridhi-secondary">₹{monthlyEMI.toLocaleString()}/mo</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex justify-between items-center pt-4 border-t border-samridhi-border/40">
+                    <button
+                      onClick={() => setWizardStep(1)}
+                      className="text-xs font-bold text-samridhi-textMuted hover:text-samridhi-textPrimary transition-colors"
+                    >
+                      Change Amount
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        dispatch({
+                          type: 'APPLY_LOAN',
+                          payload: {
+                            id: `l-${Date.now()}`,
+                            lender: "Samridhi Capital Fund",
+                            amount: loanAmount,
+                            rate: `${interestRate}%`,
+                            emi: `₹${monthlyEMI.toLocaleString()}`,
+                            status: "Active",
+                            date: new Date().toISOString().split('T')[0]
+                          }
+                        });
+                        dispatch({
+                          type: 'ADD_NOTIFICATION',
+                          payload: {
+                            id: `n-${Date.now()}`,
+                            text: `Contract Signed: Active micro-loan of ₹${loanAmount.toLocaleString()} generated.`,
+                            read: false,
+                            date: "Just now"
+                          }
+                        });
+                        // Reset wizard
+                        setWizardStep(1);
+                      }}
+                      className="px-6 py-2.5 bg-samridhi-success hover:bg-samridhi-success/90 text-samridhi-bg font-extrabold rounded-xl text-xs shadow-lg transition-colors flex items-center space-x-1"
+                    >
+                      <span>Sign Credit Contract</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* REJECTED SCREEN */
+                <div className="space-y-6">
+                  <div className="bg-samridhi-danger/5 border border-samridhi-danger/35 p-6 rounded-2xl flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
+                    <div className="w-12 h-12 rounded-full bg-samridhi-danger/20 flex items-center justify-center text-2xl text-samridhi-danger shrink-0">
+                      !
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-black uppercase text-samridhi-danger tracking-widest bg-samridhi-danger/10 px-2.5 py-0.5 rounded">Decision: Under Review</span>
+                      <h3 className="font-extrabold text-base text-samridhi-textPrimary mt-1.5">Insuffient Credibility Score</h3>
+                      <p className="text-[11px] text-samridhi-textMuted leading-relaxed mt-1">
+                        Your credit rating of <strong class="text-samridhi-danger">{calculatedScore}</strong> is below the minimum partner threshold (41).
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-samridhi-surface border border-samridhi-border p-6 rounded-2xl text-xs space-y-3">
+                    <h4 className="font-bold text-samridhi-textPrimary">Recommendation to Qualify:</h4>
+                    <p className="text-xs text-samridhi-textMuted leading-normal">
+                      We evaluate alternate indicators to represent trustworthiness. To raise your score to the approval range:
+                    </p>
+                    <ul className="list-disc pl-4 space-y-1 text-samridhi-textMuted text-[11px]">
+                      <li>Go to <strong>Profile Settings</strong> and connect your Aadhaar, PAN, and UPI accounts.</li>
+                      <li>Add professional skills certificates (AWS, Meta, Coursera) to represent verified earning capacity.</li>
+                      <li>Simulate steady UPI payments to increase transaction recency variables.</li>
+                    </ul>
+                  </div>
+
+                  <div className="flex justify-end pt-4 border-t border-samridhi-border/40">
+                    <button
+                      onClick={() => setWizardStep(1)}
+                      className="px-6 py-2.5 bg-samridhi-surface hover:bg-samridhi-card border border-samridhi-border text-samridhi-textPrimary font-bold rounded-xl text-xs transition-colors"
+                    >
+                      Return to Parameters
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // --- MOUNTING ---
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

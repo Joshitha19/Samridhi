@@ -69,6 +69,7 @@ window.DashboardView = ({
               { id: 'apply', name: 'Apply for Loan', icon: <Icons.Apply /> },
               { id: 'score', name: 'My Score Factors', icon: <Icons.Score /> },
               { id: 'transactions', name: 'Transaction Analysis', icon: <Icons.Transactions /> },
+              { id: 'inventory', name: 'Asset & Inventory', icon: <Icons.Inventory /> },
               { id: 'recommendations', name: 'Loan Recommendations', icon: <Icons.Offers /> },
               { id: 'profile', name: 'Profile Settings', icon: <Icons.User /> },
             ].map((item) => {
@@ -235,6 +236,15 @@ window.DashboardView = ({
           {/* TAB 4: TRANSACTION ANALYSIS */}
           {activeTab === 'transactions' && (
             <DashboardTransactionsTab dashboardState={dashboardState} />
+          )}
+
+          {/* TAB: ASSET & INVENTORY LEDGER */}
+          {activeTab === 'inventory' && (
+            <DashboardInventoryTab 
+              user={user}
+              dashboardState={dashboardState}
+              dispatch={dispatch}
+            />
           )}
 
           {/* TAB 5: LOAN RECOMMENDATIONS */}

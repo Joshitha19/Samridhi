@@ -8,6 +8,7 @@ window.calculateCredibilityScore = (user, metrics) => {
     upiLinked = false,
     upiVerified = false,
     skills = [],
+    inventory = [],
     whatIfRepayActive = false,
     whatIfLinkGithub = false,
     whatIfNewCert = false,
@@ -34,6 +35,11 @@ window.calculateCredibilityScore = (user, metrics) => {
   // Professional certificates (proxy for future earning potential)
   const verifiedSkillsCount = skills.filter(s => s.verified).length;
   score += verifiedSkillsCount * 4;
+
+  // Inventory assets verification (alternative collateral proxy)
+  if (inventory && inventory.length > 0) {
+    score += 10;
+  }
 
   // Live simulation What-If points (behavioral predictions)
   if (whatIfRepayActive) score += 6;

@@ -22,6 +22,11 @@ const REDUCER_INITIAL_STATE = {
     { id: 's-3', name: "Advanced Financial Analytics", issuer: "Wharton Online", verified: false },
     { id: 's-4', name: "Professional English Writing", issuer: "British Council", verified: true }
   ],
+  inventory: [
+    { id: 'inv-1', name: "Arabica Coffee Beans", category: "Raw Materials", quantity: 150, unit: "kg", price: 350, lastUpdated: "2026-05-24" },
+    { id: 'inv-2', name: "Paper Cups & Lids", category: "Packaging", quantity: 1200, unit: "pcs", price: 3, lastUpdated: "2026-05-25" },
+    { id: 'inv-3', name: "Packaged Roasted Coffee", category: "Finished Goods", quantity: 45, unit: "pouches", price: 580, lastUpdated: "2026-05-25" }
+  ],
   notifications: [
     { id: 'n-1', text: "Your UPI analysis shows standard caching: Stability Index is HIGH (+15 score points).", read: false, date: "2 hrs ago" },
     { id: 'n-2', text: "Skill Verification Successful: Meta React Certificate connected (+10 score points).", read: false, date: "1 day ago" },
@@ -63,6 +68,16 @@ function dashboardReducer(state, action) {
       return {
         ...state,
         skills: [...state.skills, action.payload]
+      };
+    case 'ADD_INVENTORY_ITEM':
+      return {
+        ...state,
+        inventory: [...state.inventory, action.payload]
+      };
+    case 'REMOVE_INVENTORY_ITEM':
+      return {
+        ...state,
+        inventory: state.inventory.filter(item => item.id !== action.payload)
       };
     case 'RESET_STATE':
       return REDUCER_INITIAL_STATE;
@@ -107,12 +122,13 @@ function App() {
       upiLinked,
       upiVerified,
       skills: dashboardState.skills,
+      inventory: dashboardState.inventory,
       whatIfRepayActive,
       whatIfLinkGithub,
       whatIfNewCert,
       whatIfConsistentUpi
     });
-  }, [user, aadhaarVerified, panVerified, upiLinked, upiVerified, dashboardState.skills, whatIfRepayActive, whatIfLinkGithub, whatIfNewCert, whatIfConsistentUpi]);
+  }, [user, aadhaarVerified, panVerified, upiLinked, upiVerified, dashboardState.skills, dashboardState.inventory, whatIfRepayActive, whatIfLinkGithub, whatIfNewCert, whatIfConsistentUpi]);
 
   // If user logs out
   const handleLogout = () => {

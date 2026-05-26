@@ -4,7 +4,7 @@ Samridhi is a premium, modern dark-themed web application designed to empower In
 
 ## 🚀 Key Features
 
-- **Alternative Credit Scoring Model (0-100)**: Evaluates non-traditional telemetry such as certified skills, UPI transaction frequencies, repayment histories, and official identities (Aadhaar/PAN).
+- **Asset & Inventory Ledger**: Introduces role-customized asset listing (product stock ledger for Entrepreneurs, active projects/deliverables for Freelancers, courses/learning assets for Students) to verify collateral value and award a **+10 score points** credibility boost.
 - **Explainable AI (XAI)**: Visualizes the impact of different credibility factors on the final score.
 - **Dynamic What-If Simulator**: Enables users to preview how linking credentials (like GitHub, Upwork, or government IDs) affects their score in real time.
 - **UPI KYC & Mobile Deep Linking**: Integrates dynamic QR codes (via `api.qrserver.com`) and mobile payment links using the standard `upi://pay` protocol to authenticate profiles.
@@ -15,7 +15,7 @@ Samridhi is a premium, modern dark-themed web application designed to empower In
 
 ## 🛠️ Modular Architecture
 
-To allow independent modifications by Machine Learning engineers and Front-End developers, the codebase is structured into **15 modular files**. 
+To allow independent modifications by Machine Learning engineers and Front-End developers, the codebase is structured into **16 modular files**. 
 
 The application runs entirely client-side inside the browser using **Babel Standalone** to parse JSX. This allows you to launch the app instantly by **double-clicking `index.html`** without needing any build tools (Webpack, Vite), Node.js, or local servers.
 
@@ -39,6 +39,7 @@ Samridhi/
     ├── DashboardOverviewTab.js # Core dashboard status, transaction logs, and UPI QR verification
     ├── DashboardScoreTab.js    # Score factors and What-If simulator panels
     ├── DashboardTransactionsTab.js # Cashflow analysis visualization (Recharts)
+    ├── DashboardInventoryTab.js # Asset & Inventory ledger (stock ledger, software assets, certifications)
     ├── DashboardRecommendationsTab.js # Tailored loan offers and AI Underwriting Rationales
     └── DashboardProfileTab.js  # User settings, profile updates, and KYC document toggles
 ```

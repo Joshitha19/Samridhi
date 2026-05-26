@@ -5,6 +5,7 @@ window.SignInPageView = ({ setPage, onSignIn }) => {
   const { useState } = React;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [userType, setUserType] = useState('Freelancer');
   const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
@@ -18,7 +19,7 @@ window.SignInPageView = ({ setPage, onSignIn }) => {
       return;
     }
     setError('');
-    onSignIn(email, password);
+    onSignIn(email, password, userType);
   };
 
   return (
@@ -78,6 +79,20 @@ window.SignInPageView = ({ setPage, onSignIn }) => {
             </div>
           </div>
 
+          <div className="flex flex-col space-y-1.5">
+            <label className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">Select Earning Sector</label>
+            <select
+              value={userType}
+              onChange={(e) => setUserType(e.target.value)}
+              className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary text-sm rounded-xl py-3 px-4 text-samridhi-textPrimary focus:outline-none transition-colors"
+            >
+              <option value="Freelancer">Freelancer / Gig Contractor</option>
+              <option value="Student">Student (Vocational/Tech)</option>
+              <option value="Entrepreneur">Micro-Entrepreneur / Merchant</option>
+              <option value="Salaried">Salaried Employee</option>
+            </select>
+          </div>
+
           <button
             type="submit"
             className="w-full py-3 bg-samridhi-primary hover:bg-samridhi-primary/95 text-white font-bold rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center space-x-2 mt-6 active:scale-95"
@@ -92,26 +107,36 @@ window.SignInPageView = ({ setPage, onSignIn }) => {
             <div className="w-full border-t border-samridhi-border/60"></div>
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-samridhi-card px-3 text-samridhi-textMuted font-bold">Or continue with</span>
+            <span className="bg-samridhi-card px-3 text-samridhi-textMuted font-bold">Sandbox Dev Quick Sign-In</span>
           </div>
         </div>
 
-        <button
-          onClick={() => {
-            // Mock OAuth Integration
-            onSignIn('demo.freelancer@samridhi.in', 'password123');
-          }}
-          className="w-full py-2.5 bg-samridhi-surface hover:bg-samridhi-bg border border-samridhi-border text-xs font-bold rounded-xl transition-all flex items-center justify-center space-x-2.5 hover:text-samridhi-secondary"
-        >
-          {/* Google G logo */}
-          <svg className="w-4 h-4" viewBox="0 0 24 24">
-            <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.47 14.97 1 12 1 7.37 1 3.4 3.65 1.54 7.5l3.85 2.99C6.27 7.21 8.87 5.04 12 5.04z" />
-            <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.34H12v4.44h6.44c-.28 1.46-1.1 2.7-2.34 3.53l3.65 2.83c2.14-1.97 3.74-4.87 3.74-8.46z" />
-            <path fill="#FBBC05" d="M5.39 14.8c-.24-.72-.38-1.49-.38-2.3s.14-1.58.38-2.3L1.54 7.21C.56 9.17 0 11.33 0 13.5s.56 4.33 1.54 6.29l3.85-2.99z" />
-            <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.65-2.83c-1.1.74-2.5 1.18-4.31 1.18-3.13 0-5.73-2.17-6.68-5.45l-3.85 2.99C3.4 20.35 7.37 23 12 23z" />
-          </svg>
-          <span>Single Sign-On (Sandbox Dev)</span>
-        </button>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => onSignIn('demo.student@samridhi.in', 'password123', 'Student')}
+            className="py-2 px-3 bg-samridhi-surface hover:bg-samridhi-primary/10 border border-samridhi-border text-[11px] font-bold rounded-xl transition-all flex items-center justify-center space-x-1.5 hover:text-samridhi-secondary"
+          >
+            <span>🎓 Student</span>
+          </button>
+          <button
+            onClick={() => onSignIn('demo.freelancer@samridhi.in', 'password123', 'Freelancer')}
+            className="py-2 px-3 bg-samridhi-surface hover:bg-samridhi-primary/10 border border-samridhi-border text-[11px] font-bold rounded-xl transition-all flex items-center justify-center space-x-1.5 hover:text-samridhi-secondary"
+          >
+            <span>💻 Freelancer</span>
+          </button>
+          <button
+            onClick={() => onSignIn('demo.entrepreneur@samridhi.in', 'password123', 'Entrepreneur')}
+            className="py-2 px-3 bg-samridhi-surface hover:bg-samridhi-primary/10 border border-samridhi-border text-[11px] font-bold rounded-xl transition-all flex items-center justify-center space-x-1.5 hover:text-samridhi-secondary"
+          >
+            <span>🛒 Merchant</span>
+          </button>
+          <button
+            onClick={() => onSignIn('demo.salaried@samridhi.in', 'password123', 'Salaried')}
+            className="py-2 px-3 bg-samridhi-surface hover:bg-samridhi-primary/10 border border-samridhi-border text-[11px] font-bold rounded-xl transition-all flex items-center justify-center space-x-1.5 hover:text-samridhi-secondary"
+          >
+            <span>💼 Salaried</span>
+          </button>
+        </div>
 
         <div className="mt-8 text-center text-xs">
           <span className="text-samridhi-textMuted">Don't have an account? </span>

@@ -146,12 +146,14 @@ function App() {
   };
 
   // Handle sign in submission
-  const handleSignIn = (email, password) => {
+  const handleSignIn = (email, password, selectedType) => {
     const username = email.split('@')[0].replace('.', ' ').toUpperCase() || 'SAMRIDHI USER';
-    let type = 'Freelancer';
-    if (email.toLowerCase().includes('student')) type = 'Student';
-    else if (email.toLowerCase().includes('entrepreneur')) type = 'Entrepreneur';
-    else if (email.toLowerCase().includes('salaried')) type = 'Salaried';
+    let type = selectedType || 'Freelancer';
+    if (!selectedType) {
+      if (email.toLowerCase().includes('student')) type = 'Student';
+      else if (email.toLowerCase().includes('entrepreneur')) type = 'Entrepreneur';
+      else if (email.toLowerCase().includes('salaried')) type = 'Salaried';
+    }
 
     const mockUser = {
       name: username,

@@ -102,6 +102,13 @@ window.SignInPageView = ({ setPage, onSignIn }) => {
           </button>
         </form>
 
+        <button
+          onClick={() => onSignIn('demo@samridhi.in', 'password123', 'Entrepreneur')}
+          className="w-full mt-3 py-3 bg-gradient-to-r from-samridhi-secondary to-samridhi-primary text-samridhi-bg font-extrabold rounded-xl shadow-lg hover:brightness-110 active:scale-95 transition-all flex items-center justify-center space-x-2"
+        >
+          <span>⚡ One-Click Live Demo Sign-In</span>
+        </button>
+
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-samridhi-border/60"></div>

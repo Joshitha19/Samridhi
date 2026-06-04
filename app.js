@@ -4,6 +4,11 @@
 
 const { useState, useEffect, useReducer, useMemo } = React;
 
+// Supabase Client Config
+const SUPABASE_URL = "https://lbagswiwwlkcgrfhkyqr.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxiYWdzd2l3d2xrY2dyZmhreXFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NDI2MzcsImV4cCI6MjA5NjExODYzN30.o1x0Zw1F56-XdtjSRhpjAcBvTGw46OC5_EKPwJm-uF0";
+const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
 const REDUCER_INITIAL_STATE = {
   loans: [
     { id: 'l-1', lender: "Samridhi Capital Fund", amount: 50000, rate: "9.5%", emi: "₹4,380", status: "Active", date: "2026-04-15" },
@@ -79,6 +84,14 @@ function dashboardReducer(state, action) {
         ...state,
         inventory: state.inventory.filter(item => item.id !== action.payload)
       };
+    case 'SET_INITIAL_STATE':
+      return {
+        ...state,
+        loans: action.payload.loans || [],
+        transactions: action.payload.transactions || [],
+        skills: action.payload.skills || [],
+        inventory: action.payload.inventory || []
+      };
     case 'RESET_STATE':
       return REDUCER_INITIAL_STATE;
     default:
@@ -130,57 +143,377 @@ function App() {
     });
   }, [user, aadhaarVerified, panVerified, upiLinked, upiVerified, dashboardState.skills, dashboardState.inventory, whatIfRepayActive, whatIfLinkGithub, whatIfNewCert, whatIfConsistentUpi]);
 
+  // Custom dbDispatch interceptor to sync state transitions with Supabase
+  const dbDispatch = (action) => {
+    dispatch(action);
+
+    if (!user || !supabaseClient) return;
+    const userId = user.id;
+
+    switch (action.type) {
+      case 'ADD_TRANSACTION':
+        supabaseClient
+          .from('transactions')
+          .insert({
+            user_id: userId,
+            date: action.payload.date,
+            merchant: action.payload.merchant,
+            amount: action.payload.amount,
+            category: action.payload.category,
+            type: action.payload.type
+          })
+          .then(({ error }) => {
+            if (error) console.error("Error syncing transactions: ", error);
+          });
+        break;
+
+      case 'APPLY_LOAN':
+        supabaseClient
+          .from('loans')
+          .insert({
+            user_id: userId,
+            lender: action.payload.lender,
+            amount: action.payload.amount,
+            rate: action.payload.rate,
+            emi: action.payload.emi,
+            status: action.payload.status,
+            date: action.payload.date
+          })
+          .then(({ error }) => {
+            if (error) console.error("Error syncing loans: ", error);
+          });
+        break;
+
+      case 'TOGGLE_SKILL_VERIFICATION': {
+        const targetSkill = dashboardState.skills.find(s => s.id === action.payload);
+        if (targetSkill) {
+          supabaseClient
+            .from('skills')
+            .update({ verified: !targetSkill.verified })
+            .eq('id', action.payload)
+            .then(({ error }) => {
+              if (error) console.error("Error syncing skills: ", error);
+            });
+        }
+        break;
+      }
+
+      case 'ADD_SKILL':
+        supabaseClient
+          .from('skills')
+          .insert({
+            user_id: userId,
+            name: action.payload.name,
+            issuer: action.payload.issuer,
+            verified: action.payload.verified
+          })
+          .then(({ error }) => {
+            if (error) console.error("Error syncing skills: ", error);
+          });
+        break;
+
+      case 'ADD_INVENTORY_ITEM':
+        supabaseClient
+          .from('inventory')
+          .insert({
+            user_id: userId,
+            name: action.payload.name,
+            category: action.payload.category,
+            quantity: action.payload.quantity,
+            unit: action.payload.unit,
+            price: action.payload.price,
+            last_updated: action.payload.lastUpdated
+          })
+          .then(({ error }) => {
+            if (error) console.error("Error syncing inventory: ", error);
+          });
+        break;
+
+      case 'REMOVE_INVENTORY_ITEM':
+        supabaseClient
+          .from('inventory')
+          .delete()
+          .eq('id', action.payload)
+          .then(({ error }) => {
+            if (error) console.error("Error syncing inventory deletion: ", error);
+          });
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  // Fetch and seed Supabase user records
+  const fetchAndPopulateState = async (userId, userEmail) => {
+    if (!supabaseClient) return;
+
+    try {
+      // 1. Profile sync/load
+      const { data: profile, error: profileErr } = await supabaseClient
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (profileErr && profileErr.code !== 'PGRST116') {
+        throw profileErr;
+      }
+
+      let activeProfile = profile;
+      if (!activeProfile) {
+        const emailPrefix = userEmail ? userEmail.split('@')[0] : 'user';
+        const { data: newProfile, error: createErr } = await supabaseClient
+          .from('profiles')
+          .insert({
+            id: userId,
+            name: emailPrefix.toUpperCase(),
+            email: userEmail || 'user@samridhi.in',
+            type: 'Freelancer'
+          })
+          .select()
+          .single();
+        if (createErr) throw createErr;
+        activeProfile = newProfile;
+      }
+
+      if (activeProfile) {
+        setUser({
+          id: userId,
+          name: activeProfile.name,
+          email: activeProfile.email,
+          type: activeProfile.type,
+          upiVpa: activeProfile.upi_vpa || ''
+        });
+        setAadhaarVerified(activeProfile.aadhaar_verified);
+        setPanVerified(activeProfile.pan_verified);
+        setUpiLinked(activeProfile.upi_vpa ? true : false);
+        setUpiVerified(activeProfile.upi_verified);
+      }
+
+      // 2. Fetch database records
+      const { data: txs } = await supabaseClient.from('transactions').select('*').eq('user_id', userId).order('date', { ascending: false });
+      const { data: skills } = await supabaseClient.from('skills').select('*').eq('user_id', userId);
+      const { data: loans } = await supabaseClient.from('loans').select('*').eq('user_id', userId).order('date', { ascending: false });
+      const { data: inventory } = await supabaseClient.from('inventory').select('*').eq('user_id', userId);
+
+      // If database already contains items, load them
+      if (txs && txs.length > 0) {
+        dispatch({
+          type: 'SET_INITIAL_STATE',
+          payload: {
+            transactions: txs.map(t => ({ id: t.id, date: t.date, merchant: t.merchant, amount: parseFloat(t.amount), category: t.category, type: t.type })),
+            skills: skills.map(s => ({ id: s.id, name: s.name, issuer: s.issuer, verified: s.verified })),
+            loans: loans.map(l => ({ id: l.id, lender: l.lender, amount: parseFloat(l.amount), rate: l.rate, emi: l.emi, status: l.status, date: l.date })),
+            inventory: inventory.map(i => ({ id: i.id, name: i.name, category: i.category, quantity: parseInt(i.quantity), unit: i.unit, price: parseFloat(i.price), lastUpdated: i.last_updated }))
+          }
+        });
+      } else {
+        // If empty user tables, seed them with beautiful default records
+        console.log("Seeding mock ledger details to Supabase tables...");
+        
+        const insertTxs = REDUCER_INITIAL_STATE.transactions.map(t => ({
+          user_id: userId,
+          date: t.date,
+          merchant: t.merchant,
+          amount: t.amount,
+          category: t.category,
+          type: t.type
+        }));
+        await supabaseClient.from('transactions').insert(insertTxs);
+
+        const insertSkills = REDUCER_INITIAL_STATE.skills.map(s => ({
+          user_id: userId,
+          name: s.name,
+          issuer: s.issuer,
+          verified: s.verified
+        }));
+        await supabaseClient.from('skills').insert(insertSkills);
+
+        const insertLoans = REDUCER_INITIAL_STATE.loans.map(l => ({
+          user_id: userId,
+          lender: l.lender,
+          amount: l.amount,
+          rate: l.rate,
+          emi: l.emi,
+          status: l.status,
+          date: l.date
+        }));
+        await supabaseClient.from('loans').insert(insertLoans);
+
+        const insertInventory = REDUCER_INITIAL_STATE.inventory.map(i => ({
+          user_id: userId,
+          name: i.name,
+          category: i.category,
+          quantity: i.quantity,
+          unit: i.unit,
+          price: i.price,
+          last_updated: i.lastUpdated
+        }));
+        await supabaseClient.from('inventory').insert(insertInventory);
+
+        // Fetch back clean database records
+        const { data: freshTxs } = await supabaseClient.from('transactions').select('*').eq('user_id', userId).order('date', { ascending: false });
+        const { data: freshSkills } = await supabaseClient.from('skills').select('*').eq('user_id', userId);
+        const { data: freshLoans } = await supabaseClient.from('loans').select('*').eq('user_id', userId).order('date', { ascending: false });
+        const { data: freshInventory } = await supabaseClient.from('inventory').select('*').eq('user_id', userId);
+
+        dispatch({
+          type: 'SET_INITIAL_STATE',
+          payload: {
+            transactions: freshTxs.map(t => ({ id: t.id, date: t.date, merchant: t.merchant, amount: parseFloat(t.amount), category: t.category, type: t.type })),
+            skills: freshSkills.map(s => ({ id: s.id, name: s.name, issuer: s.issuer, verified: s.verified })),
+            loans: freshLoans.map(l => ({ id: l.id, lender: l.lender, amount: parseFloat(l.amount), rate: l.rate, emi: l.emi, status: l.status, date: l.date })),
+            inventory: freshInventory.map(i => ({ id: i.id, name: i.name, category: i.category, quantity: parseInt(i.quantity), unit: i.unit, price: parseFloat(i.price), lastUpdated: i.last_updated }))
+          }
+        });
+      }
+    } catch (e) {
+      console.warn("Failed syncing Supabase profile state: ", e);
+    }
+  };
+
+  // Check auth session persistence
+  useEffect(() => {
+    if (!supabaseClient) return;
+
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        fetchAndPopulateState(session.user.id, session.user.email);
+        setPage('dashboard');
+      }
+    });
+
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        fetchAndPopulateState(session.user.id, session.user.email);
+        setPage('dashboard');
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setPage('landing');
+        dispatch({ type: 'RESET_STATE' });
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSetAadhaarVerified = async (val) => {
+    setAadhaarVerified(val);
+    if (user && supabaseClient) {
+      await supabaseClient.from('profiles').update({ aadhaar_verified: val }).eq('id', user.id);
+    }
+  };
+
+  const handleSetPanVerified = async (val) => {
+    setPanVerified(val);
+    if (user && supabaseClient) {
+      await supabaseClient.from('profiles').update({ pan_verified: val }).eq('id', user.id);
+    }
+  };
+
+  const handleSetUpiLinked = async (val) => {
+    setUpiLinked(val);
+    if (user && supabaseClient) {
+      await supabaseClient.from('profiles').update({ upi_vpa: val ? user.upiVpa : '' }).eq('id', user.id);
+    }
+  };
+
+  const handleSetUpiVerified = async (val) => {
+    setUpiVerified(val);
+    if (user && supabaseClient) {
+      await supabaseClient.from('profiles').update({ upi_verified: val }).eq('id', user.id);
+    }
+  };
+
+  const handleUpdateUser = async (updatedUser) => {
+    setUser(updatedUser);
+    if (updatedUser && supabaseClient && updatedUser.id) {
+      await supabaseClient.from('profiles').update({
+        name: updatedUser.name,
+        type: updatedUser.type,
+        upi_vpa: updatedUser.upiVpa
+      }).eq('id', updatedUser.id);
+    }
+  };
+
   // If user logs out
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (supabaseClient) {
+      await supabaseClient.auth.signOut();
+    }
     setUser(null);
     setPage('landing');
     dispatch({ type: 'RESET_STATE' });
-    // Reset what-if options
     setWhatIfRepayActive(false);
     setWhatIfLinkGithub(false);
     setWhatIfNewCert(false);
     setWhatIfConsistentUpi(false);
-    // Reset UPI verifications
     setUpiVerified(false);
     setUpiLinked(false);
   };
 
   // Handle sign in submission
-  const handleSignIn = (email, password, selectedType) => {
-    const username = email.split('@')[0].replace('.', ' ').toUpperCase() || 'SAMRIDHI USER';
-    let type = selectedType || 'Freelancer';
-    if (!selectedType) {
-      if (email.toLowerCase().includes('student')) type = 'Student';
-      else if (email.toLowerCase().includes('entrepreneur')) type = 'Entrepreneur';
-      else if (email.toLowerCase().includes('salaried')) type = 'Salaried';
+  const handleSignIn = async (email, password, selectedType) => {
+    if (supabaseClient) {
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+      if (error) {
+        alert("Sign In Failed: " + error.message);
+        return;
+      }
+    } else {
+      const username = email.split('@')[0].replace('.', ' ').toUpperCase() || 'SAMRIDHI USER';
+      let type = selectedType || 'Freelancer';
+      setUser({
+        id: 'mock-user-123',
+        name: username,
+        email: email,
+        type: type,
+        upiVpa: `${email.split('@')[0].replace('.', '').toLowerCase()}@okaxis`,
+      });
+      setUpiLinked(true);
+      setUpiVerified(false);
+      setPage('dashboard');
+      setActiveTab('overview');
     }
-
-    const mockUser = {
-      name: username,
-      email: email,
-      type: type,
-      upiVpa: `${email.split('@')[0].replace('.', '').toLowerCase()}@okaxis`, // default VPA
-    };
-    setUser(mockUser);
-    setUpiLinked(true);
-    setUpiVerified(false);
-    setPage('dashboard');
-    setActiveTab('overview');
   };
 
   // Handle sign up submission
-  const handleSignUp = (name, email, type, upiVpa) => {
-    const mockUser = {
-      name: name.toUpperCase(),
-      email: email,
-      type: type,
-      upiVpa: upiVpa || '',
-    };
-    setUser(mockUser);
-    setUpiLinked(upiVpa ? true : false);
-    setUpiVerified(false);
-    setPage('dashboard');
-    setActiveTab('overview');
+  const handleSignUp = async (name, email, type, upiVpa, password) => {
+    if (supabaseClient) {
+      const { data, error } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: name,
+            type: type,
+            upi_vpa: upiVpa
+          }
+        }
+      });
+      if (error) {
+        alert("Sign Up Failed: " + error.message);
+        return;
+      }
+      alert("Sign Up Successful! You can sign in now.");
+      setPage('signin');
+    } else {
+      const mockUser = {
+        name: name.toUpperCase(),
+        email: email,
+        type: type,
+        upiVpa: upiVpa || '',
+      };
+      setUser(mockUser);
+      setUpiLinked(upiVpa ? true : false);
+      setUpiVerified(false);
+      setPage('dashboard');
+      setActiveTab('overview');
+    }
   };
 
   // Smooth scroll triggers for landing page
@@ -281,23 +614,23 @@ function App() {
         {page === 'dashboard' && user && (
           <DashboardView 
             user={user} 
-            setUser={setUser}
+            setUser={handleUpdateUser}
             activeTab={activeTab} 
             setActiveTab={setActiveTab} 
             calculatedScore={calculatedScore}
             dashboardState={dashboardState}
-            dispatch={dispatch}
+            dispatch={dbDispatch}
             handleLogout={handleLogout}
             showNotifications={showNotifications}
             setShowNotifications={setShowNotifications}
             aadhaarVerified={aadhaarVerified}
-            setAadhaarVerified={setAadhaarVerified}
+            setAadhaarVerified={handleSetAadhaarVerified}
             panVerified={panVerified}
-            setPanVerified={setPanVerified}
+            setPanVerified={handleSetPanVerified}
             upiLinked={upiLinked}
-            setUpiLinked={setUpiLinked}
+            setUpiLinked={handleSetUpiLinked}
             upiVerified={upiVerified}
-            setUpiVerified={setUpiVerified}
+            setUpiVerified={handleSetUpiVerified}
             whatIfRepayActive={whatIfRepayActive}
             setWhatIfRepayActive={setWhatIfRepayActive}
             whatIfLinkGithub={whatIfLinkGithub}

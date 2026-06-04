@@ -27,7 +27,7 @@ window.SignUpPageView = ({ setPage, onSignUp }) => {
       return;
     }
     setError('');
-    onSignUp(name, email, userType, upiVpa);
+    onSignUp(name, email, userType, upiVpa, password);
   };
 
   return (

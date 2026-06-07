@@ -38,17 +38,17 @@
         extend: {
           colors: {
             samridhi: {
-              bg: '#040806',
-              surface: '#0A0F0C',
-              card: '#0E1612',
-              border: '#1C2E25',
-              primary: '#00E676',
-              secondary: '#B2FF59',
+              bg: '#000000',
+              surface: '#0A0A0E',
+              card: '#111116',
+              border: '#20202A',
+              primary: '#D500F9',
+              secondary: '#00E5FF',
               success: '#00E676',
               warning: '#FFD600',
               danger: '#FF1744',
-              textPrimary: '#E8F5E9',
-              textMuted: '#759F87',
+              textPrimary: '#FFFFFF',
+              textMuted: '#8E8E9F',
             }
           },
           fontFamily: {
@@ -67,14 +67,14 @@
       height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: #040806;
+      background: #000000;
     }
     ::-webkit-scrollbar-thumb {
-      background: #1C2E25;
+      background: #20202A;
       border-radius: 9999px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #00E676;
+      background: #D500F9;
     }
 
     /* Keyframes and Animations */
@@ -123,13 +123,13 @@
     .bg-grid-glow {
       background-size: 40px 40px;
       background-image: 
-        linear-gradient(to right, rgba(0, 230, 118, 0.03) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0, 230, 118, 0.03) 1px, transparent 1px);
+        linear-gradient(to right, rgba(213, 0, 249, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(213, 0, 249, 0.02) 1px, transparent 1px);
     }
 
     /* Custom utilities for gradients and borders */
     .border-gradient-green-lime {
-      border-image: linear-gradient(to right, #00E676, #B2FF59) 1;
+      border-image: linear-gradient(to right, #D500F9, #00E5FF) 1;
     }
     
     /* Backdrop blur fallback */
@@ -147,19 +147,37 @@
       animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    /* Floating SVG coins/elements */
-    @keyframes floatCoin {
+    /* 5 Tilted Coin Float animations for high perspective */
+    @keyframes floatCoin1 {
       0%, 100% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-6px) rotate(8deg); }
+      50% { transform: translateY(-12px) rotate(4deg); }
     }
-    .animate-float-coin {
-      animation: floatCoin 3.5s infinite ease-in-out;
+    @keyframes floatCoin2 {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(-3deg); }
     }
+    @keyframes floatCoin3 {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-14px) rotate(2deg); }
+    }
+    @keyframes floatCoin4 {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(-4deg); }
+    }
+    @keyframes floatCoin5 {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-16px) rotate(5deg); }
+    }
+    .animate-coin-1 { animation: floatCoin1 5s infinite ease-in-out; }
+    .animate-coin-2 { animation: floatCoin2 4.2s infinite ease-in-out; }
+    .animate-coin-3 { animation: floatCoin3 6s infinite ease-in-out; }
+    .animate-coin-4 { animation: floatCoin4 4.8s infinite ease-in-out; }
+    .animate-coin-5 { animation: floatCoin5 5.5s infinite ease-in-out; }
 
     /* Neon Pulsing Box Shadows */
     @keyframes neonGlowPulse {
-      0%, 100% { box-shadow: 0 0 5px rgba(0, 230, 118, 0.1), inset 0 0 5px rgba(0, 230, 118, 0.05); }
-      50% { box-shadow: 0 0 15px rgba(0, 230, 118, 0.3), inset 0 0 8px rgba(0, 230, 118, 0.1); }
+      0%, 100% { box-shadow: 0 0 5px rgba(213, 0, 249, 0.1), inset 0 0 5px rgba(213, 0, 249, 0.05); }
+      50% { box-shadow: 0 0 15px rgba(213, 0, 249, 0.3), inset 0 0 8px rgba(213, 0, 249, 0.1); }
     }
     .animate-neon-glow {
       animation: neonGlowPulse 2.5s infinite ease-in-out;
@@ -170,8 +188,8 @@
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .hover-glow-green:hover {
-      box-shadow: 0 0 20px rgba(0, 230, 118, 0.18);
-      border-color: rgba(0, 230, 118, 0.5);
+      box-shadow: 0 0 20px rgba(0, 230, 118, 0.15);
+      border-color: rgba(0, 230, 118, 0.4);
       transform: translateY(-2px);
     }
   </style>

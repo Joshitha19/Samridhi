@@ -691,29 +691,6 @@ function App() {
 
   // Handle sign in submission
   const handleSignIn = async (email, password, selectedType) => {
-    // Intercept demo accounts to bypass Supabase auth email confirmation requirement
-    if (email.endsWith('@samridhi.in')) {
-      const username = email.split('@')[0].replace('.', ' ').toUpperCase() || 'SAMRIDHI USER';
-      let type = selectedType || 'Freelancer';
-      if (email.includes('student')) type = 'Student';
-      if (email.includes('freelancer')) type = 'Freelancer';
-      if (email.includes('entrepreneur')) type = 'Entrepreneur';
-      if (email.includes('salaried')) type = 'Salaried';
-
-      setUser({
-        id: 'mock-user-123',
-        name: username,
-        email: email,
-        type: type,
-        upiVpa: `${email.split('@')[0].replace('.', '').toLowerCase()}@okaxis`,
-      });
-      setUpiLinked(true);
-      setUpiVerified(false);
-      setPage('dashboard');
-      setActiveTab('overview');
-      return;
-    }
-
     if (supabaseClient) {
       const { data, error } = await supabaseClient.auth.signInWithPassword({
         email,
@@ -781,19 +758,6 @@ function App() {
 
   // Handle banker sign in
   const handleBankerSignIn = async (email, password) => {
-    // Intercept demo banker login to bypass Supabase auth email confirmation requirement
-    if (email === 'banker@samridhi.in') {
-      setUser({
-        id: 'mock-banker-123',
-        name: 'SBI BANKER',
-        email: email,
-        type: 'Banker',
-        bankName: 'State Bank of India'
-      });
-      setPage('banker-dashboard');
-      return;
-    }
-
     if (supabaseClient) {
       const { data, error } = await supabaseClient.auth.signInWithPassword({
         email,
@@ -809,7 +773,18 @@ function App() {
       }
     } else {
       // Sandbox fallback
-      alert("Sandbox banker demo email is banker@samridhi.in / password123");
+      if (email === 'banker@samridhi.in') {
+        setUser({
+          id: 'mock-banker-123',
+          name: 'SBI BANKER',
+          email: email,
+          type: 'Banker',
+          bankName: 'State Bank of India'
+        });
+        setPage('banker-dashboard');
+      } else {
+        alert("Sandbox banker demo email is banker@samridhi.in / password123");
+      }
     }
   };
 

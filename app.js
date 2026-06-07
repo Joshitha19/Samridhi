@@ -335,22 +335,39 @@ function App() {
 
   // Real-time synchronization polling for customers (every 5 seconds)
   useEffect(() => {
-    if (!user || user.type === 'Banker' || !supabaseClient) return;
+    if (!user || user.type === 'Banker') return;
 
     const interval = setInterval(async () => {
       try {
-        const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
-        if (profile) {
-          setAadhaarVerified(profile.aadhaar_verified);
-          setPanVerified(profile.pan_verified);
-          setUpiVerified(profile.upi_verified);
-        }
-        const { data: loans } = await supabaseClient.from('loans').select('*').eq('user_id', user.id).order('date', { ascending: false });
-        if (loans) {
+        if (user.isDemo) {
+          // Poll from localStorage for demo users
+          const localProfiles = JSON.parse(localStorage.getItem('samridhi_profiles') || '[]');
+          const profile = localProfiles.find(p => p.id === user.id);
+          if (profile) {
+            setAadhaarVerified(profile.aadhaar_verified);
+            setPanVerified(profile.pan_verified);
+            setUpiVerified(profile.upi_verified);
+          }
+          const localLoans = JSON.parse(localStorage.getItem('samridhi_loans') || '[]');
+          const userLoans = localLoans.filter(l => l.user_id === user.id);
           dispatch({
             type: 'SET_LOANS',
-            payload: loans.map(l => ({ id: l.id, lender: l.lender, amount: parseFloat(l.amount), rate: l.rate, emi: l.emi, status: l.status, date: l.date }))
+            payload: userLoans.map(l => ({ id: l.id, lender: l.lender, amount: parseFloat(l.amount), rate: l.rate, emi: l.emi, status: l.status, date: l.date }))
           });
+        } else if (supabaseClient) {
+          const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+          if (profile) {
+            setAadhaarVerified(profile.aadhaar_verified);
+            setPanVerified(profile.pan_verified);
+            setUpiVerified(profile.upi_verified);
+          }
+          const { data: loans } = await supabaseClient.from('loans').select('*').eq('user_id', user.id).order('date', { ascending: false });
+          if (loans) {
+            dispatch({
+              type: 'SET_LOANS',
+              payload: loans.map(l => ({ id: l.id, lender: l.lender, amount: parseFloat(l.amount), rate: l.rate, emi: l.emi, status: l.status, date: l.date }))
+            });
+          }
         }
       } catch (e) {
         console.warn("Real-time customer polling sync error: ", e);
@@ -360,12 +377,90 @@ function App() {
     return () => clearInterval(interval);
   }, [user]);
 
-  // Custom dbDispatch interceptor to sync state transitions with Supabase
+  // Custom dbDispatch interceptor to sync state transitions with Supabase / localStorage
   const dbDispatch = (action) => {
     dispatch(action);
 
-    if (!user || !supabaseClient) return;
+    if (!user) return;
     const userId = user.id;
+
+    if (user.isDemo) {
+      switch (action.type) {
+        case 'ADD_TRANSACTION': {
+          const localTxs = JSON.parse(localStorage.getItem('samridhi_transactions') || '[]');
+          localTxs.unshift({
+            id: `t-demo-${userId}-${Date.now()}`,
+            user_id: userId,
+            date: action.payload.date,
+            merchant: action.payload.merchant,
+            amount: action.payload.amount,
+            category: action.payload.category,
+            type: action.payload.type
+          });
+          localStorage.setItem('samridhi_transactions', JSON.stringify(localTxs));
+          break;
+        }
+        case 'APPLY_LOAN': {
+          const localLoans = JSON.parse(localStorage.getItem('samridhi_loans') || '[]');
+          localLoans.unshift({
+            id: action.payload.id,
+            user_id: userId,
+            lender: action.payload.lender,
+            amount: action.payload.amount,
+            rate: action.payload.rate,
+            emi: action.payload.emi,
+            status: action.payload.status,
+            date: action.payload.date
+          });
+          localStorage.setItem('samridhi_loans', JSON.stringify(localLoans));
+          break;
+        }
+        case 'TOGGLE_SKILL_VERIFICATION': {
+          let localSkills = JSON.parse(localStorage.getItem('samridhi_skills') || '[]');
+          localSkills = localSkills.map(s => s.id === action.payload ? { ...s, verified: !s.verified } : s);
+          localStorage.setItem('samridhi_skills', JSON.stringify(localSkills));
+          break;
+        }
+        case 'ADD_SKILL': {
+          const localSkills = JSON.parse(localStorage.getItem('samridhi_skills') || '[]');
+          localSkills.push({
+            id: `s-demo-${userId}-${Date.now()}`,
+            user_id: userId,
+            name: action.payload.name,
+            issuer: action.payload.issuer,
+            verified: action.payload.verified
+          });
+          localStorage.setItem('samridhi_skills', JSON.stringify(localSkills));
+          break;
+        }
+        case 'ADD_INVENTORY_ITEM': {
+          const localInventory = JSON.parse(localStorage.getItem('samridhi_inventory') || '[]');
+          localInventory.push({
+            id: `inv-demo-${userId}-${Date.now()}`,
+            user_id: userId,
+            name: action.payload.name,
+            category: action.payload.category,
+            quantity: action.payload.quantity,
+            unit: action.payload.unit,
+            price: action.payload.price,
+            last_updated: action.payload.lastUpdated
+          });
+          localStorage.setItem('samridhi_inventory', JSON.stringify(localInventory));
+          break;
+        }
+        case 'REMOVE_INVENTORY_ITEM': {
+          let localInventory = JSON.parse(localStorage.getItem('samridhi_inventory') || '[]');
+          localInventory = localInventory.filter(item => item.id !== action.payload);
+          localStorage.setItem('samridhi_inventory', JSON.stringify(localInventory));
+          break;
+        }
+        default:
+          break;
+      }
+      return;
+    }
+
+    if (!supabaseClient) return;
 
     switch (action.type) {
       case 'ADD_TRANSACTION':
@@ -611,6 +706,24 @@ function App() {
 
   // Check auth session persistence
   useEffect(() => {
+    // Check if there is an active demo session in localStorage
+    const demoSessionStr = localStorage.getItem('samridhi_demo_session');
+    if (demoSessionStr) {
+      try {
+        const demoUser = JSON.parse(demoSessionStr);
+        setUser(demoUser);
+        if (demoUser.type === 'Banker') {
+          setPage('banker-dashboard');
+        } else {
+          setPage('dashboard');
+          loadDemoUserState(demoUser);
+        }
+        return;
+      } catch (e) {
+        console.warn("Failed parsing demo session:", e);
+      }
+    }
+
     if (!supabaseClient) return;
 
     supabaseClient.auth.getSession().then(({ data: { session } }) => {
@@ -634,47 +747,192 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  const loadDemoUserState = (demoUser) => {
+    const userId = demoUser.id;
+    const userEmail = demoUser.email;
+    
+    // 1. Get or create profile in localStorage
+    let localProfiles = JSON.parse(localStorage.getItem('samridhi_profiles') || '[]');
+    let profile = localProfiles.find(p => p.id === userId);
+    
+    if (!profile) {
+      profile = {
+        id: userId,
+        name: demoUser.name,
+        email: userEmail,
+        type: demoUser.type,
+        upi_vpa: demoUser.upiVpa || '',
+        upi_verified: false,
+        aadhaar_verified: true,
+        pan_verified: true
+      };
+      localProfiles.push(profile);
+      localStorage.setItem('samridhi_profiles', JSON.stringify(localProfiles));
+    }
+    
+    setAadhaarVerified(profile.aadhaar_verified);
+    setPanVerified(profile.pan_verified);
+    setUpiLinked(profile.upi_vpa ? true : false);
+    setUpiVerified(profile.upi_verified);
+    
+    // 2. Fetch or seed other data (loans, transactions, skills, inventory) in localStorage
+    let localTxs = JSON.parse(localStorage.getItem('samridhi_transactions') || '[]');
+    let localSkills = JSON.parse(localStorage.getItem('samridhi_skills') || '[]');
+    let localLoans = JSON.parse(localStorage.getItem('samridhi_loans') || '[]');
+    let localInventory = JSON.parse(localStorage.getItem('samridhi_inventory') || '[]');
+    
+    const userTxs = localTxs.filter(t => t.user_id === userId);
+    const userSkills = localSkills.filter(s => s.user_id === userId);
+    const userLoans = localLoans.filter(l => l.user_id === userId);
+    const userInventory = localInventory.filter(i => i.user_id === userId);
+    
+    // If no transactions found for this user, seed default values
+    if (userTxs.length === 0) {
+      const seededTxs = REDUCER_INITIAL_STATE.transactions.map((t, idx) => ({
+        id: `t-demo-${userId}-${idx}`,
+        user_id: userId,
+        date: t.date,
+        merchant: t.merchant,
+        amount: t.amount,
+        category: t.category,
+        type: t.type
+      }));
+      localTxs = [...localTxs, ...seededTxs];
+      localStorage.setItem('samridhi_transactions', JSON.stringify(localTxs));
+    }
+    
+    if (userSkills.length === 0) {
+      const seededSkills = REDUCER_INITIAL_STATE.skills.map((s, idx) => ({
+        id: `s-demo-${userId}-${idx}`,
+        user_id: userId,
+        name: s.name,
+        issuer: s.issuer,
+        verified: s.verified
+      }));
+      localSkills = [...localSkills, ...seededSkills];
+      localStorage.setItem('samridhi_skills', JSON.stringify(localSkills));
+    }
+    
+    if (userLoans.length === 0) {
+      const seededLoans = REDUCER_INITIAL_STATE.loans.map((l, idx) => ({
+        id: `l-demo-${userId}-${idx}`,
+        user_id: userId,
+        lender: l.lender,
+        amount: l.amount,
+        rate: l.rate,
+        emi: l.emi,
+        status: l.status,
+        date: l.date
+      }));
+      localLoans = [...localLoans, ...seededLoans];
+      localStorage.setItem('samridhi_loans', JSON.stringify(localLoans));
+    }
+    
+    if (userInventory.length === 0) {
+      const seededInventory = REDUCER_INITIAL_STATE.inventory.map((i, idx) => ({
+        id: `inv-demo-${userId}-${idx}`,
+        user_id: userId,
+        name: i.name,
+        category: i.category,
+        quantity: i.quantity,
+        unit: i.unit,
+        price: i.price,
+        last_updated: i.lastUpdated
+      }));
+      localInventory = [...localInventory, ...seededInventory];
+      localStorage.setItem('samridhi_inventory', JSON.stringify(localInventory));
+    }
+    
+    // Reload state for dispatch
+    const freshTxs = JSON.parse(localStorage.getItem('samridhi_transactions') || '[]').filter(t => t.user_id === userId);
+    const freshSkills = JSON.parse(localStorage.getItem('samridhi_skills') || '[]').filter(s => s.user_id === userId);
+    const freshLoans = JSON.parse(localStorage.getItem('samridhi_loans') || '[]').filter(l => l.user_id === userId);
+    const freshInventory = JSON.parse(localStorage.getItem('samridhi_inventory') || '[]').filter(i => i.user_id === userId);
+    
+    dispatch({
+      type: 'SET_INITIAL_STATE',
+      payload: {
+        transactions: freshTxs.map(t => ({ id: t.id, date: t.date, merchant: t.merchant, amount: parseFloat(t.amount), category: t.category, type: t.type })),
+        skills: freshSkills.map(s => ({ id: s.id, name: s.name, issuer: s.issuer, verified: s.verified })),
+        loans: freshLoans.map(l => ({ id: l.id, lender: l.lender, amount: parseFloat(l.amount), rate: l.rate, emi: l.emi, status: l.status, date: l.date })),
+        inventory: freshInventory.map(i => ({ id: i.id, name: i.name, category: i.category, quantity: parseInt(i.quantity), unit: i.unit, price: parseFloat(i.price), lastUpdated: i.last_updated }))
+      }
+    });
+  };
+
   const handleSetAadhaarVerified = async (val) => {
     setAadhaarVerified(val);
-    if (user && supabaseClient) {
-      await supabaseClient.from('profiles').update({ aadhaar_verified: val }).eq('id', user.id);
+    if (user) {
+      if (user.isDemo) {
+        let localProfiles = JSON.parse(localStorage.getItem('samridhi_profiles') || '[]');
+        localProfiles = localProfiles.map(p => p.id === user.id ? { ...p, aadhaar_verified: val } : p);
+        localStorage.setItem('samridhi_profiles', JSON.stringify(localProfiles));
+      } else if (supabaseClient) {
+        await supabaseClient.from('profiles').update({ aadhaar_verified: val }).eq('id', user.id);
+      }
     }
   };
 
   const handleSetPanVerified = async (val) => {
     setPanVerified(val);
-    if (user && supabaseClient) {
-      await supabaseClient.from('profiles').update({ pan_verified: val }).eq('id', user.id);
+    if (user) {
+      if (user.isDemo) {
+        let localProfiles = JSON.parse(localStorage.getItem('samridhi_profiles') || '[]');
+        localProfiles = localProfiles.map(p => p.id === user.id ? { ...p, pan_verified: val } : p);
+        localStorage.setItem('samridhi_profiles', JSON.stringify(localProfiles));
+      } else if (supabaseClient) {
+        await supabaseClient.from('profiles').update({ pan_verified: val }).eq('id', user.id);
+      }
     }
   };
 
   const handleSetUpiLinked = async (val) => {
     setUpiLinked(val);
-    if (user && supabaseClient) {
-      await supabaseClient.from('profiles').update({ upi_vpa: val ? user.upiVpa : '' }).eq('id', user.id);
+    if (user) {
+      if (user.isDemo) {
+        let localProfiles = JSON.parse(localStorage.getItem('samridhi_profiles') || '[]');
+        localProfiles = localProfiles.map(p => p.id === user.id ? { ...p, upi_vpa: val ? user.upiVpa : '' } : p);
+        localStorage.setItem('samridhi_profiles', JSON.stringify(localProfiles));
+      } else if (supabaseClient) {
+        await supabaseClient.from('profiles').update({ upi_vpa: val ? user.upiVpa : '' }).eq('id', user.id);
+      }
     }
   };
 
   const handleSetUpiVerified = async (val) => {
     setUpiVerified(val);
-    if (user && supabaseClient) {
-      await supabaseClient.from('profiles').update({ upi_verified: val }).eq('id', user.id);
+    if (user) {
+      if (user.isDemo) {
+        let localProfiles = JSON.parse(localStorage.getItem('samridhi_profiles') || '[]');
+        localProfiles = localProfiles.map(p => p.id === user.id ? { ...p, upi_verified: val } : p);
+        localStorage.setItem('samridhi_profiles', JSON.stringify(localProfiles));
+      } else if (supabaseClient) {
+        await supabaseClient.from('profiles').update({ upi_verified: val }).eq('id', user.id);
+      }
     }
   };
 
   const handleUpdateUser = async (updatedUser) => {
     setUser(updatedUser);
-    if (updatedUser && supabaseClient && updatedUser.id) {
-      await supabaseClient.from('profiles').update({
-        name: updatedUser.name,
-        type: updatedUser.type,
-        upi_vpa: updatedUser.upiVpa
-      }).eq('id', updatedUser.id);
+    if (updatedUser && updatedUser.id) {
+      if (updatedUser.isDemo) {
+        let localProfiles = JSON.parse(localStorage.getItem('samridhi_profiles') || '[]');
+        localProfiles = localProfiles.map(p => p.id === updatedUser.id ? { ...p, name: updatedUser.name, type: updatedUser.type, upi_vpa: updatedUser.upiVpa } : p);
+        localStorage.setItem('samridhi_profiles', JSON.stringify(localProfiles));
+        localStorage.setItem('samridhi_demo_session', JSON.stringify(updatedUser));
+      } else if (supabaseClient) {
+        await supabaseClient.from('profiles').update({
+          name: updatedUser.name,
+          type: updatedUser.type,
+          upi_vpa: updatedUser.upiVpa
+        }).eq('id', updatedUser.id);
+      }
     }
   };
 
   // If user logs out
   const handleLogout = async () => {
+    localStorage.removeItem('samridhi_demo_session');
     if (supabaseClient) {
       await supabaseClient.auth.signOut();
     }
@@ -691,6 +949,31 @@ function App() {
 
   // Handle sign in submission
   const handleSignIn = async (email, password, selectedType) => {
+    if (email.endsWith('@samridhi.in')) {
+      // Demo accounts bypass Supabase
+      const username = email.split('@')[0].replace('.', ' ').toUpperCase() || 'SAMRIDHI USER';
+      let type = selectedType || 'Freelancer';
+      if (email.includes('student')) type = 'Student';
+      if (email.includes('freelancer')) type = 'Freelancer';
+      if (email.includes('entrepreneur')) type = 'Entrepreneur';
+      if (email.includes('salaried')) type = 'Salaried';
+
+      const demoUser = {
+        id: `demo-uid-${email.split('@')[0].replace('.', '-')}`,
+        name: username,
+        email: email,
+        type: type,
+        upiVpa: `${email.split('@')[0].replace('.', '').toLowerCase()}@okaxis`,
+        isDemo: true
+      };
+      setUser(demoUser);
+      localStorage.setItem('samridhi_demo_session', JSON.stringify(demoUser));
+      setPage('dashboard');
+      setActiveTab('overview');
+      loadDemoUserState(demoUser);
+      return;
+    }
+
     if (supabaseClient) {
       const { data, error } = await supabaseClient.auth.signInWithPassword({
         email,
@@ -758,6 +1041,30 @@ function App() {
 
   // Handle banker sign in
   const handleBankerSignIn = async (email, password) => {
+    if (email === 'banker@samridhi.in' || email.endsWith('@samridhi.in')) {
+      const namePrefix = email.split('@')[0];
+      const name = namePrefix.replace('.', ' ').toUpperCase() + " BANKER";
+      
+      let bankName = 'State Bank of India';
+      if (email.includes('hdfc')) bankName = 'HDFC Bank';
+      else if (email.includes('icici')) bankName = 'ICICI Bank';
+      else if (email.includes('axis')) bankName = 'Axis Bank';
+      else if (email.includes('pnb')) bankName = 'Punjab National Bank';
+
+      const demoBanker = {
+        id: `demo-banker-${namePrefix.replace('.', '-')}`,
+        name: name,
+        email: email,
+        type: 'Banker',
+        bankName: bankName,
+        isDemo: true
+      };
+      setUser(demoBanker);
+      localStorage.setItem('samridhi_demo_session', JSON.stringify(demoBanker));
+      setPage('banker-dashboard');
+      return;
+    }
+
     if (supabaseClient) {
       const { data, error } = await supabaseClient.auth.signInWithPassword({
         email,

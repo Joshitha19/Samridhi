@@ -15,51 +15,112 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
   const [selectedProfileSkills, setSelectedProfileSkills] = useState([]);
   const [selectedProfileTxs, setSelectedProfileTxs] = useState([]);
 
-  // Fetch real-time data from Supabase
+  // Fetch real-time data from Supabase / localStorage
   const fetchData = async () => {
+    let localProfiles = [];
+    let localLoans = [];
+    try {
+      localProfiles = JSON.parse(localStorage.getItem('samridhi_profiles') || '[]');
+      localLoans = JSON.parse(localStorage.getItem('samridhi_loans') || '[]');
+    } catch (e) {
+      console.warn("Failed reading local storage db in banker portal:", e);
+    }
+
     if (!window.supabaseClient) {
       // Mock fallback data for Sandbox/Dev mode
-      const allMockProfiles = [
-        { id: 'c-1', name: 'ARJUN SHARMA', email: 'arjun@gmail.com', type: 'Freelancer', aadhaar_verified: true, pan_verified: true, upi_vpa: 'arjun@okaxis', upi_verified: true, score: 80 },
-        { id: 'c-2', name: 'SNEHA PATEL', email: 'sneha@student.in', type: 'Student', aadhaar_verified: true, pan_verified: false, upi_vpa: '', upi_verified: false, score: 52 },
-        { id: 'c-3', name: 'KABIR MEHTA', email: 'kabir@shop.com', type: 'Entrepreneur', aadhaar_verified: true, pan_verified: true, upi_vpa: 'kabir@okaxis', upi_verified: true, score: 91 }
-      ];
-      const allMockLoans = [
-        { id: 'l-1', user_id: 'c-1', lender: 'State Bank of India', amount: 150000, rate: 11.5, emi: 13300, status: 'Pending', date: '2026-06-07' },
-        { id: 'l-2', user_id: 'c-2', lender: 'HDFC Bank', amount: 50000, rate: 11.5, emi: 4400, status: 'Approved', date: '2026-06-05' },
-        { id: 'l-3', user_id: 'c-3', lender: 'ICICI Bank', amount: 300000, rate: 11.5, emi: 26500, status: 'Rejected', date: '2026-06-02' }
-      ];
-
-      const bankerLoans = allMockLoans.filter(l => l.lender === user.bankName);
-
-      setProfiles(allMockProfiles);
-      setLoans(bankerLoans);
+      if (localProfiles.length === 0 && localLoans.length === 0) {
+        const defaultProfiles = [
+          { id: 'demo-uid-demo', name: 'DEMO MERCHANT', email: 'demo@samridhi.in', type: 'Entrepreneur', aadhaar_verified: true, pan_verified: true, upi_vpa: 'demo@okaxis', upi_verified: true },
+          { id: 'demo-uid-student', name: 'DEMO STUDENT', email: 'demo.student@samridhi.in', type: 'Student', aadhaar_verified: true, pan_verified: false, upi_vpa: 'student@okaxis', upi_verified: false },
+          { id: 'demo-uid-freelancer', name: 'DEMO FREELANCER', email: 'demo.freelancer@samridhi.in', type: 'Freelancer', aadhaar_verified: true, pan_verified: true, upi_vpa: 'freelancer@okaxis', upi_verified: true }
+        ];
+        const defaultLoans = [
+          { id: 'l-1', user_id: 'demo-uid-demo', lender: 'State Bank of India', amount: 150000, rate: '11.5%', emi: '₹13,300', status: 'Pending', date: '2026-06-07' }
+        ];
+        localStorage.setItem('samridhi_profiles', JSON.stringify(defaultProfiles));
+        localStorage.setItem('samridhi_loans', JSON.stringify(defaultLoans));
+        
+        const bankerLoans = defaultLoans.filter(l => l.lender === user.bankName);
+        setProfiles(defaultProfiles);
+        setLoans(bankerLoans);
+      } else {
+        const bankerLoans = localLoans.filter(l => l.lender === user.bankName);
+        setProfiles(localProfiles);
+        setLoans(bankerLoans);
+      }
       setLoading(false);
       return;
     }
 
     try {
-      // Fetch all customer profiles (exclude other bankers for dashboard focus)
-      const { data: profileList, error: pErr } = await window.supabaseClient
+      // Fetch all customer profiles from Supabase (exclude other bankers)
+      const { data: dbProfiles, error: pErr } = await window.supabaseClient
         .from('profiles')
         .select('*')
         .neq('type', 'Banker');
       if (pErr) throw pErr;
 
-      // Fetch all loans
-      const { data: loanList, error: lErr } = await window.supabaseClient
+      // Fetch all loans from Supabase
+      const { data: dbLoans, error: lErr } = await window.supabaseClient
         .from('loans')
         .select('*')
         .order('date', { ascending: false });
       if (lErr) throw lErr;
 
-      // Filter loans based on banker associated bank (matching exact bankName)
-      const bankerLoans = (loanList || []).filter(l => l.lender === user.bankName);
+      // Merge and deduplicate profiles
+      const mergedProfilesMap = new Map();
+      localProfiles.forEach(p => {
+        mergedProfilesMap.set(p.id, p);
+      });
+      if (dbProfiles) {
+        dbProfiles.forEach(p => {
+          mergedProfilesMap.set(p.id, {
+            id: p.id,
+            name: p.name,
+            email: p.email,
+            type: p.type,
+            upi_vpa: p.upi_vpa,
+            upi_verified: p.upi_verified,
+            aadhaar_verified: p.aadhaar_verified,
+            pan_verified: p.pan_verified
+          });
+        });
+      }
 
-      setProfiles(profileList || []);
+      // Merge and deduplicate loans
+      const mergedLoansMap = new Map();
+      localLoans.forEach(l => {
+        mergedLoansMap.set(l.id, l);
+      });
+      if (dbLoans) {
+        dbLoans.forEach(l => {
+          mergedLoansMap.set(l.id, {
+            id: l.id,
+            user_id: l.user_id,
+            lender: l.lender,
+            amount: parseFloat(l.amount),
+            rate: l.rate,
+            emi: l.emi,
+            status: l.status,
+            date: l.date
+          });
+        });
+      }
+
+      const allProfiles = Array.from(mergedProfilesMap.values());
+      const allLoans = Array.from(mergedLoansMap.values());
+
+      // Filter loans based on banker associated bank (matching exact bankName)
+      const bankerLoans = allLoans.filter(l => l.lender === user.bankName);
+
+      setProfiles(allProfiles);
       setLoans(bankerLoans);
     } catch (err) {
-      console.error("Error fetching banker records: ", err);
+      console.error("Error fetching banker records from Supabase: ", err);
+      // Fallback merging
+      const bankerLoans = localLoans.filter(l => l.lender === user.bankName);
+      setProfiles(localProfiles);
+      setLoans(bankerLoans);
     } finally {
       setLoading(false);
     }
@@ -77,62 +138,102 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
     setTimeout(() => setToast(''), 3000);
   };
 
-  // Update loan status (Approve / Reject)
+  // Update loan status (Approve / Reject) in both localStorage and Supabase
   const handleUpdateStatus = async (loanId, newStatus) => {
     // 1. Optimistic update
     setLoans(prevLoans => prevLoans.map(l => l.id === loanId ? { ...l, status: newStatus } : l));
     triggerToast(`Loan application successfully ${newStatus}!`);
 
+    // 2. Update localStorage
+    try {
+      const localLoans = JSON.parse(localStorage.getItem('samridhi_loans') || '[]');
+      const updatedLoans = localLoans.map(l => l.id === loanId ? { ...l, status: newStatus } : l);
+      localStorage.setItem('samridhi_loans', JSON.stringify(updatedLoans));
+    } catch (e) {
+      console.warn("Failed updating local storage loan status:", e);
+    }
+
+    // 3. Update Supabase
     if (window.supabaseClient) {
       try {
         const { error } = await window.supabaseClient
           .from('loans')
           .update({ status: newStatus })
           .eq('id', loanId);
-        if (error) throw error;
+        if (error) {
+          console.warn("Supabase sync warning for loan status update: ", error.message);
+        }
       } catch (err) {
-        console.error("Error updating loan status: ", err);
-        triggerToast("Failed to update status on server.");
-        fetchData(); // Rollback
+        console.warn("Error updating loan status on Supabase: ", err);
       }
     }
   };
 
-  // Open modal and fetch alternative telemetry data for the clicked profile
+  // Open modal and fetch alternative telemetry data for the clicked profile (merged from local & DB)
   const handleInspectProfile = async (profile) => {
     setSelectedProfile(profile);
     setSelectedProfileSkills([]);
     setSelectedProfileTxs([]);
 
+    let localSkills = [];
+    let localTxs = [];
+    try {
+      localSkills = JSON.parse(localStorage.getItem('samridhi_skills') || '[]').filter(s => s.user_id === profile.id);
+      localTxs = JSON.parse(localStorage.getItem('samridhi_transactions') || '[]').filter(t => t.user_id === profile.id);
+    } catch (e) {
+      console.warn("Failed to read local storage inspect details:", e);
+    }
+
     if (!window.supabaseClient) {
-      // Mock data in sandbox mode
-      setSelectedProfileSkills([
-        { id: 's1', name: 'React Web Development', issuer: 'Meta', verified: true },
-        { id: 's2', name: 'Machine Learning Basics', issuer: 'Stanford', verified: true }
-      ]);
-      setSelectedProfileTxs([
-        { id: 't1', date: '01 Jun', merchant: 'UPI Inflow - Client Pay', amount: 18000, type: 'credit', category: 'Income' },
-        { id: 't2', date: '03 Jun', merchant: 'UPI Outflow - Utility', amount: 2400, type: 'debit', category: 'Housing' }
-      ]);
+      setSelectedProfileSkills(localSkills);
+      setSelectedProfileTxs(localTxs);
       return;
     }
 
     try {
-      const { data: skills } = await window.supabaseClient
+      const { data: dbSkills } = await window.supabaseClient
         .from('skills')
         .select('*')
         .eq('user_id', profile.id);
       
-      const { data: txs } = await window.supabaseClient
+      const { data: dbTxs } = await window.supabaseClient
         .from('transactions')
         .select('*')
         .eq('user_id', profile.id)
         .limit(10);
 
-      setSelectedProfileSkills(skills || []);
-      setSelectedProfileTxs(txs || []);
+      // Merge and deduplicate skills
+      const mergedSkillsMap = new Map();
+      localSkills.forEach(s => mergedSkillsMap.set(s.id || s.name, s));
+      if (dbSkills) {
+        dbSkills.forEach(s => mergedSkillsMap.set(s.id || s.name, {
+          id: s.id,
+          name: s.name,
+          issuer: s.issuer,
+          verified: s.verified
+        }));
+      }
+
+      // Merge and deduplicate transactions
+      const mergedTxsMap = new Map();
+      localTxs.forEach(t => mergedTxsMap.set(t.id || (t.date + t.merchant + t.amount), t));
+      if (dbTxs) {
+        dbTxs.forEach(t => mergedTxsMap.set(t.id || (t.date + t.merchant + t.amount), {
+          id: t.id,
+          date: t.date,
+          merchant: t.merchant,
+          amount: parseFloat(t.amount),
+          category: t.category,
+          type: t.type
+        }));
+      }
+
+      setSelectedProfileSkills(Array.from(mergedSkillsMap.values()));
+      setSelectedProfileTxs(Array.from(mergedTxsMap.values()));
     } catch (e) {
-      console.warn("Failed fetching telemetry inspect logs: ", e);
+      console.warn("Failed fetching Supabase telemetry inspect logs: ", e);
+      setSelectedProfileSkills(localSkills);
+      setSelectedProfileTxs(localTxs);
     }
   };
 

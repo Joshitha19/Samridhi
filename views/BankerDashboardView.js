@@ -31,10 +31,8 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
       ];
 
       const bankerLoans = allMockLoans.filter(l => l.lender === user.bankName);
-      const applicantIds = new Set(bankerLoans.map(l => l.user_id));
-      const bankerProfiles = allMockProfiles.filter(p => applicantIds.has(p.id));
 
-      setProfiles(bankerProfiles);
+      setProfiles(allMockProfiles);
       setLoans(bankerLoans);
       setLoading(false);
       return;
@@ -55,12 +53,10 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
         .order('date', { ascending: false });
       if (lErr) throw lErr;
 
-      // Filter based on banker associated bank (matching exact bankName)
+      // Filter loans based on banker associated bank (matching exact bankName)
       const bankerLoans = (loanList || []).filter(l => l.lender === user.bankName);
-      const applicantIds = new Set(bankerLoans.map(l => l.user_id));
-      const bankerProfiles = (profileList || []).filter(p => applicantIds.has(p.id));
 
-      setProfiles(bankerProfiles);
+      setProfiles(profileList || []);
       setLoans(bankerLoans);
     } catch (err) {
       console.error("Error fetching banker records: ", err);

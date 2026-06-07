@@ -697,7 +697,11 @@ function App() {
         password
       });
       if (error) {
-        alert("Sign In Failed: " + error.message);
+        if (error.message.includes("Email not confirmed")) {
+          alert("Sign In Failed: Email not confirmed.\n\nTip: Please confirm your email address via the link sent to your inbox, or disable 'Confirm email' under Auth -> Providers -> Email in your Supabase Dashboard settings.");
+        } else {
+          alert("Sign In Failed: " + error.message);
+        }
         return;
       }
     } else {
@@ -735,7 +739,7 @@ function App() {
         alert("Sign Up Failed: " + error.message);
         return;
       }
-      alert("Sign Up Successful! You can sign in now.");
+      alert("Sign Up Successful! Please check your email inbox (and spam folder) for the verification link to confirm your account, or disable email confirmations in your Supabase Auth dashboard.");
       setPage('signin');
     } else {
       const mockUser = {
@@ -760,7 +764,11 @@ function App() {
         password
       });
       if (error) {
-        alert("Banker Sign In Failed: " + error.message);
+        if (error.message.includes("Email not confirmed")) {
+          alert("Banker Sign In Failed: Email not confirmed.\n\nTip: Please confirm your email address via the link sent to your inbox, or disable 'Confirm email' under Auth -> Providers -> Email in your Supabase Dashboard settings.");
+        } else {
+          alert("Banker Sign In Failed: " + error.message);
+        }
         return;
       }
     } else {
@@ -798,7 +806,7 @@ function App() {
         alert("Banker Registration Failed: " + error.message);
         return;
       }
-      alert("Banker Registration Successful! You can sign in now.");
+      alert("Banker Registration Successful! Please check your email inbox (and spam folder) for the verification link to confirm your account, or disable email confirmations in your Supabase Auth dashboard.");
       setPage('banker-login');
     } else {
       alert("Supabase is required to register new Bankers. Try One-Click Banker Demo Login.");

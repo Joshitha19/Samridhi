@@ -19,16 +19,23 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
   const fetchData = async () => {
     if (!window.supabaseClient) {
       // Mock fallback data for Sandbox/Dev mode
-      setProfiles([
+      const allMockProfiles = [
         { id: 'c-1', name: 'ARJUN SHARMA', email: 'arjun@gmail.com', type: 'Freelancer', aadhaar_verified: true, pan_verified: true, upi_vpa: 'arjun@okaxis', upi_verified: true, score: 80 },
         { id: 'c-2', name: 'SNEHA PATEL', email: 'sneha@student.in', type: 'Student', aadhaar_verified: true, pan_verified: false, upi_vpa: '', upi_verified: false, score: 52 },
         { id: 'c-3', name: 'KABIR MEHTA', email: 'kabir@shop.com', type: 'Entrepreneur', aadhaar_verified: true, pan_verified: true, upi_vpa: 'kabir@okaxis', upi_verified: true, score: 91 }
-      ]);
-      setLoans([
-        { id: 'l-1', user_id: 'c-1', lender: 'SBI Micro-Capital', amount: 150000, rate: 11.5, emi: 13300, status: 'Pending', date: '2026-06-07' },
-        { id: 'l-2', user_id: 'c-2', lender: 'HDFC Student Pool', amount: 50000, rate: 11.5, emi: 4400, status: 'Approved', date: '2026-06-05' },
-        { id: 'l-3', user_id: 'c-3', lender: 'Axis Business Trust', amount: 300000, rate: 11.5, emi: 26500, status: 'Rejected', date: '2026-06-02' }
-      ]);
+      ];
+      const allMockLoans = [
+        { id: 'l-1', user_id: 'c-1', lender: 'State Bank of India', amount: 150000, rate: 11.5, emi: 13300, status: 'Pending', date: '2026-06-07' },
+        { id: 'l-2', user_id: 'c-2', lender: 'HDFC Bank', amount: 50000, rate: 11.5, emi: 4400, status: 'Approved', date: '2026-06-05' },
+        { id: 'l-3', user_id: 'c-3', lender: 'ICICI Bank', amount: 300000, rate: 11.5, emi: 26500, status: 'Rejected', date: '2026-06-02' }
+      ];
+
+      const bankerLoans = allMockLoans.filter(l => l.lender === user.bankName);
+      const applicantIds = new Set(bankerLoans.map(l => l.user_id));
+      const bankerProfiles = allMockProfiles.filter(p => applicantIds.has(p.id));
+
+      setProfiles(bankerProfiles);
+      setLoans(bankerLoans);
       setLoading(false);
       return;
     }
@@ -48,8 +55,13 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
         .order('date', { ascending: false });
       if (lErr) throw lErr;
 
-      setProfiles(profileList || []);
-      setLoans(loanList || []);
+      // Filter based on banker associated bank (matching exact bankName)
+      const bankerLoans = (loanList || []).filter(l => l.lender === user.bankName);
+      const applicantIds = new Set(bankerLoans.map(l => l.user_id));
+      const bankerProfiles = (profileList || []).filter(p => applicantIds.has(p.id));
+
+      setProfiles(bankerProfiles);
+      setLoans(bankerLoans);
     } catch (err) {
       console.error("Error fetching banker records: ", err);
     } finally {
@@ -334,7 +346,7 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
                           <td className="p-4 text-samridhi-textPrimary font-semibold">{loan.lender}</td>
                           <td className="p-4 font-bold text-white font-mono">₹{loan.amount.toLocaleString()}</td>
                           <td className="p-4 text-samridhi-textMuted font-mono">
-                            {loan.emi ? `₹${loan.emi.toLocaleString()}/mo` : 'N/A'}
+                            {loan.emi ? `${loan.emi.toString().startsWith('₹') ? '' : '₹'}${loan.emi.toLocaleString()}/mo` : 'N/A'}
                             <span className="block text-[9px] uppercase font-bold tracking-wider">
                               Tenure: 12 mos
                             </span>

@@ -14,6 +14,7 @@ window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab, voiceNavig
   const [loanAmount, setLoanAmount] = useState(100000);
   const [loanPurpose, setLoanPurpose] = useState('Business');
   const [tenure, setTenure] = useState(12);
+  const [selectedBank, setSelectedBank] = useState('State Bank of India');
 
   // Step 2 Form fields
   const [phone, setPhone] = useState('9876543210');
@@ -76,11 +77,11 @@ window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab, voiceNavig
         type: 'APPLY_LOAN',
         payload: {
           id: generatedId,
-          lender: "Samridhi AI Match",
+          lender: selectedBank,
           amount: loanAmount,
           rate: "11.5%",
-          emi: `₹${emiCalculations.emi.toLocaleString()}`,
-          status: "Under Review",
+          emi: `₹${Math.round(emiCalculations.emi).toLocaleString()}`,
+          status: "Pending",
           date: new Date().toISOString().split('T')[0]
         }
       });
@@ -531,6 +532,24 @@ window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab, voiceNavig
                   <option value="Medical">Medical</option>
                   <option value="Home Renovation">Home Renovation</option>
                   <option value="Vehicle">Vehicle</option>
+                </select>
+              </div>
+
+              {/* Target Bank Selection */}
+              <div className="flex flex-col space-y-1.5 mt-4">
+                <div className="flex justify-between items-center text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">
+                  <span>Target Bank / Lender</span>
+                </div>
+                <select
+                  value={selectedBank}
+                  onChange={(e) => setSelectedBank(e.target.value)}
+                  className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary rounded-xl py-3 px-4 text-samridhi-textPrimary focus:outline-none transition-all text-sm font-bold"
+                >
+                  <option value="State Bank of India">State Bank of India (SBI)</option>
+                  <option value="HDFC Bank">HDFC Bank</option>
+                  <option value="ICICI Bank">ICICI Bank</option>
+                  <option value="Axis Bank">Axis Bank</option>
+                  <option value="Punjab National Bank">Punjab National Bank (PNB)</option>
                 </select>
               </div>
             </div>

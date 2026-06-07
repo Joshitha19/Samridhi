@@ -121,6 +121,11 @@ function App() {
   const [upiLinked, setUpiLinked] = useState(true);
   const [upiVerified, setUpiVerified] = useState(false);
 
+  // KYC Camera & Statement Upload states
+  const [kycCameraVerified, setKycCameraVerified] = useState(false);
+  const [bankStatementUploaded, setBankStatementUploaded] = useState(false);
+  const [voiceNavigationActive, setVoiceNavigationActive] = useState(false);
+
   // What-If score parameters state (in My Score Tab)
   const [whatIfRepayActive, setWhatIfRepayActive] = useState(false);
   const [whatIfLinkGithub, setWhatIfLinkGithub] = useState(false);
@@ -136,12 +141,72 @@ function App() {
       upiVerified,
       skills: dashboardState.skills,
       inventory: dashboardState.inventory,
+      kycCameraVerified,
+      bankStatementUploaded,
       whatIfRepayActive,
       whatIfLinkGithub,
       whatIfNewCert,
       whatIfConsistentUpi
     });
-  }, [user, aadhaarVerified, panVerified, upiLinked, upiVerified, dashboardState.skills, dashboardState.inventory, whatIfRepayActive, whatIfLinkGithub, whatIfNewCert, whatIfConsistentUpi]);
+  }, [user, aadhaarVerified, panVerified, upiLinked, upiVerified, dashboardState.skills, dashboardState.inventory, kycCameraVerified, bankStatementUploaded, whatIfRepayActive, whatIfLinkGithub, whatIfNewCert, whatIfConsistentUpi]);
+
+  // Voice Navigation Continuous Speech recognition listener
+  useEffect(() => {
+    if (!voiceNavigationActive) return;
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      console.warn("Speech recognition not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = 'en-IN';
+
+    recognition.onresult = (event) => {
+      const last = event.results.length - 1;
+      const command = event.results[last][0].transcript.trim().toLowerCase();
+      console.log("Voice command: ", command);
+
+      if (command.includes('go to my score') || command.includes('go to score') || command.includes('show my score')) {
+        setActiveTab('score');
+      } else if (command.includes('show recommendations') || command.includes('loan recommendations') || command.includes('recommendations')) {
+        setActiveTab('recommendations');
+      } else if (command.includes('apply for loan') || command.includes('apply loan') || command.includes('apply for a loan')) {
+        setActiveTab('apply');
+      } else if (command.includes('what is my score') || command.includes('check my score') || command.includes('my score')) {
+        const msg = new SpeechSynthesisUtterance();
+        msg.text = `Your current credibility index score is ${calculatedScore} points, indicating a low risk profile.`;
+        msg.volume = 1;
+        msg.rate = 0.9;
+        msg.pitch = 1;
+        window.speechSynthesis.speak(msg);
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error: ", event.error);
+    };
+
+    recognition.onend = () => {
+      if (voiceNavigationActive) {
+        try { recognition.start(); } catch (e) {}
+      }
+    };
+
+    try {
+      recognition.start();
+    } catch (e) {
+      console.error(e);
+    }
+
+    return () => {
+      recognition.onend = null;
+      try { recognition.stop(); } catch (e) {}
+    };
+  }, [voiceNavigationActive, calculatedScore]);
 
   // Custom dbDispatch interceptor to sync state transitions with Supabase
   const dbDispatch = (action) => {
@@ -631,6 +696,12 @@ function App() {
             setUpiLinked={handleSetUpiLinked}
             upiVerified={upiVerified}
             setUpiVerified={handleSetUpiVerified}
+            kycCameraVerified={kycCameraVerified}
+            setKycCameraVerified={setKycCameraVerified}
+            bankStatementUploaded={bankStatementUploaded}
+            setBankStatementUploaded={setBankStatementUploaded}
+            voiceNavigationActive={voiceNavigationActive}
+            setVoiceNavigationActive={setVoiceNavigationActive}
             whatIfRepayActive={whatIfRepayActive}
             setWhatIfRepayActive={setWhatIfRepayActive}
             whatIfLinkGithub={whatIfLinkGithub}

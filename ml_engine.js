@@ -9,6 +9,8 @@ window.calculateCredibilityScore = (user, metrics) => {
     upiVerified = false,
     skills = [],
     inventory = [],
+    kycCameraVerified = false,
+    bankStatementUploaded = false,
     whatIfRepayActive = false,
     whatIfLinkGithub = false,
     whatIfNewCert = false,
@@ -40,6 +42,10 @@ window.calculateCredibilityScore = (user, metrics) => {
   if (inventory && inventory.length > 0) {
     score += 10;
   }
+
+  // KYC Camera Verification & Bank Statement Upload Points
+  if (kycCameraVerified) score += 8;
+  if (bankStatementUploaded) score += 7;
 
   // Live simulation What-If points (behavioral predictions)
   if (whatIfRepayActive) score += 6;

@@ -11,9 +11,11 @@ window.DashboardProfileTab = ({
   panVerified,
   setPanVerified,
   upiLinked,
-  setUpiLinked
+  setUpiLinked,
+  kycCameraVerified,
+  setKycCameraVerified
 }) => {
-  const { useState } = React;
+  const { useState, useEffect, useRef } = React;
   
   // Local state for inline certification form
   const [showAddForm, setShowAddForm] = useState(false);
@@ -39,6 +41,140 @@ window.DashboardProfileTab = ({
   const [editIncome, setEditIncome] = useState(45000);
   const [editLocation, setEditLocation] = useState('Bangalore, India');
 
+  // KYC webcam flow states
+  const [kycStep, setKycStep] = useState('idle'); // 'idle' | 'camera' | 'ocr' | 'completed'
+  const [instruction, setInstruction] = useState('');
+  const [ocrText, setOcrText] = useState({ number: '', name: '', dob: '', address: '' });
+  const [capturedImage, setCapturedImage] = useState(null);
+  
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const streamRef = useRef(null);
+
+  const startKycFlow = async () => {
+    setKycStep('camera');
+    setInstruction('Position your face in the frame');
+    setOcrText({ number: '', name: '', dob: '', address: '' });
+    setCapturedImage(null);
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 300, height: 200 } });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      console.error("Camera access failed: ", err);
+      setInstruction('Camera access denied. Please allow webcam permissions.');
+    }
+  };
+
+  // Handle liveness 3s sequencing
+  useEffect(() => {
+    if (kycStep !== 'camera') return;
+
+    // Timer 1: Transition instruction to "Hold still..." at 1s
+    const t1 = setTimeout(() => {
+      setInstruction('Hold still...');
+    }, 1200);
+
+    // Timer 2: Transition instruction to "Face Detected" at 2.4s
+    const t2 = setTimeout(() => {
+      setInstruction('Face Detected');
+    }, 2400);
+
+    // Timer 3: Capture and freeze at 3.2s
+    const t3 = setTimeout(() => {
+      captureSnapshot();
+    }, 3200);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [kycStep]);
+
+  const captureSnapshot = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (video && canvas) {
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      setCapturedImage(canvas.toDataURL('image/png'));
+      
+      // Stop stream tracks
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+      
+      setKycStep('ocr');
+      startOcrTypewriter();
+    }
+  };
+
+  const startOcrTypewriter = () => {
+    const data = {
+      number: "XXXX XXXX 8742",
+      name: "Arjun Sharma",
+      dob: "15/08/1998",
+      address: "Hyderabad, Telangana"
+    };
+
+    let curField = 'number';
+    let charIndex = 0;
+    
+    const interval = setInterval(() => {
+      if (curField === 'number') {
+        if (charIndex < data.number.length) {
+          setOcrText(prev => ({ ...prev, number: prev.number + data.number[charIndex] }));
+          charIndex++;
+        } else {
+          curField = 'name';
+          charIndex = 0;
+        }
+      } else if (curField === 'name') {
+        if (charIndex < data.name.length) {
+          setOcrText(prev => ({ ...prev, name: prev.name + data.name[charIndex] }));
+          charIndex++;
+        } else {
+          curField = 'dob';
+          charIndex = 0;
+        }
+      } else if (curField === 'dob') {
+        if (charIndex < data.dob.length) {
+          setOcrText(prev => ({ ...prev, dob: prev.dob + data.dob[charIndex] }));
+          charIndex++;
+        } else {
+          curField = 'address';
+          charIndex = 0;
+        }
+      } else if (curField === 'address') {
+        if (charIndex < data.address.length) {
+          setOcrText(prev => ({ ...prev, address: prev.address + data.address[charIndex] }));
+          charIndex++;
+        } else {
+          clearInterval(interval);
+          completeKyc();
+        }
+      }
+    }, 45); // Typewriter speed
+  };
+
+  const completeKyc = () => {
+    setKycStep('completed');
+    setKycCameraVerified(true);
+    dispatch({
+      type: 'ADD_NOTIFICATION',
+      payload: {
+        id: `n-kyc-${Date.now()}`,
+        text: "Identity verified successfully via Liveness Face ID. Credibility score raised (+8 points).",
+        read: false,
+        date: "Just now"
+      }
+    });
+  };
+
   const handleAddCertSubmit = (e) => {
     e.preventDefault();
     if (!certName || !issuingBody) return;
@@ -63,7 +199,6 @@ window.DashboardProfileTab = ({
       }
     });
 
-    // Reset
     setCertName('');
     setIssuingBody('');
     setShowAddForm(false);
@@ -77,9 +212,30 @@ window.DashboardProfileTab = ({
     setIsEditing(false);
   };
 
+  // Clean up media stream if user closes or switches tab
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-fade-in text-xs">
       
+      {/* CSS Scanner Animations */}
+      <style>{`
+        @keyframes scanline {
+          0% { top: 0%; }
+          50% { top: 100%; }
+          100% { top: 0%; }
+        }
+        .animate-scan {
+          animation: scanline 2s linear infinite;
+        }
+      `}</style>
+
       {/* PROFILE HEADER CARD */}
       <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl shadow-lg relative">
         {/* Edit Profile / Save button */}
@@ -105,23 +261,42 @@ window.DashboardProfileTab = ({
         </div>
 
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-          {/* Avatar (80px Gradient) */}
-          <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center font-black text-2xl text-samridhi-bg shadow-lg">
-            {user.name ? user.name[0] : 'U'}
+          {/* Avatar (80px Gradient) with verification indicator */}
+          <div className="relative">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center font-black text-2xl text-samridhi-bg shadow-lg">
+              {user.name ? user.name[0] : 'U'}
+            </div>
+            {kycCameraVerified && (
+              <div className="absolute -bottom-1 -right-1 bg-samridhi-success border-2 border-samridhi-card p-1 rounded-full text-white" title="Liveness KYC Verified">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            )}
           </div>
 
           <div className="text-center sm:text-left space-y-2 flex-1 w-full">
             <div>
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value.toUpperCase())}
-                  className="bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary font-extrabold text-lg px-2.5 py-1 rounded focus:border-samridhi-primary focus:outline-none"
-                />
-              ) : (
-                <h2 className="text-lg font-black text-samridhi-textPrimary">{user.name}</h2>
-              )}
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value.toUpperCase())}
+                    className="bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary font-extrabold text-lg px-2.5 py-1 rounded focus:border-samridhi-primary focus:outline-none"
+                  />
+                ) : (
+                  <h2 className="text-lg font-black text-samridhi-textPrimary">{user.name}</h2>
+                )}
+                {kycCameraVerified && (
+                  <span className="inline-flex items-center space-x-0.5 px-2 py-0.5 bg-samridhi-success/15 border border-samridhi-success/35 text-samridhi-success rounded text-[9px] font-black uppercase">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Identity Verified</span>
+                  </span>
+                )}
+              </div>
               
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-1">
                 <span className="text-[10px] text-samridhi-textMuted font-bold">{user.email}</span>
@@ -177,6 +352,301 @@ window.DashboardProfileTab = ({
         </div>
       </div>
 
+      {/* KYC DEVICE CAMERA VERIFICATION CARD */}
+      <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl shadow-lg space-y-4">
+        <div className="border-b border-samridhi-border/40 pb-3">
+          <h3 className="text-sm font-extrabold text-samridhi-textPrimary uppercase tracking-wider">
+            Liveness KYC Camera Authentication
+          </h3>
+          <p className="text-[10px] text-samridhi-textMuted mt-0.5">
+            Use your device camera to pass liveness checks and unlock +8 credibility points.
+          </p>
+        </div>
+
+        {kycStep === 'idle' && (
+          <div className="flex flex-col items-center justify-center p-6 bg-samridhi-surface/40 border border-dashed border-samridhi-border rounded-xl text-center space-y-4">
+            {kycCameraVerified ? (
+              <div className="space-y-2 py-4">
+                <div className="w-12 h-12 rounded-full bg-samridhi-success/15 border border-samridhi-success/35 text-samridhi-success flex items-center justify-center mx-auto">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h4 className="font-extrabold text-sm text-samridhi-textPrimary">Liveness Check: PASSED</h4>
+                <p className="text-[10px] text-samridhi-textMuted max-w-sm">Identity authenticated via facial features. Mock Aadhaar data linked and verified.</p>
+                <div className="pt-2">
+                  <span className="px-3.5 py-1 rounded bg-samridhi-success/10 border border-samridhi-success/30 text-samridhi-success font-black tracking-widest text-[9px]">
+                    +8 CREDIBILITY POINTS ACTIVE
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="w-12 h-12 rounded-full bg-samridhi-primary/10 flex items-center justify-center mx-auto text-samridhi-primary">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="font-bold text-xs text-samridhi-textPrimary">Begin Identity Verification</h4>
+                  <p className="text-[10px] text-samridhi-textMuted max-w-xs leading-normal mt-0.5">Please ensure you are in a well-lit area before starting video parsing.</p>
+                </div>
+                <button
+                  onClick={startKycFlow}
+                  className="px-5 py-2.5 bg-samridhi-primary hover:bg-samridhi-primary/95 text-white font-extrabold rounded-xl shadow-md transition-colors"
+                >
+                  Verify Identity
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {kycStep === 'camera' && (
+          <div className="flex flex-col items-center justify-center space-y-4">
+            {/* Webcam card container */}
+            <div className="relative w-80 h-52 bg-black rounded-2xl border-2 border-samridhi-border overflow-hidden">
+              <video 
+                ref={videoRef}
+                autoPlay 
+                playsInline 
+                muted
+                className="w-full h-full object-cover"
+              />
+              
+              {/* Corner brackets overlay */}
+              <div className="absolute inset-6 border-2 border-transparent pointer-events-none">
+                <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-samridhi-secondary"></div>
+                <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-samridhi-secondary"></div>
+                <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-samridhi-secondary"></div>
+                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-samridhi-secondary"></div>
+              </div>
+
+              {/* Cyan scanning line */}
+              <div className="absolute left-6 right-6 h-0.5 bg-samridhi-secondary opacity-80 animate-scan pointer-events-none"></div>
+            </div>
+
+            <div className="flex flex-col items-center space-y-1.5">
+              <span className="text-xs font-bold text-samridhi-textPrimary uppercase tracking-wider">{instruction}</span>
+              <div className="flex items-center space-x-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-samridhi-secondary animate-ping"></div>
+                <span className="text-[10px] text-samridhi-textMuted font-bold">Scanning facial geometry...</span>
+              </div>
+            </div>
+            
+            <canvas ref={canvasRef} width="300" height="200" className="hidden" />
+          </div>
+        )}
+
+        {kycStep === 'ocr' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+            {/* Frozen frame snapshot */}
+            <div className="flex flex-col items-center space-y-3">
+              <div className="relative w-72 h-48 rounded-xl overflow-hidden border border-samridhi-success/50">
+                <img src={capturedImage} alt="Snapshot" className="w-full h-full object-cover opacity-80" />
+                <div className="absolute inset-0 bg-samridhi-success/5 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-samridhi-success border-2 border-white flex items-center justify-center text-white shadow-xl animate-bounce">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <span className="text-[10px] font-black uppercase text-samridhi-success tracking-widest bg-samridhi-success/15 px-2.5 py-0.5 rounded">
+                Liveness Check: PASSED
+              </span>
+            </div>
+
+            {/* Typewritten mock Aadhaar values */}
+            <div className="bg-samridhi-surface/70 border border-samridhi-border p-4.5 rounded-xl space-y-3 text-[10px] font-mono leading-relaxed">
+              <h4 className="font-extrabold text-[9px] text-samridhi-textMuted uppercase font-sans tracking-wider border-b border-samridhi-border/40 pb-1.5 mb-2.5">
+                OCR Document Extraction
+              </h4>
+              <div>
+                <span className="text-samridhi-textMuted block font-sans">Aadhaar Card:</span>
+                <span className="text-samridhi-secondary font-bold font-mono">{ocrText.number || ' '}</span>
+              </div>
+              <div>
+                <span className="text-samridhi-textMuted block font-sans">Full Name:</span>
+                <span className="text-samridhi-textPrimary font-bold">{ocrText.name || ' '}</span>
+              </div>
+              <div>
+                <span className="text-samridhi-textMuted block font-sans">Date of Birth:</span>
+                <span className="text-samridhi-textPrimary font-bold">{ocrText.dob || ' '}</span>
+              </div>
+              <div>
+                <span className="text-samridhi-textMuted block font-sans">Address:</span>
+                <span className="text-samridhi-textPrimary font-bold">{ocrText.address || ' '}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {kycStep === 'completed' && (
+          <div className="py-6 flex flex-col items-center justify-center space-y-4 text-center animate-fade-in">
+            <div className="w-14 h-14 rounded-full bg-samridhi-success/15 border border-samridhi-success/45 text-samridhi-success flex items-center justify-center shadow-lg shadow-samridhi-success/10 animate-bounce">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            
+            <div className="space-y-1">
+              <h4 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider">KYC Verification complete</h4>
+              <p className="text-[10px] text-samridhi-textMuted max-w-sm">Facial liveness score and Aadhaar card successfully linked. Rating updated permanently.</p>
+            </div>
+
+            <div className="bg-samridhi-surface/50 border border-samridhi-border p-4.5 rounded-xl w-full max-w-sm text-left grid grid-cols-2 gap-x-4 gap-y-2">
+              <div>
+                <span className="text-samridhi-textMuted block text-[9px] uppercase font-sans">Document ID</span>
+                <span className="font-bold font-mono text-samridhi-textPrimary">XXXX XXXX 8742</span>
+              </div>
+              <div>
+                <span className="text-samridhi-textMuted block text-[9px] uppercase font-sans">Cardholder</span>
+                <span className="font-bold text-samridhi-textPrimary">Arjun Sharma</span>
+              </div>
+              <div>
+                <span className="text-samridhi-textMuted block text-[9px] uppercase font-sans">DOB</span>
+                <span className="font-bold text-samridhi-textPrimary">15/08/1998</span>
+              </div>
+              <div>
+                <span className="text-samridhi-textMuted block text-[9px] uppercase font-sans">State</span>
+                <span className="font-bold text-samridhi-textPrimary">Telangana</span>
+              </div>
+            </div>
+
+            <div className="pt-2 space-y-2">
+              <span className="block px-3.5 py-1.5 rounded-lg bg-samridhi-success/10 border border-samridhi-success/35 text-samridhi-success font-black text-[10px]">
+                KYC Score: +8 credibility points added!
+              </span>
+              <button 
+                onClick={() => setKycStep('idle')}
+                className="text-[10px] font-bold text-samridhi-textMuted hover:text-samridhi-textPrimary underline uppercase block pt-1.5"
+              >
+                Reset Verification
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Gov ID Integrations Checklist */}
+      <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl shadow-lg space-y-6">
+        <h3 className="text-sm font-extrabold text-samridhi-textPrimary uppercase tracking-wider border-b border-samridhi-border/40 pb-3">
+          Profile Credentials & KYC Registry
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Personal info form */}
+          <div className="space-y-4 text-xs">
+            <div>
+              <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1">Full Name</label>
+              <input
+                type="text"
+                value={user.name}
+                onChange={(e) => setUser({ ...user, name: e.target.value.toUpperCase() })}
+                className="w-full bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary rounded-lg p-2.5 focus:border-samridhi-primary focus:outline-none font-bold"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1">Email Address</label>
+              <input
+                type="email"
+                value={user.email}
+                disabled
+                className="w-full bg-samridhi-bg border border-samridhi-border text-samridhi-textMuted rounded-lg p-2.5 cursor-not-allowed opacity-60 font-semibold"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1">Earning Profile Sector</label>
+              <select
+                value={user.type}
+                onChange={(e) => setUser({ ...user, type: e.target.value })}
+                className="w-full bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary rounded-lg p-2.5 focus:border-samridhi-primary focus:outline-none font-bold"
+              >
+                <option value="Salaried">Salaried Employee</option>
+                <option value="Freelancer">Freelancer / Gig Contractor</option>
+                <option value="Student">Student (Vocational/Tech)</option>
+                <option value="Entrepreneur">Micro-Entrepreneur / Merchant</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1">Linked UPI ID (VPA)</label>
+              <input
+                type="text"
+                value={user.upiVpa || ''}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setUser({ ...user, upiVpa: val });
+                  setUpiLinked(val.trim() !== '');
+                }}
+                placeholder="e.g. yourname@okaxis"
+                className="w-full bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary rounded-lg p-2.5 focus:border-samridhi-primary focus:outline-none font-bold"
+              />
+            </div>
+          </div>
+
+          {/* KYC Checklist */}
+          <div className="space-y-4">
+            <h4 className="font-bold text-xs text-samridhi-textPrimary uppercase tracking-wider border-b border-samridhi-border/40 pb-2.5">
+              Gov ID Integrations
+            </h4>
+            
+            <div className="space-y-3.5 pt-1">
+              {/* Aadhaar checkbox */}
+              <label className="flex items-center justify-between p-3 bg-samridhi-surface border border-samridhi-border/60 rounded-xl cursor-pointer hover:border-samridhi-border transition-colors">
+                <div className="flex items-center space-x-2.5">
+                  <input
+                    type="checkbox"
+                    checked={aadhaarVerified}
+                    onChange={(e) => setAadhaarVerified(e.target.checked)}
+                    className="rounded text-samridhi-primary border-samridhi-border focus:ring-samridhi-primary bg-samridhi-bg"
+                  />
+                  <span className="text-xs font-bold text-samridhi-textPrimary">Aadhaar Registry Sync</span>
+                </div>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${aadhaarVerified ? 'bg-samridhi-success/10 text-samridhi-success' : 'bg-samridhi-border text-samridhi-textMuted'}`}>
+                  {aadhaarVerified ? 'Verified (+4)' : 'Unlinked'}
+                </span>
+              </label>
+
+              {/* PAN */}
+              <label className="flex items-center justify-between p-3 bg-samridhi-surface border border-samridhi-border/60 rounded-xl cursor-pointer hover:border-samridhi-border transition-colors">
+                <div className="flex items-center space-x-2.5">
+                  <input
+                    type="checkbox"
+                    checked={panVerified}
+                    onChange={(e) => setPanVerified(e.target.checked)}
+                    className="rounded text-samridhi-primary border-samridhi-border focus:ring-samridhi-primary bg-samridhi-bg"
+                  />
+                  <span className="text-xs font-bold text-samridhi-textPrimary">PAN Registry Match</span>
+                </div>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${panVerified ? 'bg-samridhi-success/10 text-samridhi-success' : 'bg-samridhi-border text-samridhi-textMuted'}`}>
+                  {panVerified ? 'Verified (+3)' : 'Unlinked'}
+                </span>
+              </label>
+
+              {/* UPI */}
+              <label className="flex items-center justify-between p-3 bg-samridhi-surface border border-samridhi-border/60 rounded-xl cursor-pointer hover:border-samridhi-border transition-colors">
+                <div className="flex items-center space-x-2.5">
+                  <input
+                    type="checkbox"
+                    checked={upiLinked}
+                    onChange={(e) => setUpiLinked(e.target.checked)}
+                    className="rounded text-samridhi-primary border-samridhi-border focus:ring-samridhi-primary bg-samridhi-bg"
+                  />
+                  <span className="text-xs font-bold text-samridhi-textPrimary">UPI Aggregator Sync</span>
+                </div>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${upiLinked ? 'bg-samridhi-success/10 text-samridhi-success' : 'bg-samridhi-border text-samridhi-textMuted'}`}>
+                  {upiLinked ? 'Synced (+10)' : 'Disconnected'}
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* SKILLS & CERTIFICATIONS CARD */}
       <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl shadow-lg space-y-4">
         <div>
@@ -189,7 +659,6 @@ window.DashboardProfileTab = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Skill List */}
           {dashboardState.skills.map((skill) => (
             <div key={skill.id} className="bg-samridhi-surface border border-samridhi-border p-4 rounded-xl flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -204,7 +673,7 @@ window.DashboardProfileTab = ({
                 </div>
               </div>
               <div className="text-[9px] font-black text-samridhi-success uppercase flex items-center space-x-0.5 shrink-0 bg-samridhi-success/5 border border-samridhi-success/20 px-2 py-0.5 rounded-md">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5 animate-pulse" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
                 <span>Verified</span>
@@ -212,7 +681,6 @@ window.DashboardProfileTab = ({
             </div>
           ))}
 
-          {/* Add Certification Card (Dashed) */}
           {showAddForm ? (
             <form onSubmit={handleAddCertSubmit} className="bg-samridhi-surface border-2 border-dashed border-samridhi-primary/40 p-4 rounded-xl space-y-3">
               <div className="grid grid-cols-2 gap-2">
@@ -221,7 +689,7 @@ window.DashboardProfileTab = ({
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Google Cloud Practitioner"
+                    placeholder="e.g. Google UX Certificate"
                     value={certName}
                     onChange={(e) => setCertName(e.target.value)}
                     className="w-full bg-samridhi-bg border border-samridhi-border rounded p-1.5 focus:border-samridhi-primary focus:outline-none font-bold text-[10px]"
@@ -257,7 +725,7 @@ window.DashboardProfileTab = ({
                   <label className="block text-[9px] font-bold text-samridhi-textMuted uppercase mb-0.5">Upload File</label>
                   <input
                     type="file"
-                    className="w-full text-[9px] text-samridhi-textMuted file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[9px] file:font-bold file:bg-samridhi-border file:text-samridhi-textPrimary cursor-pointer focus:outline-none"
+                    className="w-full text-[9px] text-samridhi-textMuted file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[9px] file:font-bold file:bg-samridhi-border file:text-samridhi-textPrimary cursor-pointer focus:outline-none font-bold"
                   />
                 </div>
               </div>

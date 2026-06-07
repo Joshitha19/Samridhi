@@ -21,6 +21,12 @@ window.DashboardView = ({
   setUpiLinked,
   upiVerified,
   setUpiVerified,
+  kycCameraVerified,
+  setKycCameraVerified,
+  bankStatementUploaded,
+  setBankStatementUploaded,
+  voiceNavigationActive,
+  setVoiceNavigationActive,
   whatIfRepayActive,
   setWhatIfRepayActive,
   whatIfLinkGithub,
@@ -51,7 +57,7 @@ window.DashboardView = ({
     const query = text.toLowerCase();
     
     if (query.includes('score') || query.includes('rating') || query.includes('credit')) {
-      return `Your current score is 72/100 (LOW RISK). This alternative rating is based on your monthly income of ₹45,000, 4 verified skill credentials, and 38 UPI transactions this month. Pay utility bills via UPI and maintain credit age to boost it further.`;
+      return `Your current score is ${calculatedScore}/100 (LOW RISK). This alternative rating is based on your monthly income of ₹45,000, 4 verified skill credentials, and 38 UPI transactions this month. Pay utility bills via UPI and maintain credit age to boost it further.`;
     }
     if (query.includes('improve') || query.includes('increase') || query.includes('boost') || query.includes('raise')) {
       return `To improve your score: 1. Add 2 more verified skills certificates (+6 points). 2. Pay monthly utility and electricity bills via UPI (+4 points). 3. Accumulate 6 more months of transactional history (+3 points). Each action will automatically rebuild your underwriting profile.`;
@@ -69,7 +75,7 @@ window.DashboardView = ({
       return `You have 4 verified credentials (Python, Data Analysis, AWS, Freelancing) active on your profile. Adding 2 more verified certs increases your Skill Credibility Index by +6 score points.`;
     }
     
-    return `Hello! I am Samridhi AI, your financial underwriting assistant. Your score is 72/100 (LOW RISK), with ₹45,000/mo income and 4 verified skills. Ask me how to improve your score, check loan eligibility, or view interest rates.`;
+    return `Hello! I am Samridhi AI, your financial underwriting assistant. Your score is ${calculatedScore}/100 (LOW RISK), with ₹45,000/mo income and 4 verified skills. Ask me how to improve your score, check loan eligibility, or view interest rates.`;
   };
 
   const handleSendMessage = (e) => {
@@ -176,6 +182,20 @@ window.DashboardView = ({
           {/* Notification bell and utilities */}
           <div className="flex items-center space-x-4 relative">
             
+            {/* Voice Control Toggle */}
+            <div className="flex items-center space-x-2 bg-samridhi-card border border-samridhi-border px-3 py-1.5 rounded-xl">
+              <span className="text-[9px] uppercase font-bold text-samridhi-textMuted tracking-wider">Voice Control</span>
+              <button
+                onClick={() => setVoiceNavigationActive(!voiceNavigationActive)}
+                className={`w-8 h-4.5 rounded-full p-0.5 transition-colors relative focus:outline-none ${
+                  voiceNavigationActive ? 'bg-samridhi-primary' : 'bg-samridhi-border'
+                }`}
+                title="Toggle continuous voice commands navigation"
+              >
+                <div className={`w-3.5 h-3.5 rounded-full bg-white transition-transform transform ${voiceNavigationActive ? 'translate-x-3.5' : 'translate-x-0'}`}></div>
+              </button>
+            </div>
+
             {/* Score summary on header */}
             <div className="hidden sm:flex items-center space-x-2 bg-samridhi-card border border-samridhi-border px-3.5 py-1.5 rounded-xl">
               <span className="text-[10px] uppercase font-bold text-samridhi-textMuted tracking-wider">Index score</span>
@@ -296,7 +316,13 @@ window.DashboardView = ({
 
           {/* TAB 4: TRANSACTION ANALYSIS */}
           {activeTab === 'transactions' && (
-            <DashboardTransactionsTab dashboardState={dashboardState} />
+            <DashboardTransactionsTab 
+              dashboardState={dashboardState} 
+              dispatch={dispatch}
+              bankStatementUploaded={bankStatementUploaded}
+              setBankStatementUploaded={setBankStatementUploaded}
+              calculatedScore={calculatedScore}
+            />
           )}
 
           {/* TAB: ASSET & INVENTORY LEDGER */}
@@ -331,6 +357,8 @@ window.DashboardView = ({
               setPanVerified={setPanVerified}
               upiLinked={upiLinked}
               setUpiLinked={setUpiLinked}
+              kycCameraVerified={kycCameraVerified}
+              setKycCameraVerified={setKycCameraVerified}
             />
           )}
 

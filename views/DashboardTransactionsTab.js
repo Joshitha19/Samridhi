@@ -685,29 +685,41 @@ window.DashboardTransactionsTab = ({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         
         {/* Stat 1 */}
-        <div className="bg-samridhi-card border border-samridhi-border p-4.5 rounded-2xl flex flex-col justify-between shadow-lg hover-glow-green">
-          <span className="text-[10px] font-bold text-samridhi-textMuted uppercase tracking-wider block">Total Transactions</span>
-          <div className="flex items-baseline justify-between mt-2">
-            <span className="text-xl font-black text-samridhi-textPrimary">{stats.count}</span>
-            <span className="text-[9px] font-bold text-samridhi-textMuted uppercase">This Month</span>
+        <div className="bg-samridhi-card border border-samridhi-border p-5 rounded-2xl flex flex-col justify-between shadow-lg hover-glow-green min-h-[115px]">
+          <div className="flex flex-col space-y-1.5">
+            <span className="text-[10px] font-extrabold text-samridhi-textMuted uppercase tracking-wider block">Total Transactions</span>
+            <span className="text-2xl font-black text-white font-mono leading-none">{stats.count}</span>
+          </div>
+          <div className="mt-3.5 flex">
+            <span className="text-[9px] font-extrabold text-samridhi-textMuted uppercase tracking-wider leading-none px-2 py-1 bg-samridhi-surface border border-samridhi-border rounded-md select-none">
+              This Month
+            </span>
           </div>
         </div>
 
         {/* Stat 2 */}
-        <div className="bg-samridhi-card border border-samridhi-border p-4.5 rounded-2xl flex flex-col justify-between shadow-lg hover-glow-green">
-          <span className="text-[10px] font-bold text-samridhi-textMuted uppercase tracking-wider block">Total Credited</span>
-          <div className="flex items-baseline justify-between mt-2">
-            <span className="text-xl font-black text-samridhi-success">₹{stats.credited.toLocaleString()}</span>
-            <span className="text-[9px] font-bold text-samridhi-success uppercase">Active Inflow</span>
+        <div className="bg-samridhi-card border border-samridhi-border p-5 rounded-2xl flex flex-col justify-between shadow-lg hover-glow-green min-h-[115px]">
+          <div className="flex flex-col space-y-1.5">
+            <span className="text-[10px] font-extrabold text-samridhi-textMuted uppercase tracking-wider block">Total Credited</span>
+            <span className="text-2xl font-black text-samridhi-success font-mono leading-none">₹{stats.credited.toLocaleString()}</span>
+          </div>
+          <div className="mt-3.5 flex">
+            <span className="text-[9px] font-extrabold text-samridhi-success uppercase tracking-wider leading-none px-2 py-1 bg-samridhi-success/10 border border-samridhi-success/20 rounded-md select-none">
+              Active Inflow
+            </span>
           </div>
         </div>
 
         {/* Stat 3 */}
-        <div className="bg-samridhi-card border border-samridhi-border p-4.5 rounded-2xl flex flex-col justify-between shadow-lg hover-glow-green">
-          <span className="text-[10px] font-bold text-samridhi-textMuted uppercase tracking-wider block">Total Debited</span>
-          <div className="flex items-baseline justify-between mt-2">
-            <span className="text-xl font-black text-samridhi-danger">₹{stats.debited.toLocaleString()}</span>
-            <span className="text-[9px] font-bold text-samridhi-danger uppercase">Outflow</span>
+        <div className="bg-samridhi-card border border-samridhi-border p-5 rounded-2xl flex flex-col justify-between shadow-lg hover-glow-green min-h-[115px]">
+          <div className="flex flex-col space-y-1.5">
+            <span className="text-[10px] font-extrabold text-samridhi-textMuted uppercase tracking-wider block">Total Debited</span>
+            <span className="text-2xl font-black text-samridhi-danger font-mono leading-none">₹{stats.debited.toLocaleString()}</span>
+          </div>
+          <div className="mt-3.5 flex">
+            <span className="text-[9px] font-extrabold text-samridhi-danger uppercase tracking-wider leading-none px-2 py-1 bg-samridhi-danger/10 border border-samridhi-danger/20 rounded-md select-none">
+              Outflow
+            </span>
           </div>
         </div>
 

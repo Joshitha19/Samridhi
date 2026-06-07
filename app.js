@@ -209,6 +209,11 @@ function dashboardReducer(state, action) {
         skills: action.payload.skills || [],
         inventory: action.payload.inventory || []
       };
+    case 'SET_LOANS':
+      return {
+        ...state,
+        loans: action.payload || []
+      };
     case 'RESET_STATE':
       return REDUCER_INITIAL_STATE;
     default:
@@ -327,6 +332,33 @@ function App() {
       try { recognition.stop(); } catch (e) {}
     };
   }, [voiceNavigationActive, calculatedScore]);
+
+  // Real-time synchronization polling for customers (every 5 seconds)
+  useEffect(() => {
+    if (!user || user.type === 'Banker' || !supabaseClient) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+        if (profile) {
+          setAadhaarVerified(profile.aadhaar_verified);
+          setPanVerified(profile.pan_verified);
+          setUpiVerified(profile.upi_verified);
+        }
+        const { data: loans } = await supabaseClient.from('loans').select('*').eq('user_id', user.id).order('date', { ascending: false });
+        if (loans) {
+          dispatch({
+            type: 'SET_LOANS',
+            payload: loans.map(l => ({ id: l.id, lender: l.lender, amount: parseFloat(l.amount), rate: l.rate, emi: l.emi, status: l.status, date: l.date }))
+          });
+        }
+      } catch (e) {
+        console.warn("Real-time customer polling sync error: ", e);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [user]);
 
   // Custom dbDispatch interceptor to sync state transitions with Supabase
   const dbDispatch = (action) => {
@@ -447,14 +479,18 @@ function App() {
 
       let activeProfile = profile;
       if (!activeProfile) {
+        const { data: { user: authUser } } = await supabaseClient.auth.getUser();
+        const meta = authUser?.user_metadata || {};
+        
         const emailPrefix = userEmail ? userEmail.split('@')[0] : 'user';
         const { data: newProfile, error: createErr } = await supabaseClient
           .from('profiles')
           .insert({
             id: userId,
-            name: emailPrefix.toUpperCase(),
+            name: meta.name || emailPrefix.toUpperCase(),
             email: userEmail || 'user@samridhi.in',
-            type: 'Freelancer'
+            type: meta.type || 'Freelancer',
+            upi_vpa: meta.upi_vpa || ''
           })
           .select()
           .single();
@@ -463,6 +499,21 @@ function App() {
       }
 
       if (activeProfile) {
+        if (activeProfile.type === 'Banker') {
+          const { data: { user: authUser } } = await supabaseClient.auth.getUser();
+          const meta = authUser?.user_metadata || {};
+          setUser({
+            id: userId,
+            name: activeProfile.name,
+            email: activeProfile.email,
+            type: 'Banker',
+            bankName: meta.bankName || 'State Bank of India',
+            upiVpa: ''
+          });
+          setPage('banker-dashboard');
+          return;
+        }
+
         setUser({
           id: userId,
           name: activeProfile.name,
@@ -701,6 +752,59 @@ function App() {
     }
   };
 
+  // Handle banker sign in
+  const handleBankerSignIn = async (email, password) => {
+    if (supabaseClient) {
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+      if (error) {
+        alert("Banker Sign In Failed: " + error.message);
+        return;
+      }
+    } else {
+      // Sandbox fallback
+      if (email === 'banker@samridhi.in') {
+        setUser({
+          id: 'mock-banker-123',
+          name: 'SBI BANKER',
+          email: email,
+          type: 'Banker',
+          bankName: 'State Bank of India'
+        });
+        setPage('banker-dashboard');
+      } else {
+        alert("Sandbox banker demo email is banker@samridhi.in / password123");
+      }
+    }
+  };
+
+  // Handle banker sign up
+  const handleBankerSignUp = async (name, email, bankName, password) => {
+    if (supabaseClient) {
+      const { data, error } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: name,
+            type: 'Banker',
+            bankName: bankName
+          }
+        }
+      });
+      if (error) {
+        alert("Banker Registration Failed: " + error.message);
+        return;
+      }
+      alert("Banker Registration Successful! You can sign in now.");
+      setPage('banker-login');
+    } else {
+      alert("Supabase is required to register new Bankers. Try One-Click Banker Demo Login.");
+    }
+  };
+
   // Smooth scroll triggers for landing page
   const scrollToSection = (id) => {
     if (page !== 'landing') {
@@ -722,7 +826,7 @@ function App() {
   return (
     <div className="min-h-screen flex flex-col selection:bg-samridhi-primary/30 selection:text-samridhi-textPrimary bg-grid-glow">
       {/* STICKY NAVBAR */}
-      {page !== 'dashboard' && (
+      {page !== 'dashboard' && page !== 'banker-dashboard' && (
         <header className="sticky top-0 z-50 w-full bg-samridhi-bg/85 border-b border-samridhi-border blur-nav">
           <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             {/* Logo */}
@@ -800,6 +904,19 @@ function App() {
             onSignUp={handleSignUp} 
           />
         )}
+        {page === 'banker-login' && (
+          <BankerPortalView 
+            setPage={setPage} 
+            onBankerSignIn={handleBankerSignIn} 
+            onBankerSignUp={handleBankerSignUp} 
+          />
+        )}
+        {page === 'banker-dashboard' && user && (
+          <BankerDashboardView 
+            user={user} 
+            handleLogout={handleLogout} 
+          />
+        )}
         {page === 'dashboard' && user && (
           <DashboardView 
             user={user} 
@@ -839,7 +956,7 @@ function App() {
       </main>
 
       {/* FOOTER */}
-      {page !== 'dashboard' && (
+      {page !== 'dashboard' && page !== 'banker-dashboard' && (
         <footer className="bg-[#020503] border-t border-samridhi-border py-12 px-6">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
             <div>

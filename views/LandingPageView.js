@@ -164,11 +164,7 @@ window.LandingPageView = ({ setPage, scrollToSection, calculatedScore }) => {
         </svg>
 
         {/* CENTERED HERO CONTENT */}
-        <div className="max-w-3xl mx-auto text-center relative z-10 flex flex-col items-center space-y-7 animate-slide-up">
-          <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 bg-samridhi-primary/10 border border-samridhi-primary/30 rounded-full select-none">
-            <span className="w-2 h-2 rounded-full bg-samridhi-secondary animate-ping"></span>
-            <span className="text-xs font-extrabold text-samridhi-secondary uppercase tracking-widest">AI UNDERWRITING ENGINE v2.4</span>
-          </div>
+        <div className="max-w-3xl mx-auto text-center relative z-10 flex flex-col items-center space-y-7 animate-slide-up pt-10">
           
           <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.1] select-none">
             A new era of <br />
@@ -190,10 +186,10 @@ window.LandingPageView = ({ setPage, scrollToSection, calculatedScore }) => {
               <Icons.ArrowRight className="w-4 h-4 text-black" />
             </button>
             <button 
-              onClick={() => scrollToSection('features')}
+              onClick={() => setPage('banker-login')}
               className="px-8 py-3.5 bg-samridhi-surface hover:bg-samridhi-card text-samridhi-textPrimary border border-samridhi-border hover:border-samridhi-primary/50 font-bold rounded-full transition-all duration-300 transform hover:-translate-y-0.5 w-48"
             >
-              Explore Features
+              Bank Portal Access
             </button>
           </div>
         </div>

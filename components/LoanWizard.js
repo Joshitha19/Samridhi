@@ -1,13 +1,14 @@
 // Loan Apply Wizard Stepper Component for Samridhi
 // Exposes the LoanWizard React component globally
 
-window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab }) => {
+window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab, voiceNavigationActive, setVoiceNavigationActive }) => {
   const { useState, useEffect, useMemo, useRef } = React;
   
   const [step, setStep] = useState(1); // 1, 2, 3
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [appId, setAppId] = useState('');
+  const tempDisableVoiceNavRef = useRef(false);
 
   // Step 1 Form fields
   const [loanAmount, setLoanAmount] = useState(100000);
@@ -104,6 +105,16 @@ window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab }) => {
     setTenure(12);
   };
 
+  // Helper to restore voice navigation
+  const restoreVoiceNavigation = () => {
+    if (tempDisableVoiceNavRef.current) {
+      tempDisableVoiceNavRef.current = false;
+      if (typeof setVoiceNavigationActive === 'function') {
+        setVoiceNavigationActive(true);
+      }
+    }
+  };
+
   // Web Speech API trigger
   const triggerVoiceInput = (fieldName) => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -121,116 +132,132 @@ window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab }) => {
     setListeningField(fieldName);
     setSpeechError('');
 
-    const recognition = new SpeechRecognition();
-    recognitionRef.current = recognition;
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = 'en-IN';
+    const startRecognition = () => {
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-IN';
 
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript.toLowerCase();
-      console.log(`Speech captured [${fieldName}]: `, transcript);
-      
-      // Intent mapping
-      let parsedValue = null;
-      let matchedText = '';
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        console.log(`Speech captured [${fieldName}]: `, transcript);
+        
+        // Intent mapping
+        let parsedValue = null;
+        let matchedText = '';
 
-      if (fieldName === 'amount') {
-        // Amount mapping
-        if (transcript.includes('two lakh') || transcript.includes('2 lakh') || transcript.includes('two hundred thousand') || transcript.includes('200000')) {
-          parsedValue = 200000;
-          matchedText = '₹2,00,000';
-        } else if (transcript.includes('one lakh') || transcript.includes('1 lakh') || transcript.includes('100000')) {
-          parsedValue = 100000;
-          matchedText = '₹1,00,000';
-        } else if (transcript.includes('three lakh') || transcript.includes('3 lakh') || transcript.includes('300000')) {
-          parsedValue = 300000;
-          matchedText = '₹3,00,000';
-        } else if (transcript.includes('five lakh') || transcript.includes('5 lakh') || transcript.includes('500000')) {
-          parsedValue = 500000;
-          matchedText = '₹5,00,000';
-        } else {
-          // Extract digits
-          const digits = transcript.replace(/\D/g, '');
-          if (digits) {
-            parsedValue = parseInt(digits);
-            matchedText = `₹${parsedValue.toLocaleString()}`;
+        if (fieldName === 'amount') {
+          // Amount mapping
+          if (transcript.includes('two lakh') || transcript.includes('2 lakh') || transcript.includes('two hundred thousand') || transcript.includes('200000')) {
+            parsedValue = 200000;
+            matchedText = '₹2,00,000';
+          } else if (transcript.includes('one lakh') || transcript.includes('1 lakh') || transcript.includes('100000')) {
+            parsedValue = 100000;
+            matchedText = '₹1,00,000';
+          } else if (transcript.includes('three lakh') || transcript.includes('3 lakh') || transcript.includes('300000')) {
+            parsedValue = 300000;
+            matchedText = '₹3,00,000';
+          } else if (transcript.includes('five lakh') || transcript.includes('5 lakh') || transcript.includes('500000')) {
+            parsedValue = 500000;
+            matchedText = '₹5,00,000';
+          } else {
+            // Extract digits
+            const digits = transcript.replace(/\D/g, '');
+            if (digits) {
+              parsedValue = parseInt(digits);
+              matchedText = `₹${parsedValue.toLocaleString()}`;
+            }
+          }
+
+          if (parsedValue) {
+            typewriterInput(parsedValue, setLoanAmount);
+            triggerToast(`Voice Understood: Set Amount to ${matchedText}`);
+          } else {
+            setSpeechError(`Could not extract amount from: "${transcript}"`);
+          }
+
+        } else if (fieldName === 'purpose') {
+          // Purpose mapping
+          let targetPurpose = '';
+          if (transcript.includes('education') || transcript.includes('study') || transcript.includes('college')) {
+            targetPurpose = 'Education';
+          } else if (transcript.includes('business') || transcript.includes('freelance') || transcript.includes('startup') || transcript.includes('shop')) {
+            targetPurpose = 'Business';
+          } else if (transcript.includes('personal') || transcript.includes('myself')) {
+            targetPurpose = 'Personal';
+          } else if (transcript.includes('medical') || transcript.includes('hospital') || transcript.includes('health') || transcript.includes('treatment')) {
+            targetPurpose = 'Medical';
+          } else if (transcript.includes('home') || transcript.includes('renovation') || transcript.includes('house')) {
+            targetPurpose = 'Home Renovation';
+          } else if (transcript.includes('vehicle') || transcript.includes('car') || transcript.includes('bike') || transcript.includes('scooter')) {
+            targetPurpose = 'Vehicle';
+          }
+
+          if (targetPurpose) {
+            setLoanPurpose(targetPurpose);
+            triggerToast(`Voice Understood: Selected Purpose ${targetPurpose}`);
+          } else {
+            setSpeechError(`Could not match purpose from: "${transcript}"`);
+          }
+
+        } else if (fieldName === 'tenure') {
+          // Tenure mapping
+          let targetTenure = 0;
+          if (transcript.includes('forty eight') || transcript.includes('48')) {
+            targetTenure = 48;
+          } else if (transcript.includes('twelve') || transcript.includes('12') || transcript.includes('one year')) {
+            targetTenure = 12;
+          } else if (transcript.includes('twenty four') || transcript.includes('24') || transcript.includes('two years')) {
+            targetTenure = 24;
+          } else if (transcript.includes('thirty six') || transcript.includes('36') || transcript.includes('three years')) {
+            targetTenure = 36;
+          } else if (transcript.includes('sixty') || transcript.includes('60') || transcript.includes('five years')) {
+            targetTenure = 60;
+          } else if (transcript.includes('eighty four') || transcript.includes('84') || transcript.includes('seven years')) {
+            targetTenure = 84;
+          } else {
+            const digits = transcript.replace(/\D/g, '');
+            if (digits) {
+              targetTenure = Math.max(6, Math.min(84, Math.round(parseInt(digits) / 6) * 6)); // Clamp to steps of 6
+            }
+          }
+
+          if (targetTenure) {
+            setTenure(targetTenure);
+            triggerToast(`Voice Understood: Set Tenure to ${targetTenure} Months`);
+          } else {
+            setSpeechError(`Could not match tenure from: "${transcript}"`);
           }
         }
+      };
 
-        if (parsedValue) {
-          typewriterInput(parsedValue, setLoanAmount);
-          triggerToast(`Voice Understood: Set Amount to ${matchedText}`);
-        } else {
-          setSpeechError(`Could not extract amount from: "${transcript}"`);
-        }
+      recognition.onerror = (e) => {
+        console.error(e);
+        setSpeechError(`Speech error: ${e.error}`);
+        setIsListening(false);
+        restoreVoiceNavigation();
+      };
 
-      } else if (fieldName === 'purpose') {
-        // Purpose mapping
-        let targetPurpose = '';
-        if (transcript.includes('education') || transcript.includes('study') || transcript.includes('college')) {
-          targetPurpose = 'Education';
-        } else if (transcript.includes('business') || transcript.includes('freelance') || transcript.includes('startup') || transcript.includes('shop')) {
-          targetPurpose = 'Business';
-        } else if (transcript.includes('personal') || transcript.includes('myself')) {
-          targetPurpose = 'Personal';
-        } else if (transcript.includes('medical') || transcript.includes('hospital') || transcript.includes('health') || transcript.includes('treatment')) {
-          targetPurpose = 'Medical';
-        } else if (transcript.includes('home') || transcript.includes('renovation') || transcript.includes('house')) {
-          targetPurpose = 'Home Renovation';
-        } else if (transcript.includes('vehicle') || transcript.includes('car') || transcript.includes('bike') || transcript.includes('scooter')) {
-          targetPurpose = 'Vehicle';
-        }
+      recognition.onend = () => {
+        setIsListening(false);
+        restoreVoiceNavigation();
+      };
 
-        if (targetPurpose) {
-          setLoanPurpose(targetPurpose);
-          triggerToast(`Voice Understood: Selected Purpose ${targetPurpose}`);
-        } else {
-          setSpeechError(`Could not match purpose from: "${transcript}"`);
-        }
+      recognition.start();
+    };
 
-      } else if (fieldName === 'tenure') {
-        // Tenure mapping
-        let targetTenure = 0;
-        if (transcript.includes('forty eight') || transcript.includes('48')) {
-          targetTenure = 48;
-        } else if (transcript.includes('twelve') || transcript.includes('12') || transcript.includes('one year')) {
-          targetTenure = 12;
-        } else if (transcript.includes('twenty four') || transcript.includes('24') || transcript.includes('two years')) {
-          targetTenure = 24;
-        } else if (transcript.includes('thirty six') || transcript.includes('36') || transcript.includes('three years')) {
-          targetTenure = 36;
-        } else if (transcript.includes('sixty') || transcript.includes('60') || transcript.includes('five years')) {
-          targetTenure = 60;
-        } else if (transcript.includes('eighty four') || transcript.includes('84') || transcript.includes('seven years')) {
-          targetTenure = 84;
-        } else {
-          const digits = transcript.replace(/\D/g, '');
-          if (digits) {
-            targetTenure = Math.max(6, Math.min(84, Math.round(parseInt(digits) / 6) * 6)); // Clamp to steps of 6
-          }
-        }
-
-        if (targetTenure) {
-          setTenure(targetTenure);
-          triggerToast(`Voice Understood: Set Tenure to ${targetTenure} Months`);
-        } else {
-          setSpeechError(`Could not match tenure from: "${transcript}"`);
-        }
+    if (voiceNavigationActive) {
+      tempDisableVoiceNavRef.current = true;
+      if (typeof setVoiceNavigationActive === 'function') {
+        setVoiceNavigationActive(false);
       }
-    };
-
-    recognition.onerror = (e) => {
-      console.error(e);
-      setSpeechError(`Speech error: ${e.error}`);
-      setIsListening(false);
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognition.start();
+      setTimeout(() => {
+        startRecognition();
+      }, 300);
+    } else {
+      startRecognition();
+    }
   };
 
   const stopListening = () => {
@@ -238,6 +265,7 @@ window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab }) => {
       recognitionRef.current.stop();
     }
     setIsListening(false);
+    restoreVoiceNavigation();
   };
 
   // Helper typing effect

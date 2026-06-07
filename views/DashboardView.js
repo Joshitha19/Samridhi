@@ -283,7 +283,14 @@ window.DashboardView = ({
               </div>
 
               {/* Interactive Loan Apply Wizard */}
-              <LoanWizard calculatedScore={calculatedScore} dispatch={dispatch} user={user} setActiveTab={setActiveTab} />
+              <LoanWizard 
+                calculatedScore={calculatedScore} 
+                dispatch={dispatch} 
+                user={user} 
+                setActiveTab={setActiveTab} 
+                voiceNavigationActive={voiceNavigationActive}
+                setVoiceNavigationActive={setVoiceNavigationActive}
+              />
             </div>
           )}
 

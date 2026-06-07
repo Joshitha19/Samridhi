@@ -300,6 +300,51 @@ window.DashboardOverviewTab = ({
         </div>
       </div>
 
+      {/* Active Loans Ledger */}
+      <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl space-y-4 shadow-lg">
+        <div className="flex items-center justify-between border-b border-samridhi-border/40 pb-3">
+          <h3 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider">Active Credit Portfolio</h3>
+          <span className="text-[10px] font-bold text-samridhi-textMuted uppercase">Collateral: Alternative Data</span>
+        </div>
+
+        <div className="overflow-x-auto">
+          {!dashboardState.loans || dashboardState.loans.length === 0 ? (
+            <div className="text-center py-6 text-xs text-samridhi-textMuted">
+              No active loans found. Apply in the "Apply for Loan" tab.
+            </div>
+          ) : (
+            <table className="w-full text-left text-xs text-samridhi-textMuted">
+              <thead>
+                <tr className="border-b border-samridhi-border/60 text-samridhi-textPrimary font-extrabold uppercase">
+                  <th className="py-2.5">Date Approved</th>
+                  <th className="py-2.5">Lender</th>
+                  <th className="py-2.5 text-right">Principal</th>
+                  <th className="py-2.5 text-right">Interest Rate</th>
+                  <th className="py-2.5 text-right">Monthly EMI</th>
+                  <th className="py-2.5 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-samridhi-border/30">
+                {dashboardState.loans.map((loan, idx) => (
+                  <tr key={loan.id || idx} className="hover:bg-samridhi-surface/30 transition-colors">
+                    <td className="py-3 font-semibold">{loan.date}</td>
+                    <td className="py-3 text-samridhi-textPrimary font-semibold">{loan.lender}</td>
+                    <td className="py-3 text-right font-bold text-samridhi-textPrimary">₹{parseInt(loan.amount).toLocaleString()}</td>
+                    <td className="py-3 text-right font-semibold text-samridhi-success">{loan.rate}</td>
+                    <td className="py-3 text-right font-black text-samridhi-secondary">{loan.emi}</td>
+                    <td className="py-3 text-right">
+                      <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold ${loan.status === 'Active' ? 'bg-samridhi-primary/15 border border-samridhi-primary/30 text-samridhi-primary' : 'bg-samridhi-success/15 border border-samridhi-success/30 text-samridhi-success'}`}>
+                        {loan.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+
     </div>
   );
 };

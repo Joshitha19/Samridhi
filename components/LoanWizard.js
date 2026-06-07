@@ -1,7 +1,7 @@
 // Loan Apply Wizard Stepper Component for Samridhi
 // Exposes the LoanWizard React component globally
 
-window.LoanWizard = ({ calculatedScore, dispatch, user }) => {
+window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab }) => {
   const { useState, useEffect, useMemo } = React;
   
   const [wizardStep, setWizardStep] = useState(1);
@@ -255,8 +255,8 @@ window.LoanWizard = ({ calculatedScore, dispatch, user }) => {
                         date: "Just now"
                       }
                     });
-                    // Reset wizard
-                    setWizardStep(1);
+                    // Advance wizard to success screen (step 4)
+                    setWizardStep(4);
                   }}
                   className="px-6 py-2.5 bg-samridhi-success hover:bg-samridhi-success/90 text-samridhi-bg font-extrabold rounded-xl text-xs shadow-lg transition-colors flex items-center space-x-1"
                 >
@@ -302,6 +302,63 @@ window.LoanWizard = ({ calculatedScore, dispatch, user }) => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* STEP 4: SUCCESS CONTRACT SIGNED */}
+      {wizardStep === 4 && (
+        <div className="py-8 flex flex-col items-center justify-center space-y-6 animate-fade-in text-center">
+          <div className="w-16 h-16 rounded-full bg-samridhi-success/20 border-2 border-samridhi-success flex items-center justify-center text-3xl text-samridhi-success mb-2 animate-bounce">
+            ✓
+          </div>
+          
+          <div className="space-y-2">
+            <h3 className="font-extrabold text-lg text-samridhi-textPrimary uppercase tracking-wider">Contract Signed Successfully!</h3>
+            <p className="text-xs text-samridhi-textMuted max-w-sm leading-relaxed">
+              Your smart credit agreement is verified and recorded. Capital is being disbursed to your linked VPA: <strong className="text-samridhi-textPrimary">{user.upiVpa || 'demo@okaxis'}</strong>.
+            </p>
+          </div>
+
+          <div className="bg-samridhi-surface border border-samridhi-border p-5 rounded-2xl w-full max-w-sm text-xs space-y-2.5 text-left">
+            <div className="flex justify-between">
+              <span className="text-samridhi-textMuted">Disbursement VPA:</span>
+              <span className="font-bold text-samridhi-textPrimary">{user.upiVpa || 'demo@okaxis'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-samridhi-textMuted">Loan Value:</span>
+              <span className="font-extrabold text-samridhi-secondary">₹{loanAmount.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-samridhi-textMuted">Interest Rate:</span>
+              <span className="font-bold text-samridhi-success">{interestRate}% p.a.</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-samridhi-textMuted">Repayment Tenure:</span>
+              <span className="font-bold text-samridhi-textPrimary">{loanTenure} Months</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-samridhi-textMuted">Monthly EMI:</span>
+              <span className="font-extrabold text-samridhi-secondary">₹{monthlyEMI.toLocaleString()}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 w-full justify-center">
+            <button
+              onClick={() => setWizardStep(1)}
+              className="px-5 py-2.5 bg-samridhi-surface hover:bg-samridhi-card border border-samridhi-border text-samridhi-textMuted hover:text-samridhi-textPrimary font-bold rounded-xl text-xs transition-colors"
+            >
+              Apply for Another Loan
+            </button>
+            <button
+              onClick={() => {
+                if (setActiveTab) setActiveTab('overview');
+                setWizardStep(1);
+              }}
+              className="px-5 py-2.5 bg-samridhi-primary hover:bg-samridhi-primary/90 text-white font-bold rounded-xl text-xs shadow-lg transition-colors"
+            >
+              Go to Dashboard Overview
+            </button>
+          </div>
         </div>
       )}
     </div>

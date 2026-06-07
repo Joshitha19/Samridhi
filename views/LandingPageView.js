@@ -117,7 +117,7 @@ window.LandingPageView = ({ setPage, scrollToSection, calculatedScore }) => {
             {FEATURES_DATA.map((feat, i) => (
               <div 
                 key={i} 
-                className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl hover:border-samridhi-secondary/50 hover:shadow-[0_0_20px_rgba(0,212,255,0.1)] transition-all duration-300 group"
+                className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl hover:border-samridhi-primary/50 hover:shadow-[0_0_20px_rgba(0,230,118,0.15)] transition-all duration-300 group"
               >
                 <div className="w-12 h-12 rounded-xl bg-samridhi-surface flex items-center justify-center border border-samridhi-border group-hover:border-samridhi-secondary/30 transition-colors mb-5">
                   {feat.icon}

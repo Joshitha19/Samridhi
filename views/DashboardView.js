@@ -96,7 +96,7 @@ window.DashboardView = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row bg-[#08080C] min-h-screen relative">
+    <div className="flex-1 flex flex-col md:flex-row bg-[#040806] min-h-screen relative">
       
       {/* SIDEBAR */}
       <aside className="w-full md:w-64 bg-samridhi-surface border-r border-samridhi-border/60 flex flex-col justify-between shrink-0">

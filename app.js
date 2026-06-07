@@ -9,6 +9,123 @@ const SUPABASE_URL = "https://lbagswiwwlkcgrfhkyqr.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxiYWdzd2l3d2xrY2dyZmhreXFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NDI2MzcsImV4cCI6MjA5NjExODYzN30.o1x0Zw1F56-XdtjSRhpjAcBvTGw46OC5_EKPwJm-uF0";
 const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
+// --- STARTUP SPLASH SCREEN ---
+function SplashScreen({ onComplete }) {
+  const [progress, setProgress] = useState(0);
+  const [logIndex, setLogIndex] = useState(0);
+  
+  const systemLogs = [
+    "Establishing secure quantum handshakes...",
+    "Scanning decentralized invoice pools...",
+    "Connecting UPI ledger pipeline...",
+    "Extracting Underwriting tensors...",
+    "Clustering Isolation Forest vectors...",
+    "Decrypting PAN/Aadhaar nodes...",
+    "Calculated baseline risk index: 0.14",
+    "Samridhi Credit Engine initialized."
+  ];
+
+  useEffect(() => {
+    const progressTimer = setInterval(() => {
+      setProgress(p => {
+        if (p >= 100) {
+          clearInterval(progressTimer);
+          setTimeout(onComplete, 300);
+          return 100;
+        }
+        return p + 5;
+      });
+    }, 100);
+
+    return () => clearInterval(progressTimer);
+  }, [onComplete]);
+
+  useEffect(() => {
+    const logTimer = setInterval(() => {
+      setLogIndex(prev => {
+        if (prev < systemLogs.length - 1) {
+          return prev + 1;
+        }
+        clearInterval(logTimer);
+        return prev;
+      });
+    }, 250);
+
+    return () => clearInterval(logTimer);
+  }, []);
+
+  const cashNotes = useMemo(() => {
+    return Array.from({ length: 20 }).map((_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      delay: Math.random() * 3,
+      duration: 3 + Math.random() * 2,
+      size: 14 + Math.random() * 16,
+      type: Math.random() > 0.4 ? 'note' : 'coin'
+    }));
+  }, []);
+
+  return (
+    <div className="fixed inset-0 bg-[#040806] z-50 flex flex-col items-center justify-center overflow-hidden font-sans select-none bg-grid-glow">
+      {cashNotes.map(note => (
+        <div 
+          key={note.id}
+          className="falling-cash-item flex items-center justify-center text-samridhi-primary/20"
+          style={{
+            left: `${note.left}%`,
+            animationDelay: `${note.delay}s`,
+            animationDuration: `${note.duration}s`
+          }}
+        >
+          {note.type === 'note' ? (
+            <svg style={{ width: note.size, height: note.size }} fill="currentColor" viewBox="0 0 24 24">
+              <path d="M4 10h16v4H4z" opacity="0.3"/>
+              <path d="M2 4v16h20V4H2zm18 14H4V6h16v12zM12 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+            </svg>
+          ) : (
+            <svg style={{ width: note.size, height: note.size }} fill="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+            </svg>
+          )}
+        </div>
+      ))}
+
+      <div className="relative flex flex-col items-center space-y-6 animate-fade-in text-center max-w-sm px-6">
+        <div className="w-16 h-16 rounded-xl bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center shadow-[0_0_25px_rgba(0,230,118,0.4)] border border-samridhi-primary/40 animate-pulse">
+          <span className="text-samridhi-bg font-extrabold text-3xl">S</span>
+        </div>
+
+        <div className="space-y-1">
+          <h1 className="text-2xl font-black bg-gradient-to-r from-samridhi-primary to-samridhi-secondary bg-clip-text text-transparent tracking-widest">
+            SAMRIDHI
+          </h1>
+          <p className="text-[8px] uppercase font-bold text-samridhi-textMuted tracking-widest">
+            AI-Driven Credit Underwriter
+          </p>
+        </div>
+
+        <div className="w-72 bg-black/60 border border-samridhi-border rounded-xl p-4 h-32 font-mono text-[9px] text-samridhi-primary/80 text-left space-y-1 shadow-inner overflow-hidden">
+          {systemLogs.slice(0, logIndex + 1).map((log, idx) => (
+            <div key={idx} className="flex items-start">
+              <span className="text-samridhi-secondary mr-2 font-black">&gt;</span>
+              <span>{log}</span>
+            </div>
+          ))}
+          <div className="w-1.5 h-3 bg-samridhi-primary animate-pulse inline-block"></div>
+        </div>
+
+        <div className="w-full bg-samridhi-surface border border-samridhi-border h-2 rounded-full p-0.5 relative overflow-hidden">
+          <div 
+            className="bg-gradient-to-r from-samridhi-primary to-samridhi-secondary h-full rounded-full transition-all duration-100 ease-out"
+            style={{ width: `${progress}%` }}
+          ></div>
+        </div>
+        <span className="font-mono font-black text-samridhi-primary text-[9px] tracking-widest">{progress}% INITIALIZED</span>
+      </div>
+    </div>
+  );
+}
+
 const REDUCER_INITIAL_STATE = {
   loans: [
     { id: 'l-1', lender: "Samridhi Capital Fund", amount: 50000, rate: "9.5%", emi: "₹4,380", status: "Active", date: "2026-04-15" },
@@ -100,6 +217,9 @@ function dashboardReducer(state, action) {
 }
 
 function App() {
+  // Splash Screen State
+  const [showSplash, setShowSplash] = useState(true);
+
   // Routing State: 'landing' | 'signin' | 'signup' | 'dashboard'
   const [page, setPage] = useState('landing');
   
@@ -595,8 +715,12 @@ function App() {
     }
   };
 
+  if (showSplash) {
+    return <SplashScreen onComplete={() => setShowSplash(false)} />;
+  }
+
   return (
-    <div className="min-h-screen flex flex-col selection:bg-samridhi-primary/30 selection:text-samridhi-textPrimary">
+    <div className="min-h-screen flex flex-col selection:bg-samridhi-primary/30 selection:text-samridhi-textPrimary bg-grid-glow">
       {/* STICKY NAVBAR */}
       {page !== 'dashboard' && (
         <header className="sticky top-0 z-50 w-full bg-samridhi-bg/85 border-b border-samridhi-border blur-nav">
@@ -716,7 +840,7 @@ function App() {
 
       {/* FOOTER */}
       {page !== 'dashboard' && (
-        <footer className="bg-[#07070B] border-t border-samridhi-border py-12 px-6">
+        <footer className="bg-[#020503] border-t border-samridhi-border py-12 px-6">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
               <div className="flex items-center space-x-2">

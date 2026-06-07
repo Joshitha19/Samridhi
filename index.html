@@ -9,7 +9,7 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
   
   <!-- React & Recharts Dependencies -->
   <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js" crossorigin></script>
@@ -38,21 +38,22 @@
         extend: {
           colors: {
             samridhi: {
-              bg: '#0A0A0F',
-              surface: '#12121A',
-              card: '#1A1A26',
-              border: '#2A2A3E',
-              primary: '#6C63FF',
-              secondary: '#00D4FF',
+              bg: '#040806',
+              surface: '#0A0F0C',
+              card: '#0E1612',
+              border: '#1C2E25',
+              primary: '#00E676',
+              secondary: '#B2FF59',
               success: '#00E676',
-              warning: '#FFB300',
-              danger: '#FF5252',
-              textPrimary: '#F0F0FF',
-              textMuted: '#8888AA',
+              warning: '#FFD600',
+              danger: '#FF1744',
+              textPrimary: '#E8F5E9',
+              textMuted: '#759F87',
             }
           },
           fontFamily: {
-            sans: ['Outfit', 'sans-serif'],
+            sans: ['Space Grotesk', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
           }
         }
       }
@@ -66,14 +67,14 @@
       height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: #0A0A0F;
+      background: #040806;
     }
     ::-webkit-scrollbar-thumb {
-      background: #2A2A3E;
+      background: #1C2E25;
       border-radius: 9999px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #6C63FF;
+      background: #00E676;
     }
 
     /* Keyframes and Animations */
@@ -93,15 +94,85 @@
       animation: pulseGlow 4s infinite ease-in-out;
     }
 
+    /* Falling Cash Animation */
+    @keyframes fallingCashAnim {
+      0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.8;
+      }
+      90% {
+        opacity: 0.8;
+      }
+      100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    .falling-cash-item {
+      position: absolute;
+      top: -100px;
+      pointer-events: none;
+      animation: fallingCashAnim 4.5s linear infinite;
+      z-index: 1;
+    }
+
+    /* Grid glow pattern */
+    .bg-grid-glow {
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(0, 230, 118, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 230, 118, 0.03) 1px, transparent 1px);
+    }
+
     /* Custom utilities for gradients and borders */
-    .border-gradient-purple-cyan {
-      border-image: linear-gradient(to right, #6C63FF, #00D4FF) 1;
+    .border-gradient-green-lime {
+      border-image: linear-gradient(to right, #00E676, #B2FF59) 1;
     }
     
     /* Backdrop blur fallback */
     .blur-nav {
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Slide Up entrance animation */
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slide-up {
+      animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Floating SVG coins/elements */
+    @keyframes floatCoin {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-6px) rotate(8deg); }
+    }
+    .animate-float-coin {
+      animation: floatCoin 3.5s infinite ease-in-out;
+    }
+
+    /* Neon Pulsing Box Shadows */
+    @keyframes neonGlowPulse {
+      0%, 100% { box-shadow: 0 0 5px rgba(0, 230, 118, 0.1), inset 0 0 5px rgba(0, 230, 118, 0.05); }
+      50% { box-shadow: 0 0 15px rgba(0, 230, 118, 0.3), inset 0 0 8px rgba(0, 230, 118, 0.1); }
+    }
+    .animate-neon-glow {
+      animation: neonGlowPulse 2.5s infinite ease-in-out;
+    }
+
+    /* Green Hover Glow card effect */
+    .hover-glow-green {
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .hover-glow-green:hover {
+      box-shadow: 0 0 20px rgba(0, 230, 118, 0.18);
+      border-color: rgba(0, 230, 118, 0.5);
+      transform: translateY(-2px);
     }
   </style>
 </head>

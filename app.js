@@ -475,7 +475,12 @@ function App() {
             type: action.payload.type
           })
           .then(({ error }) => {
-            if (error) console.error("Error syncing transactions: ", error);
+            if (error) {
+              console.error("Error syncing transactions: ", error);
+              if (error.code === '42501' || (error.message && error.message.includes('row-level security'))) {
+                alert("Database RLS Error: Row-Level Security prevents syncing transactions. Run 'supabase_setup.sql' to configure policies.");
+              }
+            }
           });
         break;
 
@@ -492,7 +497,12 @@ function App() {
             date: action.payload.date
           })
           .then(({ error }) => {
-            if (error) console.error("Error syncing loans: ", error);
+            if (error) {
+              console.error("Error syncing loans: ", error);
+              if (error.code === '42501' || (error.message && error.message.includes('row-level security'))) {
+                alert("Database RLS Error: Row-Level Security prevents saving this loan application to Supabase.\n\nTip: Open your Supabase SQL Editor and run the setup script 'supabase_setup.sql' located in your project folder.");
+              }
+            }
           });
         break;
 
@@ -504,7 +514,12 @@ function App() {
             .update({ verified: !targetSkill.verified })
             .eq('id', action.payload)
             .then(({ error }) => {
-              if (error) console.error("Error syncing skills: ", error);
+              if (error) {
+                console.error("Error syncing skills: ", error);
+                if (error.code === '42501' || (error.message && error.message.includes('row-level security'))) {
+                  alert("Database RLS Error: Row-Level Security prevents updating skill verification.");
+                }
+              }
             });
         }
         break;
@@ -520,7 +535,12 @@ function App() {
             verified: action.payload.verified
           })
           .then(({ error }) => {
-            if (error) console.error("Error syncing skills: ", error);
+            if (error) {
+              console.error("Error syncing skills: ", error);
+              if (error.code === '42501' || (error.message && error.message.includes('row-level security'))) {
+                alert("Database RLS Error: Row-Level Security prevents adding skills. Run 'supabase_setup.sql'.");
+              }
+            }
           });
         break;
 
@@ -537,7 +557,12 @@ function App() {
             last_updated: action.payload.lastUpdated
           })
           .then(({ error }) => {
-            if (error) console.error("Error syncing inventory: ", error);
+            if (error) {
+              console.error("Error syncing inventory: ", error);
+              if (error.code === '42501' || (error.message && error.message.includes('row-level security'))) {
+                alert("Database RLS Error: Row-Level Security prevents adding inventory. Run 'supabase_setup.sql'.");
+              }
+            }
           });
         break;
 
@@ -547,7 +572,12 @@ function App() {
           .delete()
           .eq('id', action.payload)
           .then(({ error }) => {
-            if (error) console.error("Error syncing inventory deletion: ", error);
+            if (error) {
+              console.error("Error syncing inventory deletion: ", error);
+              if (error.code === '42501' || (error.message && error.message.includes('row-level security'))) {
+                alert("Database RLS Error: Row-Level Security prevents deleting inventory. Run 'supabase_setup.sql'.");
+              }
+            }
           });
         break;
 
@@ -589,7 +619,12 @@ function App() {
           })
           .select()
           .single();
-        if (createErr) throw createErr;
+        if (createErr) {
+          if (createErr.code === '42501' || (createErr.message && createErr.message.includes('row-level security'))) {
+            alert("Database RLS Error: Row-Level Security prevents creating a profile for this user on Supabase.\n\nTip: Open your Supabase SQL Editor and run the setup script 'supabase_setup.sql' located in your project folder.");
+          }
+          throw createErr;
+        }
         activeProfile = newProfile;
       }
 

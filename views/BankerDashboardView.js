@@ -162,6 +162,9 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
           .eq('id', loanId);
         if (error) {
           console.warn("Supabase sync warning for loan status update: ", error.message);
+          if (error.code === '42501' || (error.message && error.message.includes('row-level security'))) {
+            alert("Database RLS Error: Row-Level Security prevents updating loan status on Supabase.\n\nTip: Run the setup SQL script 'supabase_setup.sql' to disable RLS or set proper update policies.");
+          }
         }
       } catch (err) {
         console.warn("Error updating loan status on Supabase: ", err);

@@ -106,7 +106,7 @@ window.SignInPageView = ({ setPage, onSignIn }) => {
           onClick={() => onSignIn('demo@samridhi.in', 'password123', 'Entrepreneur')}
           className="w-full mt-3 py-3 bg-gradient-to-r from-samridhi-secondary to-samridhi-primary text-samridhi-bg font-extrabold rounded-xl shadow-lg hover:brightness-110 active:scale-95 transition-all flex items-center justify-center space-x-2"
         >
-          <span>⚡ One-Click Live Demo Sign-In</span>
+          <span>One-Click Live Demo Sign-In</span>
         </button>
 
         <div className="relative my-6">
@@ -123,25 +123,25 @@ window.SignInPageView = ({ setPage, onSignIn }) => {
             onClick={() => onSignIn('demo.student@samridhi.in', 'password123', 'Student')}
             className="py-2 px-3 bg-samridhi-surface hover:bg-samridhi-primary/10 border border-samridhi-border text-[11px] font-bold rounded-xl transition-all flex items-center justify-center space-x-1.5 hover:text-samridhi-secondary"
           >
-            <span>🎓 Student</span>
+            <span>Student</span>
           </button>
           <button
             onClick={() => onSignIn('demo.freelancer@samridhi.in', 'password123', 'Freelancer')}
             className="py-2 px-3 bg-samridhi-surface hover:bg-samridhi-primary/10 border border-samridhi-border text-[11px] font-bold rounded-xl transition-all flex items-center justify-center space-x-1.5 hover:text-samridhi-secondary"
           >
-            <span>💻 Freelancer</span>
+            <span>Freelancer</span>
           </button>
           <button
             onClick={() => onSignIn('demo.entrepreneur@samridhi.in', 'password123', 'Entrepreneur')}
             className="py-2 px-3 bg-samridhi-surface hover:bg-samridhi-primary/10 border border-samridhi-border text-[11px] font-bold rounded-xl transition-all flex items-center justify-center space-x-1.5 hover:text-samridhi-secondary"
           >
-            <span>🛒 Merchant</span>
+            <span>Merchant</span>
           </button>
           <button
             onClick={() => onSignIn('demo.salaried@samridhi.in', 'password123', 'Salaried')}
             className="py-2 px-3 bg-samridhi-surface hover:bg-samridhi-primary/10 border border-samridhi-border text-[11px] font-bold rounded-xl transition-all flex items-center justify-center space-x-1.5 hover:text-samridhi-secondary"
           >
-            <span>💼 Salaried</span>
+            <span>Salaried</span>
           </button>
         </div>
 

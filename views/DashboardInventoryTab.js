@@ -58,7 +58,7 @@ window.DashboardInventoryTab = ({
       type: 'ADD_NOTIFICATION',
       payload: {
         id: `n-${Date.now()}`,
-        text: `Asset added to Inventory: ${newItemName} (${qty} ${newItemUnit}) valued at ₹${(qty * price).toLocaleString()}. Credit valuation updated.`,
+        text: `Asset added to Ledger: ${newItemName} (${qty} ${newItemUnit}) valued at ₹${(qty * price).toLocaleString()}. Credit valuation updated.`,
         read: false,
         date: "Just now"
       }
@@ -82,7 +82,7 @@ window.DashboardInventoryTab = ({
       type: 'ADD_NOTIFICATION',
       payload: {
         id: `n-${Date.now()}`,
-        text: `Removed inventory asset: ${name}. Credibility valuation updated.`,
+        text: `Removed ledger asset: ${name}. Credibility valuation updated.`,
         read: false,
         date: "Just now"
       }
@@ -90,7 +90,7 @@ window.DashboardInventoryTab = ({
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in text-xs">
       
       {/* Overview/Header Row */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -116,8 +116,11 @@ window.DashboardInventoryTab = ({
             </div>
             <div className="col-span-2 md:col-span-1">
               <span className="block text-[10px] text-samridhi-textMuted font-bold uppercase tracking-wider">Alternative Score Impact</span>
-              <span className="text-xs font-black text-samridhi-success inline-flex items-center gap-1 mt-1.5 px-2.5 py-1 bg-samridhi-success/15 border border-samridhi-success/20 rounded-lg">
-                ⚡ +10 Points Active
+              <span className="text-[10px] font-black text-samridhi-success inline-flex items-center gap-1.5 mt-1.5 px-2.5 py-1 bg-samridhi-success/15 border border-samridhi-success/20 rounded-lg">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span>+10 Points Active</span>
               </span>
             </div>
           </div>
@@ -134,25 +137,45 @@ window.DashboardInventoryTab = ({
             <div className="bg-samridhi-surface/50 border border-samridhi-border p-4.5 rounded-xl space-y-2 text-xs">
               {user.type === 'Entrepreneur' && (
                 <>
-                  <p className="font-extrabold text-samridhi-textPrimary">🛒 Retail & Raw Material Stock</p>
+                  <p className="font-extrabold text-samridhi-textPrimary flex items-center space-x-1.5">
+                    <svg className="w-4 h-4 text-samridhi-secondary shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Retail & Raw Material Stock</span>
+                  </p>
                   <p className="text-[11px] text-samridhi-textMuted leading-relaxed">Quantifying supply value ensures lenders know you have enough collateral to buffer working capital lines.</p>
                 </>
               )}
               {user.type === 'Freelancer' && (
                 <>
-                  <p className="font-extrabold text-samridhi-textPrimary">💻 Digital Templates & Hardware</p>
+                  <p className="font-extrabold text-samridhi-textPrimary flex items-center space-x-1.5">
+                    <svg className="w-4 h-4 text-samridhi-secondary shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>Digital Templates & Hardware</span>
+                  </p>
                   <p className="text-[11px] text-samridhi-textMuted leading-relaxed">Valuing active templates and computing hardware lists proxy professional capability and work capacity.</p>
                 </>
               )}
               {user.type === 'Student' && (
                 <>
-                  <p className="font-extrabold text-samridhi-textPrimary">🎓 Learning Assets & Project Repos</p>
+                  <p className="font-extrabold text-samridhi-textPrimary flex items-center space-x-1.5">
+                    <svg className="w-4 h-4 text-samridhi-secondary shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    <span>Learning Assets & Project Repos</span>
+                  </p>
                   <p className="text-[11px] text-samridhi-textMuted leading-relaxed">Completed online course records and project builds represent high future vocational valuation.</p>
                 </>
               )}
               {user.type === 'Salaried' && (
                 <>
-                  <p className="font-extrabold text-samridhi-textPrimary">📈 Financial Benefits & Assets</p>
+                  <p className="font-extrabold text-samridhi-textPrimary flex items-center space-x-1.5">
+                    <svg className="w-4 h-4 text-samridhi-secondary shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M7 12l3-3 3 3 4-4M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    <span>Financial Benefits & Assets</span>
+                  </p>
                   <p className="text-[11px] text-samridhi-textMuted leading-relaxed">Provident funds, digital savings bonds, and corporate benefits sync status represent low risk reserves.</p>
                 </>
               )}
@@ -175,7 +198,11 @@ window.DashboardInventoryTab = ({
           <div className="overflow-x-auto">
             {!dashboardState.inventory || dashboardState.inventory.length === 0 ? (
               <div className="text-center py-12 space-y-3">
-                <span className="text-4xl block">📦</span>
+                <div className="w-12 h-12 rounded-full bg-samridhi-surface flex items-center justify-center mx-auto text-samridhi-textMuted">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                </div>
                 <p className="text-xs text-samridhi-textMuted font-bold">No assets found in your ledger.</p>
                 <p className="text-[10px] text-samridhi-textMuted max-w-xs mx-auto">Add your stock, software licenses, project portfolios, or savings certificates in the form to get started.</p>
               </div>

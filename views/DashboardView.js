@@ -30,6 +30,15 @@ window.DashboardView = ({
   whatIfConsistentUpi,
   setWhatIfConsistentUpi
 }) => {
+  const { useState, useEffect } = React;
+
+  const [chatOpen, setChatOpen] = useState(false);
+  const [messages, setMessages] = useState([
+    { sender: 'bot', text: "Hi! I'm your Samridhi AI assistant. Ask me anything about your credit score, loan eligibility, or how to improve your score." }
+  ]);
+  const [inputText, setInputText] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+
   const unreadCount = dashboardState.notifications.filter(n => !n.read).length;
 
   const handleReadNotifications = () => {
@@ -37,8 +46,51 @@ window.DashboardView = ({
     setShowNotifications(false);
   };
 
+  // Smart mock responder mimicking Anthropic API behavior locally
+  const generateBotResponse = (text) => {
+    const query = text.toLowerCase();
+    
+    if (query.includes('score') || query.includes('rating') || query.includes('credit')) {
+      return `Your current score is 72/100 (LOW RISK). This alternative rating is based on your monthly income of ₹45,000, 4 verified skill credentials, and 38 UPI transactions this month. Pay utility bills via UPI and maintain credit age to boost it further.`;
+    }
+    if (query.includes('improve') || query.includes('increase') || query.includes('boost') || query.includes('raise')) {
+      return `To improve your score: 1. Add 2 more verified skills certificates (+6 points). 2. Pay monthly utility and electricity bills via UPI (+4 points). 3. Accumulate 6 more months of transactional history (+3 points). Each action will automatically rebuild your underwriting profile.`;
+    }
+    if (query.includes('loan') || query.includes('recommend') || query.includes('apply') || query.includes('eligible')) {
+      return `Based on your low risk tier, you qualify for our Personal Loan (₹2,50,000 at 11.5% p.a., EMI ₹5,847/mo) which has a 95% AI Match Score. You also qualify for an Education Loan (₹5,00,000) and Business Micro Loan (₹1,00,000). Apply directly inside the 'Apply for Loan' tab.`;
+    }
+    if (query.includes('interest') || query.includes('rate') || query.includes('emi')) {
+      return `Matched interest rates start at 9.8% p.a. for Education Loans, 11.5% p.a. for Personal Loans, and 13.2% p.a. for Business Micro Loans. EMIs are calculated dynamically based on tenure and principal. Check the 'Recommendations' tab for split estimates.`;
+    }
+    if (query.includes('income') || query.includes('salary')) {
+      return `Your verified monthly income is ₹45,000/mo. This steady cashflow establishes a solid financial buffer, lowering credit default risk and securing approval limits up to ₹5,00,000.`;
+    }
+    if (query.includes('skills') || query.includes('certifications') || query.includes('certs')) {
+      return `You have 4 verified credentials (Python, Data Analysis, AWS, Freelancing) active on your profile. Adding 2 more verified certs increases your Skill Credibility Index by +6 score points.`;
+    }
+    
+    return `Hello! I am Samridhi AI, your financial underwriting assistant. Your score is 72/100 (LOW RISK), with ₹45,000/mo income and 4 verified skills. Ask me how to improve your score, check loan eligibility, or view interest rates.`;
+  };
+
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (!inputText.trim()) return;
+
+    const userText = inputText;
+    setMessages(prev => [...prev, { sender: 'user', text: userText }]);
+    setInputText('');
+    setIsTyping(true);
+
+    // Simulate response delay and typing indicator
+    setTimeout(() => {
+      const response = generateBotResponse(userText);
+      setMessages(prev => [...prev, { sender: 'bot', text: response }]);
+      setIsTyping(false);
+    }, 1200);
+  };
+
   return (
-    <div className="flex-1 flex flex-col md:flex-row bg-[#08080C] min-h-screen">
+    <div className="flex-1 flex flex-col md:flex-row bg-[#08080C] min-h-screen relative">
       
       {/* SIDEBAR */}
       <aside className="w-full md:w-64 bg-samridhi-surface border-r border-samridhi-border/60 flex flex-col justify-between shrink-0">
@@ -68,8 +120,9 @@ window.DashboardView = ({
               { id: 'overview', name: 'Overview', icon: <Icons.Home /> },
               { id: 'apply', name: 'Apply for Loan', icon: <Icons.Apply /> },
               { id: 'score', name: 'My Score Factors', icon: <Icons.Score /> },
+              { id: 'simulator', name: 'Score Simulator', icon: <Icons.Simulator /> },
               { id: 'transactions', name: 'Transaction Analysis', icon: <Icons.Transactions /> },
-              { id: 'inventory', name: 'Asset & Inventory', icon: <Icons.Inventory /> },
+              { id: 'inventory', name: 'Asset Ledger', icon: <Icons.Inventory /> },
               { id: 'recommendations', name: 'Loan Recommendations', icon: <Icons.Offers /> },
               { id: 'profile', name: 'Profile Settings', icon: <Icons.User /> },
             ].map((item) => {
@@ -233,6 +286,14 @@ window.DashboardView = ({
             />
           )}
 
+          {/* TAB: SCORE SIMULATOR */}
+          {activeTab === 'simulator' && (
+            <DashboardSimulatorTab 
+              calculatedScore={calculatedScore}
+              setActiveTab={setActiveTab}
+            />
+          )}
+
           {/* TAB 4: TRANSACTION ANALYSIS */}
           {activeTab === 'transactions' && (
             <DashboardTransactionsTab dashboardState={dashboardState} />
@@ -275,6 +336,86 @@ window.DashboardView = ({
 
         </div>
       </div>
+
+      {/* FLOATING AI CHAT ASSISTANT */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        {chatOpen && (
+          <div className="w-80 h-96 bg-samridhi-card border border-samridhi-border rounded-2xl shadow-2xl overflow-hidden flex flex-col mb-4 animate-fade-in">
+            {/* Header */}
+            <div className="bg-samridhi-surface border-b border-samridhi-border px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span className="w-2 h-2 rounded-full bg-samridhi-success"></span>
+                <span className="font-extrabold text-xs text-samridhi-textPrimary">Samridhi AI</span>
+              </div>
+              <button 
+                onClick={() => setChatOpen(false)}
+                className="text-samridhi-textMuted hover:text-samridhi-textPrimary focus:outline-none"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Messages */}
+            <div className="flex-1 p-4 overflow-y-auto space-y-3 scrollbar-thin">
+              {messages.map((msg, idx) => (
+                <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-[11px] leading-relaxed font-semibold ${
+                    msg.sender === 'user'
+                      ? 'bg-samridhi-surface border border-samridhi-border text-samridhi-textPrimary rounded-tr-none'
+                      : 'bg-samridhi-primary text-white rounded-tl-none'
+                  }`}>
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+              {isTyping && (
+                <div className="flex justify-start">
+                  <div className="bg-samridhi-primary text-white rounded-2xl rounded-tl-none px-3.5 py-2 flex items-center space-x-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-white animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-white animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-white animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Input Form */}
+            <form 
+              onSubmit={handleSendMessage}
+              className="p-3 bg-samridhi-surface border-t border-samridhi-border flex items-center gap-2"
+            >
+              <input
+                type="text"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                placeholder="Ask anything..."
+                className="flex-1 bg-samridhi-bg border border-samridhi-border rounded-xl px-3.5 py-2 text-[11px] text-samridhi-textPrimary focus:border-samridhi-primary focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="p-2 bg-samridhi-primary hover:bg-samridhi-primary/90 text-white rounded-xl focus:outline-none shadow-md shrink-0"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* Floating Button */}
+        <button
+          onClick={() => setChatOpen(!chatOpen)}
+          className="w-12 h-12 rounded-full bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center text-samridhi-bg hover:opacity-90 shadow-lg shadow-samridhi-primary/30 transition-all hover:scale-105 active:scale-95 focus:outline-none"
+        >
+          <svg className="w-5 h-5 text-samridhi-bg" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+        </button>
+      </div>
+
     </div>
   );
 };

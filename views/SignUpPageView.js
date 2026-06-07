@@ -126,7 +126,7 @@ window.SignUpPageView = ({ setPage, onSignUp }) => {
             <label className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">UPI ID (VPA) for Cashflow Sync</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-samridhi-textMuted font-bold text-xs">
-                ⚡
+                VPA:
               </div>
               <input
                 type="text"

@@ -3,168 +3,400 @@
 
 window.DashboardScoreTab = ({
   calculatedScore,
-  dashboardState,
-  aadhaarVerified,
-  panVerified,
-  upiLinked,
-  whatIfRepayActive,
-  setWhatIfRepayActive,
-  whatIfLinkGithub,
-  setWhatIfLinkGithub,
-  whatIfNewCert,
-  setWhatIfNewCert,
-  whatIfConsistentUpi,
-  setWhatIfConsistentUpi
+  dashboardState
 }) => {
+  const { useState, useEffect } = React;
+  
+  const [mounted, setMounted] = useState(false);
+  const [expandedRow, setExpandedRow] = useState(null);
+
+  useEffect(() => {
+    // Trigger animations after mounting
+    const timer = setTimeout(() => setMounted(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const toggleAccordion = (index) => {
+    if (expandedRow === index) {
+      setExpandedRow(null);
+    } else {
+      setExpandedRow(index);
+    }
+  };
+
+  // SHAP Factors data
+  const shapFactors = [
+    { label: "UPI consistency", impact: 9.2, positive: true },
+    { label: "Monthly income", impact: 7.8, positive: true },
+    { label: "Skill certifications", impact: 6.1, positive: true },
+    { label: "Merchant diversity", impact: 2.9, positive: true },
+    { label: "Short credit history", impact: -5.4, positive: false },
+    { label: "Low transaction age", impact: -3.2, positive: false }
+  ];
+
+  // Accordion details data
+  const accordionFactors = [
+    {
+      name: "UPI Payment Behavior",
+      score: "18/20",
+      level: "High",
+      levelColor: "text-samridhi-success bg-samridhi-success/10 border-samridhi-success/20",
+      pct: 90,
+      explanation: "38 transactions analyzed. Consistent daily usage. Merchant diversity score: 8.2/10. Payment regularity: 94%.",
+      tips: ["Keep paying bills via UPI", "Diversify merchant categories"]
+    },
+    {
+      name: "Income Stability",
+      score: "16/20",
+      level: "High",
+      levelColor: "text-samridhi-success bg-samridhi-success/10 border-samridhi-success/20",
+      pct: 80,
+      explanation: "Regular ₹45,000 salary detected. Income-to-expense ratio 68%.",
+      tips: ["Show consistent salary credits", "Avoid large irregular withdrawals"]
+    },
+    {
+      name: "Skill Credibility Index",
+      score: "14/20",
+      level: "Medium",
+      levelColor: "text-samridhi-warning bg-samridhi-warning/10 border-samridhi-warning/20",
+      pct: 70,
+      explanation: "4 certs verified: Python, Data Analysis, AWS, Freelancing. Estimated earning potential mapped to loan repayment capacity.",
+      tips: ["Add 2 more industry-recognized certs (e.g. Google, Coursera)"]
+    },
+    {
+      name: "Transaction Diversity",
+      score: "13/20",
+      level: "Medium",
+      levelColor: "text-samridhi-warning bg-samridhi-warning/10 border-samridhi-warning/20",
+      pct: 65,
+      explanation: "6 merchant categories. Missing utility/insurance payments on UPI.",
+      tips: ["Pay electricity, internet bills via UPI to boost this score"]
+    },
+    {
+      name: "Repayment History",
+      score: "11/20",
+      level: "Low",
+      levelColor: "text-samridhi-danger bg-samridhi-danger/10 border-samridhi-danger/20",
+      pct: 55,
+      explanation: "No defaults. But limited 4-month history.",
+      tips: ["Take small credit builder loan", "Use credit card responsibly"]
+    }
+  ];
+
+  // SVG Gauge Calculations
+  const radius = 80;
+  const circumference = 2 * Math.PI * radius;
+  const targetScore = calculatedScore || 72;
+  const strokeDashoffset = circumference - (circumference * (mounted ? targetScore : 0)) / 100;
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl space-y-4">
-        <h2 className="text-lg font-extrabold text-samridhi-textPrimary">Explainable AI (XAI) Scoring Engine</h2>
-        <p className="text-xs text-samridhi-textMuted leading-relaxed">
-          Traditional models evaluate only historic banking bureau footprints. Samridhi analyzes alternate telemetry streams across 4 major dimensions. Below are your dynamic credit vectors contributing to your score of <strong className="text-samridhi-secondary">{calculatedScore}/100</strong>.
-        </p>
-
-        {/* Progress score grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+    <div className="space-y-6 animate-fade-in text-xs">
+      
+      {/* SECTION 1 - Score Header (2 columns) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* LEFT COLUMN: Gauge & History */}
+        <div className="lg:col-span-6 bg-samridhi-card border border-samridhi-border p-6 rounded-2xl flex flex-col md:flex-row items-center gap-6 justify-between shadow-lg">
           
-          {/* Metric 1 */}
-          <div className="bg-samridhi-surface border border-samridhi-border/60 p-5 rounded-xl space-y-3">
-            <div className="flex items-center justify-between text-xs font-bold">
-              <span className="text-samridhi-textPrimary">Alternative Cashflow Recency (25%)</span>
-              <span className="text-samridhi-secondary">{upiLinked ? '85/100' : '0/100'}</span>
+          <div className="flex flex-col items-center shrink-0">
+            {/* 200px Gauge */}
+            <div className="relative w-48 h-48">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 200 200">
+                <circle
+                  className="text-samridhi-border"
+                  strokeWidth="12"
+                  stroke="currentColor"
+                  fill="transparent"
+                  r={radius}
+                  cx="100"
+                  cy="100"
+                />
+                <circle
+                  stroke="#00E676"
+                  strokeWidth="12"
+                  fill="transparent"
+                  r={radius}
+                  cx="100"
+                  cy="100"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={strokeDashoffset}
+                  strokeLinecap="round"
+                  className="transition-all duration-1000 ease-out"
+                  style={{
+                    filter: 'drop-shadow(0 0 8px rgba(0, 230, 118, 0.4))'
+                  }}
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-5xl font-black text-samridhi-textPrimary leading-none">{targetScore}</span>
+                <span className="text-[10px] tracking-wider text-samridhi-textMuted font-bold uppercase mt-2">AI Rating</span>
+              </div>
             </div>
-            <div className="w-full bg-samridhi-bg h-2 rounded-full overflow-hidden">
-              <div className="bg-samridhi-secondary h-full transition-all duration-700" style={{ width: upiLinked ? '85%' : '0%' }}></div>
+            
+            <span className="text-[10px] text-samridhi-textMuted font-bold mt-3">Last updated: 22 May 2026</span>
+            <div className="mt-2.5 px-3.5 py-1 rounded-full bg-samridhi-success/10 border border-samridhi-success/35 text-samridhi-success font-black tracking-widest text-[9px]">
+              LOW RISK
             </div>
-            <p className="text-[10px] text-samridhi-textMuted leading-normal">
-              {upiLinked 
-                ? 'UPI linking confirmed. Evaluates transaction volume consistency over the past 30 days.'
-                : 'UPI cashflow not connected. Connect banking details to raise alternative credibility metrics.'}
-            </p>
           </div>
 
-          {/* Metric 2 */}
-          <div className="bg-samridhi-surface border border-samridhi-border/60 p-5 rounded-xl space-y-3">
-            <div className="flex items-center justify-between text-xs font-bold">
-              <span className="text-samridhi-textPrimary">Verified Professional Credentials (25%)</span>
-              <span className="text-samridhi-primary">
-                {Math.min(100, 45 + (dashboardState.skills.filter(s => s.verified).length * 15))}/100
-              </span>
-            </div>
-            <div className="w-full bg-samridhi-bg h-2 rounded-full overflow-hidden">
-              <div className="bg-samridhi-primary h-full transition-all duration-700" style={{ width: `${Math.min(100, 45 + (dashboardState.skills.filter(s => s.verified).length * 15))}%` }}></div>
-            </div>
-            <p className="text-[10px] text-samridhi-textMuted leading-normal">
-              Analyzing {dashboardState.skills.filter(s => s.verified).length} active verified certificates. Certifications from AWS and Meta act as proxies for earning potential.
-            </p>
-          </div>
+          {/* History Chart */}
+          <div className="flex-1 w-full space-y-3">
+            <h4 className="font-extrabold text-[10px] text-samridhi-textMuted uppercase tracking-wider">Score Progression</h4>
+            
+            {/* SVG History Chart */}
+            <div className="bg-samridhi-surface/50 border border-samridhi-border p-3 rounded-xl">
+              <svg className="w-full h-24" viewBox="0 0 240 100">
+                {/* Grid Lines */}
+                <line x1="25" y1="20" x2="230" y2="20" stroke="#2A2A3E" strokeDasharray="3 3" />
+                <line x1="25" y1="50" x2="230" y2="50" stroke="#2A2A3E" strokeDasharray="3 3" />
+                <line x1="25" y1="80" x2="230" y2="80" stroke="#2A2A3E" strokeDasharray="3 3" />
+                
+                {/* Month Labels */}
+                <text x="25" y="95" fill="#8888AA" fontSize="9" fontWeight="bold" textAnchor="middle">Jan</text>
+                <text x="75" y="95" fill="#8888AA" fontSize="9" fontWeight="bold" textAnchor="middle">Feb</text>
+                <text x="125" y="95" fill="#8888AA" fontSize="9" fontWeight="bold" textAnchor="middle">Mar</text>
+                <text x="175" y="95" fill="#8888AA" fontSize="9" fontWeight="bold" textAnchor="middle">Apr</text>
+                <text x="225" y="95" fill="#8888AA" fontSize="9" fontWeight="bold" textAnchor="middle">May</text>
+                
+                {/* Score Labels */}
+                <text x="18" y="23" fill="#8888AA" fontSize="8" fontWeight="bold" textAnchor="end">80</text>
+                <text x="18" y="53" fill="#8888AA" fontSize="8" fontWeight="bold" textAnchor="end">60</text>
+                <text x="18" y="83" fill="#8888AA" fontSize="8" fontWeight="bold" textAnchor="end">40</text>
 
-          {/* Metric 3 */}
-          <div className="bg-samridhi-surface border border-samridhi-border/60 p-5 rounded-xl space-y-3">
-            <div className="flex items-center justify-between text-xs font-bold">
-              <span className="text-samridhi-textPrimary">Simulated Repayment Index (30%)</span>
-              <span className="text-samridhi-success">80/100</span>
+                {/* Polyline: Jan 58, Feb 61, Mar 65, Apr 69, May 72 */}
+                {/* Map scores: y = 100 - score. (approx coordinates: Jan: x=25 y=52, Feb: x=75 y=49, Mar: x=125 y=43, Apr: x=175 y=37, May: x=225 y=32) */}
+                <polyline
+                  fill="none"
+                  stroke="#00D4FF"
+                  strokeWidth="2.5"
+                  points="25,52 75,49 125,43 175,37 225,32"
+                  className="transition-all duration-1000 ease-out"
+                />
+                
+                {/* Dots at points */}
+                <circle cx="25" cy="52" r="3.5" fill="#00D4FF" />
+                <circle cx="75" cy="49" r="3.5" fill="#00D4FF" />
+                <circle cx="125" cy="43" r="3.5" fill="#00D4FF" />
+                <circle cx="175" cy="37" r="3.5" fill="#00D4FF" />
+                <circle cx="225" cy="32" r="3.5" fill="#00D4FF" />
+                
+                {/* Point values */}
+                <text x="25" y="44" fill="#F0F0FF" fontSize="8" fontWeight="black" textAnchor="middle">58</text>
+                <text x="75" y="41" fill="#F0F0FF" fontSize="8" fontWeight="black" textAnchor="middle">61</text>
+                <text x="125" y="35" fill="#F0F0FF" fontSize="8" fontWeight="black" textAnchor="middle">65</text>
+                <text x="175" y="29" fill="#F0F0FF" fontSize="8" fontWeight="black" textAnchor="middle">69</text>
+                <text x="225" y="24" fill="#F0F0FF" fontSize="8" fontWeight="black" textAnchor="middle">72</text>
+              </svg>
             </div>
-            <div className="w-full bg-samridhi-bg h-2 rounded-full overflow-hidden">
-              <div className="bg-samridhi-success h-full" style={{ width: '80%' }}></div>
-            </div>
-            <p className="text-[10px] text-samridhi-textMuted leading-normal">
-              Historical data indicates no payment defaults inside Samridhi networks. Timely repayments provide high structural trust scores.
-            </p>
           </div>
-
-          {/* Metric 4 */}
-          <div className="bg-samridhi-surface border border-samridhi-border/60 p-5 rounded-xl space-y-3">
-            <div className="flex items-center justify-between text-xs font-bold">
-              <span className="text-samridhi-textPrimary">KYC & Digital Footprint Stability (20%)</span>
-              <span className="text-samridhi-warning">
-                {((aadhaarVerified ? 50 : 0) + (panVerified ? 50 : 0))}/100
-              </span>
-            </div>
-            <div className="w-full bg-samridhi-bg h-2 rounded-full overflow-hidden">
-              <div className="bg-samridhi-warning h-full transition-all duration-700" style={{ width: `${(aadhaarVerified ? 50 : 0) + (panVerified ? 50 : 0)}%` }}></div>
-            </div>
-            <p className="text-[10px] text-samridhi-textMuted leading-normal">
-              Matches Government registry verification and identity parameters (Aadhaar & PAN matching status).
-            </p>
-          </div>
-
         </div>
+
+        {/* RIGHT COLUMN: SHAP Bar Chart */}
+        <div className="lg:col-span-6 bg-samridhi-card border border-samridhi-border p-6 rounded-2xl space-y-4 shadow-lg flex flex-col justify-between">
+          <div>
+            <h4 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider">Why this score?</h4>
+            <p className="text-[11px] text-samridhi-textMuted mt-1">SHAP values indicating features driving score shifts vs baseline.</p>
+          </div>
+
+          <div className="space-y-2.5 pt-2">
+            {shapFactors.map((item, idx) => {
+              const impactPct = Math.min(100, Math.abs(item.impact) * 8); // Scale for visuals
+              return (
+                <div key={idx} className="flex items-center space-x-3 text-[11px]">
+                  {/* Factor Label */}
+                  <span className="w-28 text-samridhi-textMuted truncate font-bold">{item.label}</span>
+                  
+                  {/* Horizontal Bar container */}
+                  <div className="flex-1 h-3.5 bg-samridhi-surface/75 border border-samridhi-border/40 rounded overflow-hidden relative">
+                    <div
+                      className={`h-full rounded transition-all duration-1000 ease-out ${
+                        item.positive ? 'bg-samridhi-success' : 'bg-samridhi-danger'
+                      }`}
+                      style={{
+                        width: mounted ? `${impactPct}%` : '0%'
+                      }}
+                    ></div>
+                  </div>
+
+                  {/* Impact Value */}
+                  <span className={`w-12 text-right font-black font-mono ${
+                    item.positive ? 'text-samridhi-success' : 'text-samridhi-danger'
+                  }`}>
+                    {item.positive ? '+' : ''}{item.impact}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
       </div>
 
-      {/* INTERACTIVE CREDIT SIMULATOR */}
-      <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl space-y-4">
+      {/* SECTION 2 - Detailed Breakdown (full width card) */}
+      <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl space-y-4 shadow-lg">
         <h3 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider border-b border-samridhi-border/40 pb-3">
-          Credit Score Simulator (What-If Analysis)
+          Detailed Factor Underwriting Breakdown
         </h3>
-        <p className="text-xs text-samridhi-textMuted leading-relaxed">
-          Toggle the actions below to simulate how financial behaviors and additional digital assets will affect your real-time Samridhi AI Credibility Score:
-        </p>
+        
+        <div className="divide-y divide-samridhi-border/40">
+          {accordionFactors.map((factor, idx) => {
+            const isExpanded = expandedRow === idx;
+            return (
+              <div key={idx} className="py-3.5">
+                {/* Header (Trigger) */}
+                <div 
+                  onClick={() => toggleAccordion(idx)}
+                  className="flex items-center justify-between cursor-pointer hover:bg-samridhi-surface/25 p-2 rounded-lg transition-colors"
+                >
+                  <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                    {/* Name */}
+                    <span className="md:col-span-4 font-extrabold text-xs text-samridhi-textPrimary">{factor.name}</span>
+                    
+                    {/* Score */}
+                    <span className="md:col-span-2 font-bold text-samridhi-textMuted">{factor.score}</span>
+                    
+                    {/* Pill */}
+                    <div className="md:col-span-2">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${factor.levelColor}`}>
+                        {factor.level}
+                      </span>
+                    </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-3">
+                    {/* Progress bar */}
+                    <div className="md:col-span-4 pr-4">
+                      <div className="w-full bg-samridhi-bg h-1.5 rounded-full overflow-hidden border border-samridhi-border">
+                        <div 
+                          className={`h-full ${
+                            factor.level === 'High' 
+                              ? 'bg-samridhi-success' 
+                              : factor.level === 'Medium' 
+                                ? 'bg-samridhi-warning' 
+                                : 'bg-samridhi-danger'
+                          }`}
+                          style={{ width: `${factor.pct}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Expand Icon */}
+                  <div className="shrink-0 text-samridhi-textMuted">
+                    <svg className={`w-4 h-4 transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Expanded content */}
+                {isExpanded && (
+                  <div className="mt-3.5 px-3 py-3.5 bg-samridhi-surface/50 border border-samridhi-border/50 rounded-xl space-y-3.5 animate-fade-in">
+                    <div>
+                      <span className="text-[10px] font-bold text-samridhi-textMuted uppercase tracking-wider block mb-1">Telemetry Analysis</span>
+                      <p className="text-xs text-samridhi-textPrimary leading-relaxed">{factor.explanation}</p>
+                    </div>
+                    
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-bold text-samridhi-textMuted uppercase tracking-wider block">How to Improve</span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {factor.tips.map((tip, tipIdx) => (
+                          <div key={tipIdx} className="flex items-center space-x-2 text-[11px] text-samridhi-textPrimary font-medium">
+                            {/* Info/Bulb SVG instead of 💡 */}
+                            <svg className="w-4 h-4 text-samridhi-secondary shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                            <span>{tip}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* SECTION 3 - Improvement Roadmap */}
+      <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl space-y-4 shadow-lg">
+        <h3 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider border-b border-samridhi-border/40 pb-3">
+          How to reach 85+ score
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           
-          <button
-            onClick={() => setWhatIfRepayActive(!whatIfRepayActive)}
-            className={`p-4 rounded-xl border text-left flex flex-col justify-between transition-all ${
-              whatIfRepayActive 
-                ? 'bg-samridhi-success/5 border-samridhi-success text-samridhi-textPrimary shadow-[0_0_10px_rgba(0,230,118,0.1)]' 
-                : 'bg-samridhi-surface border-samridhi-border hover:border-samridhi-border/80 text-samridhi-textMuted'
-            }`}
-          >
-            <span className="text-xs font-bold mb-1">Repay Active Microloan</span>
-            <div className="flex items-center justify-between w-full mt-4">
-              <span className={`text-[10px] font-black ${whatIfRepayActive ? 'text-samridhi-success' : 'text-samridhi-textMuted'}`}>+6 Points</span>
-              <span className="text-[11px]">{whatIfRepayActive ? 'Active' : 'Simulate'}</span>
+          {/* Action 1 */}
+          <div className="bg-samridhi-surface border border-samridhi-border p-4 rounded-xl flex flex-col justify-between space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                {/* Book icon instead of 🎓 */}
+                <div className="w-8 h-8 rounded-lg bg-samridhi-primary/10 flex items-center justify-center text-samridhi-primary">
+                  <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+                <h4 className="font-extrabold text-xs text-samridhi-textPrimary">Add 2 certifications</h4>
+              </div>
+              <p className="text-[10px] text-samridhi-textMuted leading-normal">
+                Verifying advanced skill credentials adds verified repayment earning parameters.
+              </p>
+              <div className="text-[10px] font-black text-samridhi-success font-mono">+6 points</div>
             </div>
-          </button>
+            
+            <button className="w-full text-center border border-samridhi-border hover:border-samridhi-primary/50 text-samridhi-textPrimary hover:text-white font-bold py-1.5 rounded-lg text-[10px] transition-all">
+              Start Now
+            </button>
+          </div>
 
-          <button
-            onClick={() => setWhatIfLinkGithub(!whatIfLinkGithub)}
-            className={`p-4 rounded-xl border text-left flex flex-col justify-between transition-all ${
-              whatIfLinkGithub 
-                ? 'bg-samridhi-primary/5 border-samridhi-primary text-samridhi-textPrimary shadow-[0_0_10px_rgba(108,99,255,0.1)]' 
-                : 'bg-samridhi-surface border-samridhi-border hover:border-samridhi-border/80 text-samridhi-textMuted'
-            }`}
-          >
-            <span className="text-xs font-bold mb-1">Link GitHub Account</span>
-            <div className="flex items-center justify-between w-full mt-4">
-              <span className={`text-[10px] font-black ${whatIfLinkGithub ? 'text-samridhi-primary' : 'text-samridhi-textMuted'}`}>+8 Points</span>
-              <span className="text-[11px]">{whatIfLinkGithub ? 'Active' : 'Simulate'}</span>
+          {/* Action 2 */}
+          <div className="bg-samridhi-surface border border-samridhi-border p-4 rounded-xl flex flex-col justify-between space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                {/* Credit card icon instead of 💳 */}
+                <div className="w-8 h-8 rounded-lg bg-samridhi-secondary/10 flex items-center justify-center text-samridhi-secondary">
+                  <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                </div>
+                <h4 className="font-extrabold text-xs text-samridhi-textPrimary">Pay utilities via UPI</h4>
+              </div>
+              <p className="text-[10px] text-samridhi-textMuted leading-normal">
+                Establish household spending utility indices. Standard utility streams denote structural stability.
+              </p>
+              <div className="text-[10px] font-black text-samridhi-success font-mono">+4 points</div>
             </div>
-          </button>
+            
+            <button className="w-full text-center border border-samridhi-border hover:border-samridhi-primary/50 text-samridhi-textPrimary hover:text-white font-bold py-1.5 rounded-lg text-[10px] transition-all">
+              Start Now
+            </button>
+          </div>
 
-          <button
-            onClick={() => setWhatIfNewCert(!whatIfNewCert)}
-            className={`p-4 rounded-xl border text-left flex flex-col justify-between transition-all ${
-              whatIfNewCert 
-                ? 'bg-samridhi-secondary/5 border-samridhi-secondary text-samridhi-textPrimary shadow-[0_0_10px_rgba(0,212,255,0.1)]' 
-                : 'bg-samridhi-surface border-samridhi-border hover:border-samridhi-border/80 text-samridhi-textMuted'
-            }`}
-          >
-            <span className="text-xs font-bold mb-1">Add Google UX Cert</span>
-            <div className="flex items-center justify-between w-full mt-4">
-              <span className={`text-[10px] font-black ${whatIfNewCert ? 'text-samridhi-secondary' : 'text-samridhi-textMuted'}`}>+5 Points</span>
-              <span className="text-[11px]">{whatIfNewCert ? 'Active' : 'Simulate'}</span>
+          {/* Action 3 */}
+          <div className="bg-samridhi-surface border border-samridhi-border p-4 rounded-xl flex flex-col justify-between space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                {/* Calendar icon instead of 📅 */}
+                <div className="w-8 h-8 rounded-lg bg-samridhi-success/10 flex items-center justify-center text-samridhi-success">
+                  <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h4 className="font-extrabold text-xs text-samridhi-textPrimary">6 months history</h4>
+              </div>
+              <p className="text-[10px] text-samridhi-textMuted leading-normal">
+                Accumulate transaction history length indicators to bolster score security weight.
+              </p>
+              <div className="text-[10px] font-black text-samridhi-success font-mono">+3 points</div>
             </div>
-          </button>
-
-          <button
-            onClick={() => setWhatIfConsistentUpi(!whatIfConsistentUpi)}
-            className={`p-4 rounded-xl border text-left flex flex-col justify-between transition-all ${
-              whatIfConsistentUpi 
-                ? 'bg-samridhi-warning/5 border-samridhi-warning text-samridhi-textPrimary shadow-[0_0_10px_rgba(255,179,0,0.1)]' 
-                : 'bg-samridhi-surface border-samridhi-border hover:border-samridhi-border/80 text-samridhi-textMuted'
-            }`}
-          >
-            <span className="text-xs font-bold mb-1">30-Day Steady Deposits</span>
-            <div className="flex items-center justify-between w-full mt-4">
-              <span className={`text-[10px] font-black ${whatIfConsistentUpi ? 'text-samridhi-warning' : 'text-samridhi-textMuted'}`}>+7 Points</span>
-              <span className="text-[11px]">{whatIfConsistentUpi ? 'Active' : 'Simulate'}</span>
-            </div>
-          </button>
+            
+            <button className="w-full text-center border border-samridhi-border hover:border-samridhi-primary/50 text-samridhi-textPrimary hover:text-white font-bold py-1.5 rounded-lg text-[10px] transition-all">
+              Start Now
+            </button>
+          </div>
 
         </div>
       </div>
+
     </div>
   );
 };

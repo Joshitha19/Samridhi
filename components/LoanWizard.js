@@ -4,359 +4,595 @@
 window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab }) => {
   const { useState, useEffect, useMemo } = React;
   
-  const [wizardStep, setWizardStep] = useState(1);
-  
-  // Form fields
-  const [loanAmount, setLoanAmount] = useState(75000);
-  const [loanTenure, setLoanTenure] = useState(12);
-  const [loanPurpose, setLoanPurpose] = useState('Business Tools');
+  const [step, setStep] = useState(1); // 1, 2, 3
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [appId, setAppId] = useState('');
 
-  // Processing simulated screens
-  const [processingProgress, setProcessingProgress] = useState(0);
-  const [processingMsg, setProcessingMsg] = useState('');
+  // Step 1 Form fields
+  const [loanAmount, setLoanAmount] = useState(100000);
+  const [loanPurpose, setLoanPurpose] = useState('Business');
+  const [tenure, setTenure] = useState(12);
 
-  useEffect(() => {
-    if (wizardStep === 2) {
-      // Trigger parsing simulation
-      setProcessingProgress(0);
-      setProcessingMsg('Initializing UPI Stream Linker...');
-      
-      const interval = setInterval(() => {
-        setProcessingProgress((prev) => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            setTimeout(() => setWizardStep(3), 600);
-            return 100;
-          }
-          const stepInc = Math.floor(Math.random() * 20) + 10;
-          const nextVal = Math.min(100, prev + stepInc);
+  // Step 2 Form fields
+  const [phone, setPhone] = useState('9876543210');
+  const [income, setIncome] = useState(45000);
+  const [employmentType, setEmploymentType] = useState('Freelancer');
+  const [panNumber, setPanNumber] = useState('ABCDE1234F');
+  const [aadhaarLast4, setAadhaarLast4] = useState('1234');
+  const [bankAccount, setBankAccount] = useState('987654321098');
+  const [ifscCode, setIfscCode] = useState('HDFC0000123');
 
-          if (nextVal < 40) setProcessingMsg('Parsing digital UPI transaction statements...');
-          else if (nextVal < 70) setProcessingMsg('Analyzing Cashflow Stability & Inflow intervals...');
-          else if (nextVal < 95) setProcessingMsg('Scanning government registry profiles (PAN/UIDAI)...');
-          else setProcessingMsg('Synthesizing dynamic credit metrics...');
-
-          return nextVal;
-        });
-      }, 300);
-
-      return () => clearInterval(interval);
+  // EMI Calculator
+  const emiCalculations = useMemo(() => {
+    const amount = Number(loanAmount) || 0;
+    const annualRate = 11.5; // 11.5% annual interest as per prompt
+    const monthlyRate = annualRate / 12 / 100;
+    const n = tenure;
+    
+    if (amount <= 0 || n <= 0) {
+      return { emi: 0, totalInterest: 0, totalPayable: 0 };
     }
-  }, [wizardStep]);
+    
+    // EMI = (amount × monthly_rate × (1+rate)^n) / ((1+rate)^n - 1)
+    const power = Math.pow(1 + monthlyRate, n);
+    const emi = (amount * monthlyRate * power) / (power - 1);
+    
+    const totalPayable = emi * n;
+    const totalInterest = totalPayable - amount;
+    
+    return {
+      emi: Math.round(emi),
+      totalInterest: Math.round(totalInterest),
+      totalPayable: Math.round(totalPayable)
+    };
+  }, [loanAmount, tenure]);
 
-  // Handle final decision terms
-  const interestRate = useMemo(() => {
-    if (calculatedScore >= 75) return 8.5; // Premium
-    if (calculatedScore >= 60) return 10.2; // Regular
-    if (calculatedScore >= 45) return 12.0; // Subprime
-    return 14.5;
-  }, [calculatedScore]);
+  const handleNextStep = (e) => {
+    e.preventDefault();
+    if (step < 3) setStep(step + 1);
+  };
 
-  const monthlyEMI = useMemo(() => {
-    const principal = loanAmount;
-    const annualRate = interestRate / 100;
-    const ratePerMonth = annualRate / 12;
-    const months = loanTenure;
-    // Simple EMI calculation formula
-    const emi = (principal * ratePerMonth * Math.pow(1 + ratePerMonth, months)) / (Math.pow(1 + ratePerMonth, months) - 1);
-    return Math.round(emi);
-  }, [loanAmount, loanTenure, interestRate]);
+  const handlePrevStep = () => {
+    if (step > 1) setStep(step - 1);
+  };
 
-  const isApproved = calculatedScore >= 41;
+  const handleSubmit = () => {
+    setSubmitting(true);
+    // Simulate 1.5s loading spinner animation
+    setTimeout(() => {
+      const generatedId = `SMR-2026-${Math.floor(10000 + Math.random() * 90000)}`;
+      setAppId(generatedId);
+      setSubmitting(false);
+      setSuccess(true);
+      
+      // Dispatch Apply Loan action
+      dispatch({
+        type: 'APPLY_LOAN',
+        payload: {
+          id: generatedId,
+          lender: "Samridhi AI Match",
+          amount: loanAmount,
+          rate: "11.5%",
+          emi: `₹${emiCalculations.emi.toLocaleString()}`,
+          status: "Under Review",
+          date: new Date().toISOString().split('T')[0]
+        }
+      });
+
+      // Dispatch Notification
+      dispatch({
+        type: 'ADD_NOTIFICATION',
+        payload: {
+          id: `n-${Date.now()}`,
+          text: `Loan Application ${generatedId} submitted for review.`,
+          read: false,
+          date: "Just now"
+        }
+      });
+    }, 1500);
+  };
+
+  const resetForm = () => {
+    setStep(1);
+    setSuccess(false);
+    setLoanAmount(100000);
+    setLoanPurpose('Business');
+    setTenure(12);
+  };
+
+  if (submitting) {
+    return (
+      <div className="py-20 flex flex-col items-center justify-center space-y-6 text-center">
+        <div className="w-14 h-14 rounded-full border-4 border-samridhi-primary/20 border-t-samridhi-primary animate-spin"></div>
+        <div className="space-y-1">
+          <h4 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider">Processing Application</h4>
+          <p className="text-xs text-samridhi-textMuted">AI Underwriting models are evaluating parameters...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (success) {
+    return (
+      <div className="py-8 flex flex-col items-center justify-center space-y-6 text-center animate-fade-in">
+        {/* Checkmark SVG */}
+        <div className="w-16 h-16 rounded-full bg-samridhi-success/10 border-2 border-samridhi-success flex items-center justify-center text-samridhi-success">
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        
+        <div className="space-y-2">
+          <h3 className="font-extrabold text-lg text-samridhi-textPrimary">Application Submitted!</h3>
+          <p className="text-xs text-samridhi-textMuted max-w-sm">
+            Your application is being evaluated using alternative scoring indicators. Follow your status below.
+          </p>
+        </div>
+
+        {/* Application ID Card */}
+        <div className="bg-samridhi-surface border border-samridhi-border p-4.5 rounded-2xl w-full max-w-sm flex justify-between items-center text-xs">
+          <span className="text-samridhi-textMuted font-bold uppercase tracking-wider">Application ID:</span>
+          <span className="font-black text-samridhi-secondary tracking-widest text-sm">{appId}</span>
+        </div>
+
+        {/* Status Tracker: Submitted -> Under Review -> AI Scoring -> Decision */}
+        <div className="w-full max-w-md bg-samridhi-surface border border-samridhi-border/50 p-6 rounded-2xl space-y-4">
+          <h4 className="font-bold text-[10px] text-samridhi-textMuted uppercase tracking-wider text-left">Application Status</h4>
+          
+          <div className="relative flex items-center justify-between">
+            {/* Connection Line */}
+            <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-samridhi-border z-0"></div>
+            <div className="absolute left-0 w-1/3 top-1/2 -translate-y-1/2 h-0.5 bg-samridhi-primary z-0"></div>
+            
+            {[
+              { label: 'Submitted', active: true },
+              { label: 'Under Review', active: false },
+              { label: 'AI Scoring', active: false },
+              { label: 'Decision', active: false }
+            ].map((node, i) => (
+              <div key={i} className="relative z-10 flex flex-col items-center">
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                  node.active 
+                    ? 'bg-samridhi-primary text-white border-2 border-samridhi-primary' 
+                    : 'bg-samridhi-card text-samridhi-textMuted border border-samridhi-border'
+                }`}>
+                  {i + 1}
+                </div>
+                <span className={`text-[9px] font-bold mt-2 uppercase tracking-wide ${
+                  node.active ? 'text-samridhi-textPrimary' : 'text-samridhi-textMuted'
+                }`}>{node.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <button
+          onClick={resetForm}
+          className="px-6 py-2.5 bg-samridhi-primary hover:bg-samridhi-primary/95 text-white font-bold rounded-xl text-xs shadow-lg transition-all"
+        >
+          Apply Again
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      {/* STEP INDICATORS */}
-      <div className="flex items-center justify-between text-[11px] font-bold text-samridhi-textMuted uppercase tracking-wider border-b border-samridhi-border/30 pb-3 mb-6">
-        <span className={wizardStep === 1 ? 'text-samridhi-primary font-black' : ''}>1. Customize Capital</span>
-        <span>&gt;</span>
-        <span className={wizardStep === 2 ? 'text-samridhi-secondary font-black animate-pulse' : ''}>2. Parse Telemetry</span>
-        <span>&gt;</span>
-        <span className={wizardStep === 3 ? 'text-samridhi-success font-black' : ''}>3. Underwriting Decision</span>
+    <div className="space-y-8">
+      {/* 3-Step Progress Indicator */}
+      <div className="relative">
+        <div className="absolute top-4 left-4 right-4 h-0.5 bg-samridhi-border z-0"></div>
+        {/* Completed Line Fill */}
+        <div 
+          className="absolute top-4 left-4 h-0.5 bg-samridhi-primary transition-all duration-300 z-0" 
+          style={{ width: step === 1 ? '0%' : step === 2 ? '50%' : '100%' }}
+        ></div>
+
+        <div className="relative z-10 flex justify-between">
+          {[
+            { id: 1, name: 'Loan Details' },
+            { id: 2, name: 'Financial Info' },
+            { id: 3, name: 'Review & Submit' }
+          ].map((item) => {
+            const isCompleted = step > item.id;
+            const isActive = step === item.id;
+            return (
+              <div key={item.id} className="flex flex-col items-center">
+                <div 
+                  className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                    isCompleted 
+                      ? 'bg-samridhi-primary text-white shadow-lg shadow-samridhi-primary/25' 
+                      : isActive 
+                        ? 'bg-samridhi-surface text-samridhi-primary border-2 border-samridhi-primary animate-pulse shadow-md shadow-samridhi-primary/10' 
+                        : 'bg-samridhi-surface text-samridhi-textMuted border border-samridhi-border'
+                  }`}
+                >
+                  {isCompleted ? (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    item.id
+                  )}
+                </div>
+                <span className={`text-[10px] font-bold mt-2 uppercase tracking-wide ${
+                  isActive ? 'text-samridhi-textPrimary' : 'text-samridhi-textMuted'
+                }`}>{item.name}</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* STEP 1: PARAMETERIZE */}
-      {wizardStep === 1 && (
-        <div className="space-y-6 animate-fade-in">
+      {/* Form Steps */}
+      {step === 1 && (
+        <form onSubmit={handleNextStep} className="space-y-6 animate-fade-in">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Sliders */}
-            <div className="space-y-5">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold text-samridhi-textMuted uppercase">
-                  <span>Loan capital Amount</span>
-                  <span className="text-samridhi-secondary font-black">₹{loanAmount.toLocaleString()}</span>
-                </div>
-                <input 
-                  type="range" 
-                  min="10000" 
-                  max="300000" 
-                  step="5000"
-                  value={loanAmount} 
-                  onChange={(e) => setLoanAmount(parseInt(e.target.value))}
-                  className="w-full h-1.5 bg-samridhi-border rounded-lg appearance-none cursor-pointer accent-samridhi-primary focus:outline-none"
-                />
-                <div className="flex justify-between text-[9px] text-samridhi-textMuted font-bold">
-                  <span>₹10,000</span>
-                  <span>₹3,00,000</span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold text-samridhi-textMuted uppercase">
-                  <span>Repayment tenure</span>
-                  <span className="text-samridhi-secondary font-black">{loanTenure} Months</span>
-                </div>
-                <input 
-                  type="range" 
-                  min="3" 
-                  max="24" 
-                  step="3"
-                  value={loanTenure} 
-                  onChange={(e) => setLoanTenure(parseInt(e.target.value))}
-                  className="w-full h-1.5 bg-samridhi-border rounded-lg appearance-none cursor-pointer accent-samridhi-primary focus:outline-none"
-                />
-                <div className="flex justify-between text-[9px] text-samridhi-textMuted font-bold">
-                  <span>3 Months</span>
-                  <span>24 Months</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Dropdown & Details */}
             <div className="space-y-4">
-              <div className="flex flex-col space-y-1.5 text-xs">
-                <label className="font-bold text-samridhi-textMuted uppercase tracking-wider">Capital Purpose</label>
+              {/* Loan Amount input */}
+              <div className="flex flex-col space-y-1.5">
+                <label className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">Loan Amount (₹)</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-3.5 text-samridhi-textMuted font-bold">₹</span>
+                  <input
+                    type="number"
+                    min="10000"
+                    max="1000000"
+                    value={loanAmount}
+                    onChange={(e) => setLoanAmount(Math.max(0, parseInt(e.target.value) || 0))}
+                    className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary rounded-xl py-3 pl-8 pr-4 text-samridhi-textPrimary focus:outline-none transition-all text-sm font-bold"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Loan Purpose dropdown */}
+              <div className="flex flex-col space-y-1.5">
+                <label className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">Loan Purpose</label>
                 <select
                   value={loanPurpose}
                   onChange={(e) => setLoanPurpose(e.target.value)}
-                  className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary rounded-xl py-3 px-4 text-samridhi-textPrimary focus:outline-none transition-colors"
+                  className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary rounded-xl py-3 px-4 text-samridhi-textPrimary focus:outline-none transition-all text-sm font-bold"
                 >
-                  <option value="Business Tools">Professional / Freelance tools (Laptop, Software licenses)</option>
-                  <option value="Inventory Expansion">Inventory purchase / Stock replenishment</option>
-                  <option value="Vocational Fees">Educational / Up-skilling vocational training fees</option>
-                  <option value="Working Capital">Daily working capital (Gig-worker cash buffer)</option>
+                  <option value="Education">Education</option>
+                  <option value="Business">Business</option>
+                  <option value="Personal">Personal</option>
+                  <option value="Medical">Medical</option>
+                  <option value="Home Renovation">Home Renovation</option>
+                  <option value="Vehicle">Vehicle</option>
                 </select>
               </div>
+            </div>
 
-              {/* Quick terms estimate based on user type */}
-              <div className="bg-samridhi-surface border border-samridhi-border/60 p-4 rounded-xl text-xs space-y-2">
-                <h4 className="font-bold text-samridhi-textPrimary">Underwriting Estimate</h4>
-                <p className="text-[11px] text-samridhi-textMuted">
-                  Based on your current AI credit rating of <strong className="text-samridhi-secondary">{calculatedScore}</strong>, you qualify for an estimated interest rate of <strong className="text-samridhi-success">~{interestRate}% p.a.</strong>
-                </p>
+            <div className="space-y-4">
+              {/* Tenure slider */}
+              <div className="flex flex-col space-y-2">
+                <div className="flex justify-between items-center text-xs font-bold text-samridhi-textMuted uppercase">
+                  <span>Tenure</span>
+                  <span className="text-samridhi-secondary font-black">{tenure} Months</span>
+                </div>
+                <input
+                  type="range"
+                  min="6"
+                  max="84"
+                  step="6"
+                  value={tenure}
+                  onChange={(e) => setTenure(parseInt(e.target.value))}
+                  className="w-full h-1.5 bg-samridhi-border rounded-lg appearance-none cursor-pointer accent-samridhi-primary focus:outline-none"
+                />
+                <div className="flex justify-between text-[10px] text-samridhi-textMuted font-bold">
+                  <span>6 Months</span>
+                  <span>84 Months</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Live EMI Preview Card */}
+          <div className="bg-samridhi-surface border border-samridhi-border/70 p-5 rounded-2xl space-y-4">
+            <h4 className="font-extrabold text-[10px] text-samridhi-textMuted uppercase tracking-wider border-b border-samridhi-border/40 pb-2">Estimated EMI Preview (11.5% p.a.)</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-samridhi-card border border-samridhi-border p-3.5 rounded-xl text-center">
+                <span className="text-[10px] font-bold text-samridhi-textMuted uppercase block">EMI / Month</span>
+                <span className="text-base font-black text-samridhi-secondary">₹{emiCalculations.emi.toLocaleString()}</span>
+              </div>
+              <div className="bg-samridhi-card border border-samridhi-border p-3.5 rounded-xl text-center">
+                <span className="text-[10px] font-bold text-samridhi-textMuted uppercase block">Total Interest</span>
+                <span className="text-base font-black text-samridhi-danger">₹{emiCalculations.totalInterest.toLocaleString()}</span>
+              </div>
+              <div className="bg-samridhi-card border border-samridhi-border p-3.5 rounded-xl text-center">
+                <span className="text-[10px] font-bold text-samridhi-textMuted uppercase block">Total Payable</span>
+                <span className="text-base font-black text-samridhi-success">₹{emiCalculations.totalPayable.toLocaleString()}</span>
               </div>
             </div>
           </div>
 
           <div className="flex justify-end pt-4 border-t border-samridhi-border/40">
             <button
-              onClick={() => setWizardStep(2)}
-              className="px-6 py-2.5 bg-samridhi-primary hover:bg-samridhi-primary/90 text-white font-bold rounded-xl text-xs shadow-lg transition-colors flex items-center space-x-1"
+              type="submit"
+              className="px-6 py-2.5 bg-samridhi-primary hover:bg-samridhi-primary/95 text-white font-bold rounded-xl text-xs shadow-lg transition-colors flex items-center space-x-1"
             >
-              <span>Link Digital Telemetry</span>
-              <Icons.ChevronRight className="w-4 h-4" />
+              <span>Next</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
             </button>
           </div>
-        </div>
+        </form>
       )}
 
-      {/* STEP 2: TELEMETRY PROCESSING */}
-      {wizardStep === 2 && (
-        <div className="py-12 flex flex-col items-center justify-center space-y-6 animate-fade-in text-center">
-          <div className="w-16 h-16 rounded-full border-4 border-t-samridhi-secondary border-samridhi-border animate-spin flex items-center justify-center mb-2">
-            <span className="text-xl">📊</span>
-          </div>
-          
-          <div className="w-full max-w-xs space-y-2">
-            <h4 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider">{processingProgress}% Complete</h4>
-            <div className="w-full bg-samridhi-bg h-2 rounded-full overflow-hidden border border-samridhi-border">
-              <div className="bg-samridhi-secondary h-full transition-all duration-300" style={{ width: `${processingProgress}%` }}></div>
+      {step === 2 && (
+        <form onSubmit={handleNextStep} className="space-y-6 animate-fade-in">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Personal Details */}
+            <div className="space-y-4">
+              <h4 className="font-extrabold text-[10px] text-samridhi-textMuted uppercase tracking-wider border-b border-samridhi-border/30 pb-1.5">Personal Information</h4>
+              
+              <div className="flex flex-col space-y-1">
+                <label className="text-[10px] font-bold text-samridhi-textMuted uppercase">Full Name</label>
+                <input
+                  type="text"
+                  value={user.name || 'Mock User'}
+                  disabled
+                  className="w-full bg-samridhi-surface border border-samridhi-border rounded-xl py-2.5 px-4 text-samridhi-textMuted focus:outline-none text-xs font-semibold cursor-not-allowed"
+                />
+              </div>
+
+              <div className="flex flex-col space-y-1">
+                <label className="text-[10px] font-bold text-samridhi-textMuted uppercase">Email Address</label>
+                <input
+                  type="email"
+                  value={user.email || 'mock@samridhi.in'}
+                  disabled
+                  className="w-full bg-samridhi-surface border border-samridhi-border rounded-xl py-2.5 px-4 text-samridhi-textMuted focus:outline-none text-xs font-semibold cursor-not-allowed"
+                />
+              </div>
+
+              <div className="flex flex-col space-y-1">
+                <label className="text-[10px] font-bold text-samridhi-textMuted uppercase">Phone Number</label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary rounded-xl py-2.5 px-4 text-samridhi-textPrimary focus:outline-none text-xs font-bold"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col space-y-1">
+                  <label className="text-[10px] font-bold text-samridhi-textMuted uppercase">Monthly Income (₹)</label>
+                  <input
+                    type="number"
+                    value={income}
+                    onChange={(e) => setIncome(parseInt(e.target.value) || 0)}
+                    className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary rounded-xl py-2.5 px-4 text-samridhi-textPrimary focus:outline-none text-xs font-bold"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col space-y-1">
+                  <label className="text-[10px] font-bold text-samridhi-textMuted uppercase">Employment Type</label>
+                  <select
+                    value={employmentType}
+                    onChange={(e) => setEmploymentType(e.target.value)}
+                    className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary rounded-xl py-2.5 px-3 text-samridhi-textPrimary focus:outline-none text-xs font-bold"
+                  >
+                    <option value="Salaried">Salaried</option>
+                    <option value="Freelancer">Freelancer</option>
+                    <option value="Student">Student</option>
+                    <option value="Entrepreneur">Entrepreneur</option>
+                    <option value="Self-Employed">Self-Employed</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Financial Details */}
+            <div className="space-y-4">
+              <h4 className="font-extrabold text-[10px] text-samridhi-textMuted uppercase tracking-wider border-b border-samridhi-border/30 pb-1.5">Verification & Bank details</h4>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col space-y-1">
+                  <label className="text-[10px] font-bold text-samridhi-textMuted uppercase">PAN Number</label>
+                  <input
+                    type="text"
+                    maxLength="10"
+                    placeholder="ABCDE1234F"
+                    value={panNumber}
+                    onChange={(e) => setPanNumber(e.target.value.toUpperCase())}
+                    className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary rounded-xl py-2.5 px-4 text-samridhi-textPrimary focus:outline-none text-xs font-bold"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col space-y-1">
+                  <label className="text-[10px] font-bold text-samridhi-textMuted uppercase">Aadhaar (Last 4)</label>
+                  <input
+                    type="text"
+                    maxLength="4"
+                    placeholder="1234"
+                    value={aadhaarLast4}
+                    onChange={(e) => setAadhaarLast4(e.target.value.replace(/\D/g, ''))}
+                    className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary rounded-xl py-2.5 px-4 text-samridhi-textPrimary focus:outline-none text-xs font-bold"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col space-y-1">
+                <label className="text-[10px] font-bold text-samridhi-textMuted uppercase">Bank Account Number</label>
+                <input
+                  type="text"
+                  value={bankAccount}
+                  onChange={(e) => setBankAccount(e.target.value.replace(/\D/g, ''))}
+                  className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary rounded-xl py-2.5 px-4 text-samridhi-textPrimary focus:outline-none text-xs font-bold"
+                  required
+                />
+              </div>
+
+              <div className="flex flex-col space-y-1">
+                <label className="text-[10px] font-bold text-samridhi-textMuted uppercase">IFSC Code</label>
+                <input
+                  type="text"
+                  placeholder="HDFC0000123"
+                  value={ifscCode}
+                  onChange={(e) => setIfscCode(e.target.value.toUpperCase())}
+                  className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary rounded-xl py-2.5 px-4 text-samridhi-textPrimary focus:outline-none text-xs font-bold"
+                  required
+                />
+              </div>
             </div>
           </div>
 
-          <p className="text-xs text-samridhi-textMuted font-bold italic animate-pulse">
-            {processingMsg}
-          </p>
-        </div>
+          <div className="flex justify-between pt-4 border-t border-samridhi-border/40">
+            <button
+              type="button"
+              onClick={handlePrevStep}
+              className="px-5 py-2.5 bg-samridhi-surface border border-samridhi-border hover:bg-samridhi-card text-samridhi-textMuted hover:text-samridhi-textPrimary font-bold rounded-xl text-xs transition-colors flex items-center space-x-1"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+              <span>Back</span>
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2.5 bg-samridhi-primary hover:bg-samridhi-primary/95 text-white font-bold rounded-xl text-xs shadow-lg transition-colors flex items-center space-x-1"
+            >
+              <span>Review Application</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </form>
       )}
 
-      {/* STEP 3: CONTRACT DECISION */}
-      {wizardStep === 3 && (
+      {step === 3 && (
         <div className="space-y-6 animate-fade-in">
-          {isApproved ? (
-            /* APPROVED SCREEN */
-            <div className="space-y-6">
-              <div className="bg-samridhi-success/5 border border-samridhi-success/35 p-6 rounded-2xl flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
-                <div className="w-12 h-12 rounded-full bg-samridhi-success/20 flex items-center justify-center text-2xl text-samridhi-success shrink-0">
-                  ✓
+          {/* Review Summary Cards */}
+          <div className="bg-samridhi-surface border border-samridhi-border p-6 rounded-2xl space-y-5">
+            <h4 className="font-extrabold text-[10px] text-samridhi-textMuted uppercase tracking-wider border-b border-samridhi-border/30 pb-2">Application Summary</h4>
+            
+            {/* Section 1: Loan Details */}
+            <div className="space-y-2.5">
+              <h5 className="text-[10px] font-black text-samridhi-primary uppercase tracking-widest">Loan Details</h5>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-2 text-xs">
+                <div>
+                  <span className="text-samridhi-textMuted block text-[9px] uppercase font-bold">Loan Amount</span>
+                  <span className="font-bold text-samridhi-textPrimary">₹{loanAmount.toLocaleString()}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] font-black uppercase text-samridhi-success tracking-widest bg-samridhi-success/10 px-2.5 py-0.5 rounded">Decision: Approved</span>
-                  <h3 className="font-extrabold text-base text-samridhi-textPrimary mt-1.5">Capital Offer Generated Successfully</h3>
-                  <p className="text-[11px] text-samridhi-textMuted leading-relaxed mt-1">
-                    Our alternative risk assessment models evaluate you as a qualified credit-invisible prospect. Institutional capital matching has succeeded.
-                  </p>
-                </div>
-              </div>
-
-              {/* Contract terms card */}
-              <div className="bg-samridhi-surface border border-samridhi-border p-6 rounded-2xl space-y-4">
-                <h4 className="font-black text-xs text-samridhi-textPrimary uppercase tracking-wider border-b border-samridhi-border/40 pb-2.5">Credit Agreement Summary</h4>
-                
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-                  <div>
-                    <span className="block text-[10px] text-samridhi-textMuted uppercase font-bold">Principal Capital</span>
-                    <span className="font-black text-sm text-samridhi-textPrimary">₹{loanAmount.toLocaleString()}</span>
-                  </div>
-                  <div>
-                    <span className="block text-[10px] text-samridhi-textMuted uppercase font-bold">Interest Rate</span>
-                    <span className="font-black text-sm text-samridhi-success">{interestRate}% p.a.</span>
-                  </div>
-                  <div>
-                    <span className="block text-[10px] text-samridhi-textMuted uppercase font-bold">Repayment Term</span>
-                    <span className="font-black text-sm text-samridhi-textPrimary">{loanTenure} Months</span>
-                  </div>
-                  <div>
-                    <span className="block text-[10px] text-samridhi-textMuted uppercase font-bold">Estimated EMI</span>
-                    <span className="font-black text-sm text-samridhi-secondary">₹{monthlyEMI.toLocaleString()}/mo</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex justify-between items-center pt-4 border-t border-samridhi-border/40">
-                <button
-                  onClick={() => setWizardStep(1)}
-                  className="text-xs font-bold text-samridhi-textMuted hover:text-samridhi-textPrimary transition-colors"
-                >
-                  Change Amount
-                </button>
-                
-                <button
-                  onClick={() => {
-                    dispatch({
-                      type: 'APPLY_LOAN',
-                      payload: {
-                        id: `l-${Date.now()}`,
-                        lender: "Samridhi Capital Fund",
-                        amount: loanAmount,
-                        rate: `${interestRate}%`,
-                        emi: `₹${monthlyEMI.toLocaleString()}`,
-                        status: "Active",
-                        date: new Date().toISOString().split('T')[0]
-                      }
-                    });
-                    dispatch({
-                      type: 'ADD_NOTIFICATION',
-                      payload: {
-                        id: `n-${Date.now()}`,
-                        text: `Contract Signed: Active micro-loan of ₹${loanAmount.toLocaleString()} generated.`,
-                        read: false,
-                        date: "Just now"
-                      }
-                    });
-                    // Advance wizard to success screen (step 4)
-                    setWizardStep(4);
-                  }}
-                  className="px-6 py-2.5 bg-samridhi-success hover:bg-samridhi-success/90 text-samridhi-bg font-extrabold rounded-xl text-xs shadow-lg transition-colors flex items-center space-x-1"
-                >
-                  <span>Sign Credit Contract</span>
-                </button>
-              </div>
-            </div>
-          ) : (
-            /* REJECTED SCREEN */
-            <div className="space-y-6">
-              <div className="bg-samridhi-danger/5 border border-samridhi-danger/35 p-6 rounded-2xl flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
-                <div className="w-12 h-12 rounded-full bg-samridhi-danger/20 flex items-center justify-center text-2xl text-samridhi-danger shrink-0">
-                  !
+                  <span className="text-samridhi-textMuted block text-[9px] uppercase font-bold">Purpose</span>
+                  <span className="font-bold text-samridhi-textPrimary">{loanPurpose}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] font-black uppercase text-samridhi-danger tracking-widest bg-samridhi-danger/10 px-2.5 py-0.5 rounded">Decision: Under Review</span>
-                  <h3 className="font-extrabold text-base text-samridhi-textPrimary mt-1.5">Insuffient Credibility Score</h3>
-                  <p className="text-[11px] text-samridhi-textMuted leading-relaxed mt-1">
-                    Your credit rating of <strong className="text-samridhi-danger">{calculatedScore}</strong> is below the minimum partner threshold (41).
-                  </p>
+                  <span className="text-samridhi-textMuted block text-[9px] uppercase font-bold">Tenure</span>
+                  <span className="font-bold text-samridhi-textPrimary">{tenure} Months</span>
+                </div>
+                <div>
+                  <span className="text-samridhi-textMuted block text-[9px] uppercase font-bold">Estimated EMI</span>
+                  <span className="font-bold text-samridhi-secondary">₹{emiCalculations.emi.toLocaleString()} / mo</span>
+                </div>
+                <div>
+                  <span className="text-samridhi-textMuted block text-[9px] uppercase font-bold">Total Payable</span>
+                  <span className="font-bold text-samridhi-success">₹{emiCalculations.totalPayable.toLocaleString()}</span>
                 </div>
               </div>
+            </div>
 
-              <div className="bg-samridhi-surface border border-samridhi-border p-6 rounded-2xl text-xs space-y-3">
-                <h4 className="font-bold text-samridhi-textPrimary">Recommendation to Qualify:</h4>
-                <p className="text-xs text-samridhi-textMuted leading-normal">
-                  We evaluate alternate indicators to represent trustworthiness. To raise your score to the approval range:
-                </p>
-                <ul className="list-disc pl-4 space-y-1 text-samridhi-textMuted text-[11px]">
-                  <li>Go to <strong>Profile Settings</strong> and connect your Aadhaar, PAN, and UPI accounts.</li>
-                  <li>Add professional skills certificates (AWS, Meta, Coursera) to represent verified earning capacity.</li>
-                  <li>Simulate steady UPI payments to increase transaction recency variables.</li>
-                </ul>
+            <div className="border-t border-samridhi-border/40"></div>
+
+            {/* Section 2: Personal Info */}
+            <div className="space-y-2.5">
+              <h5 className="text-[10px] font-black text-samridhi-secondary uppercase tracking-widest">Personal & Financial Info</h5>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-2 text-xs">
+                <div>
+                  <span className="text-samridhi-textMuted block text-[9px] uppercase font-bold">Full Name</span>
+                  <span className="font-bold text-samridhi-textPrimary">{user.name || 'Mock User'}</span>
+                </div>
+                <div>
+                  <span className="text-samridhi-textMuted block text-[9px] uppercase font-bold">Email Address</span>
+                  <span className="font-bold text-samridhi-textPrimary">{user.email || 'mock@samridhi.in'}</span>
+                </div>
+                <div>
+                  <span className="text-samridhi-textMuted block text-[9px] uppercase font-bold">Phone Number</span>
+                  <span className="font-bold text-samridhi-textPrimary">{phone}</span>
+                </div>
+                <div>
+                  <span className="text-samridhi-textMuted block text-[9px] uppercase font-bold">Monthly Income</span>
+                  <span className="font-bold text-samridhi-textPrimary">₹{income.toLocaleString()}</span>
+                </div>
+                <div>
+                  <span className="text-samridhi-textMuted block text-[9px] uppercase font-bold">Employment Type</span>
+                  <span className="font-bold text-samridhi-textPrimary">{employmentType}</span>
+                </div>
+                <div>
+                  <span className="text-samridhi-textMuted block text-[9px] uppercase font-bold">PAN / Aadhaar</span>
+                  <span className="font-bold text-samridhi-textPrimary">{panNumber} / *******{aadhaarLast4}</span>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-samridhi-textMuted block text-[9px] uppercase font-bold">Bank Account Details</span>
+                  <span className="font-bold text-samridhi-textPrimary">{bankAccount} ({ifscCode})</span>
+                </div>
               </div>
+            </div>
 
-              <div className="flex justify-end pt-4 border-t border-samridhi-border/40">
-                <button
-                  onClick={() => setWizardStep(1)}
-                  className="px-6 py-2.5 bg-samridhi-surface hover:bg-samridhi-card border border-samridhi-border text-samridhi-textPrimary font-bold rounded-xl text-xs transition-colors"
-                >
-                  Return to Parameters
-                </button>
+            <div className="border-t border-samridhi-border/40"></div>
+
+            {/* Section 3: Score Info */}
+            <div className="space-y-2.5">
+              <h5 className="text-[10px] font-black text-samridhi-success uppercase tracking-widest">Score Info</h5>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-2 text-xs">
+                <div>
+                  <span className="text-samridhi-textMuted block text-[9px] uppercase font-bold">Credibility Score</span>
+                  <span className="font-black text-samridhi-secondary">{calculatedScore || 72} / 100</span>
+                </div>
+                <div>
+                  <span className="text-samridhi-textMuted block text-[9px] uppercase font-bold">Risk Level</span>
+                  <span className="font-black text-samridhi-success uppercase tracking-wider">Low Risk</span>
+                </div>
+                <div>
+                  <span className="text-samridhi-textMuted block text-[9px] uppercase font-bold">AI Recommendation</span>
+                  <span className="font-black text-samridhi-success flex items-center space-x-1">
+                    <span>Approved</span>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </span>
+                </div>
+                <div>
+                  <span className="text-samridhi-textMuted block text-[9px] uppercase font-bold">Max Eligible</span>
+                  <span className="font-bold text-samridhi-textPrimary">₹2,50,000</span>
+                </div>
               </div>
             </div>
-          )}
-        </div>
-      )}
-
-      {/* STEP 4: SUCCESS CONTRACT SIGNED */}
-      {wizardStep === 4 && (
-        <div className="py-8 flex flex-col items-center justify-center space-y-6 animate-fade-in text-center">
-          <div className="w-16 h-16 rounded-full bg-samridhi-success/20 border-2 border-samridhi-success flex items-center justify-center text-3xl text-samridhi-success mb-2 animate-bounce">
-            ✓
-          </div>
-          
-          <div className="space-y-2">
-            <h3 className="font-extrabold text-lg text-samridhi-textPrimary uppercase tracking-wider">Contract Signed Successfully!</h3>
-            <p className="text-xs text-samridhi-textMuted max-w-sm leading-relaxed">
-              Your smart credit agreement is verified and recorded. Capital is being disbursed to your linked VPA: <strong className="text-samridhi-textPrimary">{user.upiVpa || 'demo@okaxis'}</strong>.
-            </p>
           </div>
 
-          <div className="bg-samridhi-surface border border-samridhi-border p-5 rounded-2xl w-full max-w-sm text-xs space-y-2.5 text-left">
-            <div className="flex justify-between">
-              <span className="text-samridhi-textMuted">Disbursement VPA:</span>
-              <span className="font-bold text-samridhi-textPrimary">{user.upiVpa || 'demo@okaxis'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-samridhi-textMuted">Loan Value:</span>
-              <span className="font-extrabold text-samridhi-secondary">₹{loanAmount.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-samridhi-textMuted">Interest Rate:</span>
-              <span className="font-bold text-samridhi-success">{interestRate}% p.a.</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-samridhi-textMuted">Repayment Tenure:</span>
-              <span className="font-bold text-samridhi-textPrimary">{loanTenure} Months</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-samridhi-textMuted">Monthly EMI:</span>
-              <span className="font-extrabold text-samridhi-secondary">₹{monthlyEMI.toLocaleString()}</span>
-            </div>
-          </div>
+          {/* Disclaimer text */}
+          <p className="text-[10px] text-samridhi-textMuted leading-normal bg-samridhi-surface/40 p-3.5 rounded-xl border border-samridhi-border/40">
+            Disclaimer: By clicking submit, you authorize Samridhi AI models to verify alternative data points, credit history logs, and linked telemetry endpoints to perform underwriting.
+          </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 pt-4 w-full justify-center">
+          <div className="flex justify-between items-center pt-4 border-t border-samridhi-border/40 gap-4">
             <button
-              onClick={() => setWizardStep(1)}
-              className="px-5 py-2.5 bg-samridhi-surface hover:bg-samridhi-card border border-samridhi-border text-samridhi-textMuted hover:text-samridhi-textPrimary font-bold rounded-xl text-xs transition-colors"
+              type="button"
+              onClick={handlePrevStep}
+              className="px-5 py-2.5 bg-samridhi-surface border border-samridhi-border hover:bg-samridhi-card text-samridhi-textMuted hover:text-samridhi-textPrimary font-bold rounded-xl text-xs transition-colors flex items-center space-x-1 shrink-0"
             >
-              Apply for Another Loan
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+              <span>Edit</span>
             </button>
             <button
-              onClick={() => {
-                if (setActiveTab) setActiveTab('overview');
-                setWizardStep(1);
-              }}
-              className="px-5 py-2.5 bg-samridhi-primary hover:bg-samridhi-primary/90 text-white font-bold rounded-xl text-xs shadow-lg transition-colors"
+              type="button"
+              onClick={handleSubmit}
+              className="w-full py-2.5 bg-samridhi-primary hover:bg-samridhi-primary/95 text-white font-extrabold rounded-xl text-xs shadow-lg transition-colors flex items-center justify-center space-x-1.5"
             >
-              Go to Dashboard Overview
+              <span>Submit Application</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
             </button>
           </div>
         </div>

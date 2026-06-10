@@ -8,6 +8,7 @@ const { useState, useEffect, useReducer, useMemo } = React;
 const SUPABASE_URL = "https://lbagswiwwlkcgrfhkyqr.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxiYWdzd2l3d2xrY2dyZmhreXFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NDI2MzcsImV4cCI6MjA5NjExODYzN30.o1x0Zw1F56-XdtjSRhpjAcBvTGw46OC5_EKPwJm-uF0";
 const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+window.supabaseClient = supabaseClient;
 
 // --- STARTUP SPLASH SCREEN ---
 function SplashScreen({ onComplete }) {
@@ -163,6 +164,11 @@ function dashboardReducer(state, action) {
       return {
         ...state,
         transactions: [action.payload, ...state.transactions].slice(0, 15) // cap at 15 items
+      };
+    case 'ADD_TRANSACTION_BULK':
+      return {
+        ...state,
+        transactions: [...action.payload, ...state.transactions].slice(0, 30) // cap at 30 items for bulk sync
       };
     case 'APPLY_LOAN':
       return {
@@ -400,6 +406,21 @@ function App() {
           localStorage.setItem('samridhi_transactions', JSON.stringify(localTxs));
           break;
         }
+        case 'ADD_TRANSACTION_BULK': {
+          const localTxs = JSON.parse(localStorage.getItem('samridhi_transactions') || '[]');
+          const formattedTxs = action.payload.map((tx, idx) => ({
+            id: `t-demo-${userId}-${Date.now()}-${idx}-${Math.floor(Math.random() * 1000)}`,
+            user_id: userId,
+            date: tx.date,
+            merchant: tx.merchant,
+            amount: tx.amount,
+            category: tx.category,
+            type: tx.type
+          }));
+          localTxs.unshift(...formattedTxs);
+          localStorage.setItem('samridhi_transactions', JSON.stringify(localTxs));
+          break;
+        }
         case 'APPLY_LOAN': {
           const localLoans = JSON.parse(localStorage.getItem('samridhi_loans') || '[]');
           localLoans.unshift({
@@ -483,6 +504,29 @@ function App() {
             }
           });
         break;
+
+      case 'ADD_TRANSACTION_BULK': {
+        const insertBulk = action.payload.map(tx => ({
+          user_id: userId,
+          date: tx.date,
+          merchant: tx.merchant,
+          amount: tx.amount,
+          category: tx.category,
+          type: tx.type
+        }));
+        supabaseClient
+          .from('transactions')
+          .insert(insertBulk)
+          .then(({ error }) => {
+            if (error) {
+              console.error("Error syncing bulk transactions: ", error);
+              if (error.code === '42501' || (error.message && error.message.includes('row-level security'))) {
+                alert("Database RLS Error: Row-Level Security prevents syncing transactions. Run 'supabase_setup.sql' to configure policies.");
+              }
+            }
+          });
+        break;
+      }
 
       case 'APPLY_LOAN':
         supabaseClient

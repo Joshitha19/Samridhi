@@ -48,17 +48,47 @@ window.DashboardTransactionsTab = ({
     { id: 'tx-a2', date: "2026-05-14", merchant: "Suspicious High Velocity Pay", category: "Shopping", amount: 15000, type: "Debit" }
   ];
 
-  // If statement uploaded, use parsed list. Otherwise, use mock base list.
+  // If statement uploaded, use parsed list. Otherwise, use mock base list or live transactions from dashboardState.
   const activeTransactionsList = useMemo(() => {
     if (bankStatementUploaded && parsedTransactions.length > 0) {
-      return parsedTransactions;
+      return parsedTransactions.map(tx => ({
+        id: tx.id,
+        date: tx.date,
+        merchant: tx.merchant,
+        category: tx.category || 'Other',
+        amount: Math.abs(tx.amount),
+        type: tx.amount < 0 || tx.type === 'Debit' ? 'Debit' : 'Credit'
+      }));
     }
-    let list = [...baseTransactions];
+    let list = (dashboardState.transactions && dashboardState.transactions.length > 0)
+      ? dashboardState.transactions
+      : baseTransactions;
+
     if (simulateFraud) {
       list = [...anomalyTransactions, ...list];
     }
-    return list;
-  }, [bankStatementUploaded, parsedTransactions, simulateFraud]);
+
+    return list.map(tx => {
+      let cat = tx.category || 'Other';
+      // Normalize category naming for chart aggregation
+      if (cat.includes('Food') || cat.includes('Beverage')) cat = 'Food';
+      else if (cat.includes('Utility') || cat.includes('Bills') || cat.includes('Telecom') || cat.includes('Broadband')) cat = 'Utility';
+      else if (cat.includes('Rent') || cat.includes('Accommodation') || cat.includes('Housing')) cat = 'Housing';
+      else if (cat.includes('Education') || cat.includes('Course')) cat = 'Education';
+      else if (cat.includes('Shopping')) cat = 'Shopping';
+      else if (cat.includes('Entertainment') || cat.includes('Cash Withdrawal')) cat = 'Entertainment';
+      else cat = 'Other';
+
+      return {
+        id: tx.id,
+        date: tx.date,
+        merchant: tx.merchant,
+        category: cat,
+        amount: Math.abs(tx.amount),
+        type: tx.amount < 0 || tx.type === 'Debit' ? 'Debit' : 'Credit'
+      };
+    });
+  }, [bankStatementUploaded, parsedTransactions, dashboardState.transactions, simulateFraud]);
 
   // Calculate average debit transaction to identify anomalies (>3x average)
   const averageDebitAmount = useMemo(() => {

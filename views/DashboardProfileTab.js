@@ -968,4 +968,3 @@ window.DashboardProfileTab = ({
     </div>
   );
 };
-};

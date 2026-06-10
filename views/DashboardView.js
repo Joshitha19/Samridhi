@@ -1,5 +1,5 @@
 // views/DashboardView.js
-// Main Dashboard View shell for Samridhi
+// Main Premium Dashboard View shell for Samridhi
 // Exposes DashboardView globally
 
 window.DashboardView = ({
@@ -96,26 +96,26 @@ window.DashboardView = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row bg-[#040806] min-h-screen relative">
+    <div className="flex-1 flex flex-col md:flex-row bg-[#020204] min-h-screen relative font-sans">
       
       {/* SIDEBAR */}
-      <aside className="w-full md:w-64 bg-samridhi-surface border-r border-samridhi-border/60 flex flex-col justify-between shrink-0">
+      <aside className="w-full md:w-64 bg-samridhi-surface/40 backdrop-blur-xl border-r border-white/[0.04] flex flex-col justify-between shrink-0">
         <div>
           {/* Profile Card Header */}
-          <div className="p-6 border-b border-samridhi-border/60">
-            <div className="flex items-center space-x-3 mb-3">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center font-bold text-lg text-samridhi-bg shadow-md">
+          <div className="p-6 border-b border-white/[0.04]">
+            <div className="flex items-center space-x-3.5 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center font-extrabold text-sm text-samridhi-bg shadow-lg shadow-samridhi-primary/10">
                 {user.name ? user.name[0] : 'U'}
               </div>
               <div className="overflow-hidden">
-                <h4 className="font-extrabold text-sm text-samridhi-textPrimary truncate">{user.name || 'GUEST USER'}</h4>
-                <p className="text-[10px] text-samridhi-textMuted truncate">{user.email}</p>
+                <h4 className="font-extrabold text-xs text-white tracking-wide truncate">{user.name || 'GUEST USER'}</h4>
+                <p className="text-[10px] text-samridhi-textMuted tracking-normal font-mono truncate">{user.email}</p>
               </div>
             </div>
             
             {/* User Type Badge */}
-            <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-samridhi-secondary/10 border border-samridhi-secondary/25 text-samridhi-secondary rounded-lg text-[10px] font-black tracking-wider uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-samridhi-secondary"></span>
+            <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-white/[0.02] border border-white/[0.06] text-samridhi-secondary rounded-lg text-[9px] font-extrabold tracking-widest uppercase">
+              <span className="w-1.5 h-1.5 rounded-full bg-samridhi-secondary animate-pulse"></span>
               <span>{user.type}</span>
             </div>
           </div>
@@ -140,10 +140,10 @@ window.DashboardView = ({
                     setActiveTab(item.id);
                     setShowNotifications(false);
                   }}
-                  className={`w-full flex items-center space-x-3 px-4.5 py-3 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-bold transition-all ${
                     isActive
-                      ? 'bg-samridhi-primary/10 border-l-4 border-samridhi-primary text-samridhi-textPrimary'
-                      : 'text-samridhi-textMuted hover:bg-samridhi-card/50 hover:text-samridhi-textPrimary border-l-4 border-transparent'
+                      ? 'bg-gradient-to-r from-samridhi-primary/10 to-samridhi-secondary/5 border-l-4 border-samridhi-primary text-samridhi-textPrimary shadow-sm'
+                      : 'text-samridhi-textMuted hover:bg-white/[0.02] hover:text-samridhi-textPrimary border-l-4 border-transparent'
                   }`}
                 >
                   <span className={isActive ? 'text-samridhi-primary' : 'text-samridhi-textMuted'}>
@@ -157,10 +157,10 @@ window.DashboardView = ({
         </div>
 
         {/* Logout Footer button */}
-        <div className="p-4 border-t border-samridhi-border/60">
+        <div className="p-4 border-t border-white/[0.04]">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center space-x-3 px-4.5 py-3 rounded-xl text-xs font-bold text-samridhi-danger hover:bg-samridhi-danger/10 transition-all border border-transparent hover:border-samridhi-danger/20"
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-bold text-samridhi-danger hover:bg-samridhi-danger/10 transition-all border border-transparent hover:border-samridhi-danger/20"
           >
             <Icons.Logout />
             <span>Logout</span>
@@ -172,10 +172,10 @@ window.DashboardView = ({
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* TOP BAR */}
-        <header className="sticky top-0 z-20 h-16 bg-samridhi-surface border-b border-samridhi-border/60 px-6 flex items-center justify-between">
+        <header className="sticky top-0 z-20 h-16 bg-[#020204]/75 backdrop-blur-xl border-b border-white/[0.04] px-6 flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-extrabold uppercase tracking-widest text-samridhi-textMuted">
-              Dashboard &gt; <span className="text-samridhi-textPrimary font-black">{activeTab}</span>
+            <h2 className="text-[10px] font-extrabold uppercase tracking-widest text-samridhi-textMuted">
+              Terminal &gt; <span className="text-white font-black">{activeTab}</span>
             </h2>
           </div>
 
@@ -183,12 +183,12 @@ window.DashboardView = ({
           <div className="flex items-center space-x-4 relative">
             
             {/* Voice Control Toggle */}
-            <div className="flex items-center space-x-2 bg-samridhi-card border border-samridhi-border px-3 py-1.5 rounded-xl">
-              <span className="text-[9px] uppercase font-bold text-samridhi-textMuted tracking-wider">Voice Control</span>
+            <div className="flex items-center space-x-2 bg-white/[0.02] border border-white/[0.05] px-3 py-1.5 rounded-xl">
+              <span className="text-[9px] uppercase font-black text-samridhi-textMuted tracking-wider">Voice Control</span>
               <button
                 onClick={() => setVoiceNavigationActive(!voiceNavigationActive)}
                 className={`w-8 h-4.5 rounded-full p-0.5 transition-colors relative focus:outline-none ${
-                  voiceNavigationActive ? 'bg-samridhi-primary' : 'bg-samridhi-border'
+                  voiceNavigationActive ? 'bg-samridhi-primary' : 'bg-white/[0.08]'
                 }`}
                 title="Toggle continuous voice commands navigation"
               >
@@ -197,52 +197,52 @@ window.DashboardView = ({
             </div>
 
             {/* Score summary on header */}
-            <div className="hidden sm:flex items-center space-x-2 bg-samridhi-card border border-samridhi-border px-3.5 py-1.5 rounded-xl">
-              <span className="text-[10px] uppercase font-bold text-samridhi-textMuted tracking-wider">Index score</span>
-              <span className="text-sm font-extrabold text-samridhi-secondary">{calculatedScore}</span>
+            <div className="hidden sm:flex items-center space-x-2 bg-white/[0.02] border border-white/[0.05] px-3.5 py-1.5 rounded-xl">
+              <span className="text-[9px] uppercase font-black text-samridhi-textMuted tracking-wider">Index score</span>
+              <span className="text-xs font-black text-samridhi-secondary font-mono">{calculatedScore}</span>
             </div>
 
             <div className="relative">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="p-2 rounded-xl bg-samridhi-card border border-samridhi-border text-samridhi-textPrimary hover:border-samridhi-primary transition-all relative"
+                className="p-2 rounded-xl bg-white/[0.02] border border-white/[0.05] text-samridhi-textPrimary hover:border-samridhi-primary transition-all relative"
               >
                 <Icons.Bell />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-samridhi-danger animate-ping"></span>
+                  <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-samridhi-danger animate-ping"></span>
                 )}
               </button>
 
               {/* NOTIFICATIONS DROPDOWN PANEL */}
               {showNotifications && (
-                <div className="absolute right-0 mt-3 w-80 bg-samridhi-card border border-samridhi-border rounded-2xl shadow-2xl z-30 overflow-hidden animate-fade-in">
-                  <div className="p-4 border-b border-samridhi-border flex items-center justify-between">
-                    <span className="text-xs font-black uppercase text-samridhi-textPrimary">System logs ({unreadCount})</span>
+                <div className="absolute right-0 mt-3 w-80 bg-samridhi-card/95 backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-2xl z-30 overflow-hidden animate-fade-in">
+                  <div className="p-4 border-b border-white/[0.05] flex items-center justify-between">
+                    <span className="text-xs font-black uppercase text-samridhi-textPrimary tracking-wider">System Logs ({unreadCount})</span>
                     {unreadCount > 0 && (
                       <button
                         onClick={handleReadNotifications}
-                        className="text-[10px] font-bold text-samridhi-secondary hover:underline"
+                        className="text-[9px] font-bold text-samridhi-secondary hover:underline"
                       >
                         Mark all read
                       </button>
                     )}
                   </div>
-                  <div className="max-h-72 overflow-y-auto divide-y divide-samridhi-border/40">
+                  <div className="max-h-72 overflow-y-auto divide-y divide-white/[0.04]">
                     {dashboardState.notifications.length === 0 ? (
-                      <div className="p-4 text-center text-xs text-samridhi-textMuted">No notifications found</div>
+                      <div className="p-4 text-center text-[10px] text-samridhi-textMuted">No notifications found</div>
                     ) : (
                       dashboardState.notifications.map((n) => (
-                        <div key={n.id} className={`p-4 flex flex-col space-y-1 text-xs hover:bg-samridhi-surface/50 transition-colors ${!n.read ? 'bg-samridhi-primary/5' : ''}`}>
-                          <p className="text-samridhi-textPrimary leading-normal">{n.text}</p>
-                          <span className="text-[9px] font-bold text-samridhi-textMuted uppercase mt-1">{n.date}</span>
+                        <div key={n.id} className={`p-4 flex flex-col space-y-1 text-[11px] hover:bg-white/[0.02] transition-colors ${!n.read ? 'bg-samridhi-primary/5' : ''}`}>
+                          <p className="text-samridhi-textPrimary leading-relaxed">{n.text}</p>
+                          <span className="text-[8px] font-extrabold text-samridhi-textMuted uppercase mt-1 tracking-wider font-mono">{n.date}</span>
                         </div>
                       ))
                     )}
                   </div>
-                  <div className="p-2 border-t border-samridhi-border bg-samridhi-surface/40 text-center">
+                  <div className="p-2 border-t border-white/[0.05] bg-white/[0.01] text-center">
                     <button 
                       onClick={() => setShowNotifications(false)}
-                      className="text-[10px] font-bold text-samridhi-textMuted hover:text-samridhi-textPrimary py-1 w-full"
+                      className="text-[9px] font-bold text-samridhi-textMuted hover:text-samridhi-textPrimary py-1 w-full uppercase tracking-wider"
                     >
                       Close Notifications
                     </button>
@@ -251,7 +251,7 @@ window.DashboardView = ({
               )}
             </div>
 
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center font-bold text-xs text-samridhi-bg uppercase">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center font-extrabold text-xs text-samridhi-bg uppercase shadow-md">
               {user.name ? user.name[0] : 'U'}
             </div>
           </div>
@@ -276,10 +276,10 @@ window.DashboardView = ({
 
           {/* TAB 2: APPLY FOR LOAN */}
           {activeTab === 'apply' && (
-            <div className="max-w-3xl mx-auto bg-samridhi-card border border-samridhi-border p-8 rounded-3xl space-y-8 animate-fade-in">
-              <div className="border-b border-samridhi-border/40 pb-4">
-                <h2 className="text-xl font-extrabold text-samridhi-textPrimary">Apply for Smart Micro-Credit</h2>
-                <p className="text-xs text-samridhi-textMuted mt-1">Our AI evaluates your alternative metrics to generate instant interest rates and terms.</p>
+            <div className="max-w-3xl mx-auto bg-samridhi-card/60 border border-white/[0.04] p-8 rounded-3xl space-y-8 animate-fade-in shadow-xl backdrop-blur-md">
+              <div className="border-b border-white/[0.04] pb-4">
+                <h2 className="text-lg font-black text-white tracking-wide">Apply for Smart Micro-Credit</h2>
+                <p className="text-xs text-samridhi-textMuted mt-1 leading-relaxed">Our AI evaluates your alternative metrics to generate instant interest rates and terms.</p>
               </div>
 
               {/* Interactive Loan Apply Wizard */}
@@ -373,18 +373,18 @@ window.DashboardView = ({
       </div>
 
       {/* FLOATING AI CHAT ASSISTANT */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end font-sans">
         {chatOpen && (
-          <div className="w-80 h-96 bg-samridhi-card border border-samridhi-border rounded-2xl shadow-2xl overflow-hidden flex flex-col mb-4 animate-fade-in">
+          <div className="w-80 h-96 bg-samridhi-card/90 backdrop-blur-xl border border-white/[0.05] rounded-2xl shadow-[0_24px_80px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col mb-4 animate-fade-in">
             {/* Header */}
-            <div className="bg-samridhi-surface border-b border-samridhi-border px-4 py-3 flex items-center justify-between">
+            <div className="bg-white/[0.02] border-b border-white/[0.05] px-4 py-3 flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <span className="w-2 h-2 rounded-full bg-samridhi-success"></span>
-                <span className="font-extrabold text-xs text-samridhi-textPrimary">Samridhi AI</span>
+                <span className="font-extrabold text-xs text-white uppercase tracking-wider">Samridhi AI</span>
               </div>
               <button 
                 onClick={() => setChatOpen(false)}
-                className="text-samridhi-textMuted hover:text-samridhi-textPrimary focus:outline-none"
+                className="text-samridhi-textMuted hover:text-white focus:outline-none transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -398,8 +398,8 @@ window.DashboardView = ({
                 <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-[11px] leading-relaxed font-semibold ${
                     msg.sender === 'user'
-                      ? 'bg-samridhi-surface border border-samridhi-border text-samridhi-textPrimary rounded-tr-none'
-                      : 'bg-samridhi-primary text-white rounded-tl-none'
+                      ? 'bg-white/[0.03] border border-white/[0.06] text-white rounded-tr-none'
+                      : 'bg-samridhi-primary text-white rounded-tl-none shadow-md shadow-samridhi-primary/10'
                   }`}>
                     {msg.text}
                   </div>
@@ -407,7 +407,7 @@ window.DashboardView = ({
               ))}
               {isTyping && (
                 <div className="flex justify-start">
-                  <div className="bg-samridhi-primary text-white rounded-2xl rounded-tl-none px-3.5 py-2 flex items-center space-x-1">
+                  <div className="bg-samridhi-primary text-white rounded-2xl rounded-tl-none px-3.5 py-2 flex items-center space-x-1 shadow-md shadow-samridhi-primary/10">
                     <div className="w-1.5 h-1.5 rounded-full bg-white animate-bounce" style={{ animationDelay: '0ms' }}></div>
                     <div className="w-1.5 h-1.5 rounded-full bg-white animate-bounce" style={{ animationDelay: '150ms' }}></div>
                     <div className="w-1.5 h-1.5 rounded-full bg-white animate-bounce" style={{ animationDelay: '300ms' }}></div>
@@ -419,18 +419,18 @@ window.DashboardView = ({
             {/* Input Form */}
             <form 
               onSubmit={handleSendMessage}
-              className="p-3 bg-samridhi-surface border-t border-samridhi-border flex items-center gap-2"
+              className="p-3 bg-white/[0.01] border-t border-white/[0.05] flex items-center gap-2"
             >
               <input
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder="Ask anything..."
-                className="flex-1 bg-samridhi-bg border border-samridhi-border rounded-xl px-3.5 py-2 text-[11px] text-samridhi-textPrimary focus:border-samridhi-primary focus:outline-none"
+                className="flex-1 bg-white/[0.02] border border-white/[0.05] rounded-xl px-3.5 py-2.5 text-[11px] text-white placeholder:text-samridhi-textMuted/40 focus:border-samridhi-primary focus:outline-none transition-colors"
               />
               <button
                 type="submit"
-                className="p-2 bg-samridhi-primary hover:bg-samridhi-primary/90 text-white rounded-xl focus:outline-none shadow-md shrink-0"
+                className="p-2 bg-samridhi-primary hover:bg-samridhi-primary/90 text-white rounded-xl focus:outline-none shadow-lg shadow-samridhi-primary/10 shrink-0 transition-colors"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -443,7 +443,7 @@ window.DashboardView = ({
         {/* Floating Button */}
         <button
           onClick={() => setChatOpen(!chatOpen)}
-          className="w-12 h-12 rounded-full bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center text-samridhi-bg hover:opacity-90 shadow-lg shadow-samridhi-primary/30 transition-all hover:scale-105 active:scale-95 focus:outline-none"
+          className="w-12 h-12 rounded-full bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center text-samridhi-bg hover:opacity-90 shadow-xl shadow-samridhi-primary/20 transition-all hover:scale-105 active:scale-95 focus:outline-none"
         >
           <svg className="w-5 h-5 text-samridhi-bg" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />

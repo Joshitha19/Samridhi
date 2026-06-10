@@ -1061,6 +1061,8 @@ function App() {
       if (error) {
         if (error.message.includes("Email not confirmed")) {
           alert("Sign In Failed: Email not confirmed.\n\nTip: Please confirm your email address via the link sent to your inbox, or disable 'Confirm email' under Auth -> Providers -> Email in your Supabase Dashboard settings.");
+        } else if (error.message.toLowerCase().includes("invalid login credentials")) {
+          alert("Sign In Failed: Invalid login credentials.\n\nTip:\n1. If you just registered, you MUST verify your email address via the confirmation link sent to your inbox (or check spam folder).\n2. Alternatively, open your Supabase Dashboard -> Auth -> Providers -> Email and disable the 'Confirm email' setting so new users can sign in immediately.\n3. If you created the user manually in the Supabase Dashboard, make sure to check the 'Auto Confirm User' checkbox.\n4. Double-check your spelling of the email and password.");
         } else {
           alert("Sign In Failed: " + error.message);
         }
@@ -1152,6 +1154,8 @@ function App() {
       if (error) {
         if (error.message.includes("Email not confirmed")) {
           alert("Banker Sign In Failed: Email not confirmed.\n\nTip: Please confirm your email address via the link sent to your inbox, or disable 'Confirm email' under Auth -> Providers -> Email in your Supabase Dashboard settings.");
+        } else if (error.message.toLowerCase().includes("invalid login credentials")) {
+          alert("Banker Sign In Failed: Invalid login credentials.\n\nTip:\n1. If you just registered, you MUST verify your email address via the confirmation link sent to your inbox (or check spam folder).\n2. Alternatively, open your Supabase Dashboard -> Auth -> Providers -> Email and disable the 'Confirm email' setting so new users can sign in immediately.\n3. If you created the banker manually in the Supabase Dashboard, make sure to check the 'Auto Confirm User' checkbox.\n4. Double-check your spelling of the email and password.");
         } else {
           alert("Banker Sign In Failed: " + error.message);
         }

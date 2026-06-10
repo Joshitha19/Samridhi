@@ -395,7 +395,5 @@ window.DashboardScoreTab = ({
         </div>
       </div>
     </div>
-
-    </div>
   );
 };

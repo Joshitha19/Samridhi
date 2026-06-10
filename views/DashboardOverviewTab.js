@@ -46,15 +46,16 @@ window.DashboardOverviewTab = ({
   }, [dashboardState.transactions, upiVerified]);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in font-sans">
       
       {/* Row 1: Grid Score & Quick Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Score Card (Col-4) */}
-        <div className="lg:col-span-4 glass-card p-6 rounded-2xl flex flex-col items-center justify-center border border-white/[0.04] border-glow-secondary relative">
+        <div className="lg:col-span-4 glass-card p-6 rounded-3xl flex flex-col items-center justify-center border border-white/[0.04] border-glow-secondary relative overflow-hidden bg-gradient-to-b from-[#0A121E] to-[#07070C]">
           <div className="absolute top-4 left-4">
-            <span className="text-[9px] uppercase font-bold text-samridhi-textMuted tracking-wider">AI Score Gauge</span>
+            <span className="text-[9px] uppercase font-black text-samridhi-textMuted tracking-wider font-mono">Telemetry // Risk Gauge</span>
           </div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-samridhi-secondary/5 to-transparent rounded-tr-3xl pointer-events-none filter blur-2xl"></div>
           <CircularGauge score={calculatedScore} />
         </div>
 
@@ -62,23 +63,23 @@ window.DashboardOverviewTab = ({
         <div className="lg:col-span-8 flex flex-col justify-between space-y-6">
           
           {/* Greetings Header */}
-          <div className="glass-card p-6 rounded-2xl flex flex-col justify-center h-full relative overflow-hidden border border-white/[0.04] border-glow-primary">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-samridhi-primary/10 to-transparent rounded-tr-2xl pointer-events-none filter blur-2xl"></div>
-            <h2 className="text-xl md:text-2xl font-black text-white bg-gradient-to-r from-white via-white to-white/70 bg-clip-text">Welcome back, {user.name}!</h2>
-            <p className="text-xs text-samridhi-textMuted mt-1 max-w-lg leading-relaxed font-semibold">
-              Your non-traditional AI credit file is calculated based on alternative cashflow parameters. Your profile is rated as <strong className="text-samridhi-secondary">{calculatedScore >= 71 ? 'LOW RISK' : 'STABLE'}</strong>. Let's maintain healthy digital transactions to qualify for lower rates.
+          <div className="glass-card p-6 rounded-3xl flex flex-col justify-center h-full relative overflow-hidden border border-white/[0.04] border-glow-primary bg-gradient-to-r from-[#170822] via-[#0D0E15] to-[#0A0B10]">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-samridhi-primary/10 to-transparent rounded-tr-2xl pointer-events-none filter blur-3xl"></div>
+            <h2 className="text-xl md:text-2xl font-black text-white tracking-wide">Welcome back, {user.name}!</h2>
+            <p className="text-xs text-samridhi-textMuted mt-1.5 max-w-xl leading-relaxed font-semibold">
+              Your non-traditional AI credit file is calculated based on alternative cashflow parameters. Your profile is rated as <strong className="text-samridhi-secondary text-glow-secondary">{calculatedScore >= 71 ? 'LOW RISK' : 'STABLE'}</strong>. Let's maintain healthy digital transactions to qualify for lower rates.
             </p>
             
-            <div className="mt-4 flex flex-wrap gap-3">
+            <div className="mt-5 flex flex-wrap gap-3 relative z-10">
               <button
                 onClick={() => setActiveTab('apply')}
-                className="bg-samridhi-primary hover:bg-samridhi-primary/90 text-white text-xs font-black uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-lg shadow-samridhi-primary/15 transition-all duration-300"
+                className="bg-gradient-to-r from-samridhi-primary to-samridhi-primary/80 hover:brightness-110 text-white text-xs font-black uppercase tracking-wider px-6 py-3 rounded-xl shadow-lg shadow-samridhi-primary/25 transition-all duration-300 transform active:scale-95"
               >
                 Apply for Loan
               </button>
               <button
                 onClick={() => setActiveTab('recommendations')}
-                className="bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] hover:border-samridhi-primary/30 text-white text-xs font-black uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all"
+                className="bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] hover:border-samridhi-secondary/40 text-white text-xs font-black uppercase tracking-wider px-6 py-3 rounded-xl transition-all transform active:scale-95"
               >
                 View Recommendations
               </button>
@@ -87,37 +88,49 @@ window.DashboardOverviewTab = ({
 
           {/* Quick Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="glass-card p-4 rounded-xl flex items-center justify-between border border-white/[0.04]">
+            
+            {/* Stat 1 */}
+            <div className="glass-card p-4.5 rounded-2xl flex items-center justify-between border border-white/[0.04] hover:border-samridhi-success/20">
               <div className="flex flex-col space-y-1">
-                <span className="text-[9px] font-bold text-samridhi-textMuted uppercase tracking-wider">Monthly Income</span>
-                <span className="text-base font-extrabold text-white font-mono">₹45,000</span>
+                <span className="text-[9px] font-black text-samridhi-textMuted uppercase tracking-wider">Monthly Income</span>
+                <span className="text-lg font-black text-white font-mono tracking-tight">₹45,000</span>
+                <span className="text-[9px] font-bold text-samridhi-success flex items-center gap-0.5 font-semibold">
+                  <span>▲</span> <span>+12.4% trend</span>
+                </span>
               </div>
-              <div className="w-8 h-8 rounded-lg bg-samridhi-success/10 border border-samridhi-success/20 flex items-center justify-center text-samridhi-success font-black text-xs shadow-inner">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <div className="w-9 h-9 rounded-xl bg-samridhi-success/10 border border-samridhi-success/20 flex items-center justify-center text-samridhi-success shadow-inner">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
                 </svg>
               </div>
             </div>
 
-            <div className="glass-card p-4 rounded-xl flex items-center justify-between border border-white/[0.04]">
+            {/* Stat 2 */}
+            <div className="glass-card p-4.5 rounded-2xl flex items-center justify-between border border-white/[0.04] hover:border-samridhi-secondary/20">
               <div className="flex flex-col space-y-1">
-                <span className="text-[9px] font-bold text-samridhi-textMuted uppercase tracking-wider">UPI Transactions</span>
-                <span className="text-base font-extrabold text-white font-mono">{dashboardState.transactions.length} this month</span>
+                <span className="text-[9px] font-black text-samridhi-textMuted uppercase tracking-wider">UPI Transactions</span>
+                <span className="text-lg font-black text-white font-mono tracking-tight">{dashboardState.transactions.length} records</span>
+                <span className="text-[9px] font-bold text-samridhi-secondary flex items-center gap-1 font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-samridhi-secondary animate-ping"></span>
+                  <span>Active Sync</span>
+                </span>
               </div>
-              <div className="w-8 h-8 rounded-lg bg-samridhi-secondary/10 border border-samridhi-secondary/20 flex items-center justify-center text-samridhi-secondary font-black text-xs shadow-inner">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <div className="w-9 h-9 rounded-xl bg-samridhi-secondary/10 border border-samridhi-secondary/20 flex items-center justify-center text-samridhi-secondary shadow-inner">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
             </div>
 
-            <div className="glass-card p-4 rounded-xl flex items-center justify-between border border-white/[0.04]">
+            {/* Stat 3 */}
+            <div className="glass-card p-4.5 rounded-2xl flex items-center justify-between border border-white/[0.04] hover:border-samridhi-primary/20">
               <div className="flex flex-col space-y-1">
-                <span className="text-[9px] font-bold text-samridhi-textMuted uppercase tracking-wider">Skills Certified</span>
-                <span className="text-base font-extrabold text-white font-mono">{dashboardState.skills.filter(s => s.verified).length} verified</span>
+                <span className="text-[9px] font-black text-samridhi-textMuted uppercase tracking-wider">Skills Certified</span>
+                <span className="text-lg font-black text-white font-mono tracking-tight">{dashboardState.skills.filter(s => s.verified).length} items</span>
+                <span className="text-[9px] font-bold text-samridhi-primary uppercase tracking-wider font-mono">Verified On-Chain</span>
               </div>
-              <div className="w-8 h-8 rounded-lg bg-samridhi-primary/10 border border-samridhi-primary/20 flex items-center justify-center text-samridhi-primary font-black text-xs shadow-inner">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <div className="w-9 h-9 rounded-xl bg-samridhi-primary/10 border border-samridhi-primary/20 flex items-center justify-center text-samridhi-primary shadow-inner">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
               </div>
@@ -128,38 +141,52 @@ window.DashboardOverviewTab = ({
 
       {/* UPI TRANSACTION SIMULATOR AND RECENT TRANSACTIONS TABLE */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
         {/* Recent Transactions list (Col-8) */}
-        <div className="lg:col-span-8 glass-card p-6 rounded-2xl space-y-4 border border-white/[0.04]">
-          <div className="flex items-center justify-between border-b border-samridhi-border/40 pb-3">
-            <h3 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider">Recent UPI Transaction Stream</h3>
-            <span className="text-[10px] font-bold text-samridhi-textMuted uppercase">UPI Sync Engine</span>
+        <div className="lg:col-span-8 glass-card p-6 rounded-3xl space-y-4 border border-white/[0.04] border-glow-primary">
+          <div className="flex items-center justify-between border-b border-white/[0.04] pb-3">
+            <h3 className="font-extrabold text-sm text-white uppercase tracking-wider text-glow-primary">Recent UPI Transaction Stream</h3>
+            <span className="text-[9px] font-black text-samridhi-textMuted uppercase tracking-widest font-mono">UPI.Sync.Active</span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-samridhi-textMuted">
+          <div className="overflow-x-auto font-mono">
+            <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-samridhi-border/60 text-samridhi-textPrimary font-extrabold uppercase">
-                  <th className="py-2.5">Date</th>
-                  <th className="py-2.5">Merchant</th>
-                  <th className="py-2.5">Category</th>
-                  <th className="py-2.5 text-right">Amount</th>
+                <tr className="border-b border-white/[0.06] text-white font-extrabold uppercase tracking-wider text-[10px]">
+                  <th className="py-3 px-2">Date</th>
+                  <th className="py-3 px-2">Merchant</th>
+                  <th className="py-3 px-2">Category</th>
+                  <th className="py-3 px-2 text-right">Amount</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-samridhi-border/30">
-                {dashboardState.transactions.map((tx, idx) => (
-                  <tr key={tx.id || idx} className="hover:bg-samridhi-surface/30 transition-colors">
-                    <td className="py-3 font-semibold">{tx.date}</td>
-                    <td className="py-3 text-samridhi-textPrimary font-semibold">{tx.merchant}</td>
-                    <td className="py-3">
-                      <span className="px-2 py-0.5 bg-samridhi-surface border border-samridhi-border rounded text-[10px]">
-                        {tx.category}
-                      </span>
-                    </td>
-                    <td className={`py-3 text-right font-black ${tx.amount > 0 ? 'text-samridhi-success' : 'text-samridhi-textPrimary'}`}>
-                      {tx.amount > 0 ? `+₹${tx.amount.toLocaleString()}` : `-₹${Math.abs(tx.amount).toLocaleString()}`}
-                    </td>
-                  </tr>
-                ))}
+              <tbody className="divide-y divide-white/[0.02] text-samridhi-textMuted font-medium">
+                {dashboardState.transactions.map((tx, idx) => {
+                  let badgeStyle = "bg-white/[0.04] text-white/70 border-white/[0.08]";
+                  if (tx.category === "Freelance Income" || tx.category === "Income") {
+                    badgeStyle = "bg-samridhi-success/10 text-samridhi-success border-samridhi-success/20";
+                  } else if (tx.category === "Business Expense" || tx.category === "Business") {
+                    badgeStyle = "bg-samridhi-primary/10 text-samridhi-primary border-samridhi-primary/20";
+                  } else if (tx.category === "Utility Bills" || tx.category === "Utilities") {
+                    badgeStyle = "bg-samridhi-secondary/10 text-samridhi-secondary border-samridhi-secondary/20";
+                  } else if (tx.category === "Food & Beverage" || tx.category === "Travel Outflow") {
+                    badgeStyle = "bg-samridhi-warning/10 text-samridhi-warning border-samridhi-warning/20";
+                  }
+                  
+                  return (
+                    <tr key={tx.id || idx} className="hover:bg-white/[0.02] transition-colors">
+                      <td className="py-3.5 px-2 text-[11px]">{tx.date}</td>
+                      <td className="py-3.5 px-2 text-white font-bold font-sans">{tx.merchant}</td>
+                      <td className="py-3.5 px-2">
+                        <span className={`px-2.5 py-1 border rounded-lg text-[9px] font-black uppercase tracking-wider ${badgeStyle} font-sans`}>
+                          {tx.category}
+                        </span>
+                      </td>
+                      <td className={`py-3.5 px-2 text-right font-black text-[12px] ${tx.amount > 0 ? 'text-samridhi-success text-glow-success' : 'text-white'}`}>
+                        {tx.amount > 0 ? `+₹${tx.amount.toLocaleString()}` : `-₹${Math.abs(tx.amount).toLocaleString()}`}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -196,29 +223,29 @@ window.DashboardOverviewTab = ({
                 <div className="space-y-3">
                   <div className="bg-white/[0.02] p-4 border border-white/[0.06] rounded-xl space-y-2.5 text-xs">
                     <div className="flex justify-between items-center">
-                      <span className="text-samridhi-textMuted">Institution:</span>
+                      <span className="text-samridhi-textMuted font-semibold">Institution:</span>
                       <span className="font-bold text-white flex items-center gap-1">🏦 Union Bank of India</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-samridhi-textMuted">Data Sync Pipeline:</span>
+                      <span className="text-samridhi-textMuted font-semibold">Data Sync Pipeline:</span>
                       <span className="font-bold text-samridhi-success flex items-center gap-1.5 font-mono">
                         <span className="w-1.5 h-1.5 rounded-full bg-samridhi-success animate-ping"></span>
                         ACTIVE NODE
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-samridhi-textMuted">Consent Period:</span>
+                      <span className="text-samridhi-textMuted font-semibold">Consent Period:</span>
                       <span className="font-bold text-samridhi-secondary">One-Time (180d)</span>
                     </div>
                   </div>
                   
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 pt-1">
                     <button
                       onClick={() => {
                         setAaStep('select-bank');
                         setIsAaModalOpen(true);
                       }}
-                      className="flex-1 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] text-white font-bold py-2.5 px-3 rounded-xl text-[10px] uppercase tracking-wider transition-all"
+                      className="flex-1 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] text-white font-bold py-2.5 px-3 rounded-xl text-[10px] uppercase tracking-wider transition-all transform active:scale-95"
                     >
                       Update Consent
                     </button>
@@ -241,7 +268,7 @@ window.DashboardOverviewTab = ({
                       setAaStep('select-bank');
                       setIsAaModalOpen(true);
                     }}
-                    className="w-full bg-samridhi-primary hover:bg-samridhi-primary/95 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-samridhi-primary/20 flex items-center justify-center gap-2"
+                    className="w-full bg-samridhi-primary hover:bg-samridhi-primary/95 text-white font-black py-3.5 rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-samridhi-primary/20 flex items-center justify-center gap-2 transform active:scale-95"
                   >
                     <span>Link Bank via AA Consent</span>
                   </button>
@@ -305,7 +332,7 @@ window.DashboardOverviewTab = ({
                   </div>
 
                   <div className="text-[10px] text-samridhi-textMuted bg-white/[0.02] border border-white/[0.06] p-3.5 rounded-xl leading-relaxed font-semibold">
-                    💡 <strong className="text-white">Underwriting Insight:</strong> Your digital cash ledger has high savings density, adding <strong className="text-samridhi-secondary">+15 credibility points</strong>.
+                    💡 <strong className="text-white">Underwriting Insight:</strong> Your digital cash ledger has high savings density, adding <strong className="text-samridhi-secondary font-black">+15 credibility points</strong>.
                   </div>
                 </div>
               )}
@@ -314,71 +341,96 @@ window.DashboardOverviewTab = ({
         </div>
       </div>
 
-      {/* Credit Journey Timeline */}dit Journey Timeline */}
-      <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl space-y-6 shadow-lg">
-        <div className="flex items-center justify-between border-b border-samridhi-border/40 pb-3">
-          <h3 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider">Credit Journey Timeline</h3>
-          <span className="text-[10px] font-bold text-samridhi-textMuted uppercase">Historical Milestones</span>
+      {/* Credit Journey Timeline */}
+      <div className="glass-card p-6 rounded-3xl space-y-6 shadow-lg border border-white/[0.04] border-glow-secondary animate-fade-in">
+        <div className="flex items-center justify-between border-b border-white/[0.04] pb-3">
+          <h3 className="font-extrabold text-sm text-white uppercase tracking-wider text-glow-secondary">Credit Journey Timeline</h3>
+          <span className="text-[9px] font-black text-samridhi-textMuted uppercase tracking-widest font-mono">Historical.Milestones</span>
         </div>
 
-        <div className="relative py-8">
-          {/* Vertical Center Line */}
-          <div className="absolute left-4 md:left-1/2 md:-translate-x-1/2 top-0 bottom-0 w-0.5 bg-samridhi-border"></div>
+        <div className="relative py-4 overflow-x-auto scrollbar-none">
+          {/* Horizontal connecting track for desktop */}
+          <div className="hidden md:block absolute top-[52px] left-[10%] right-[10%] h-[2.5px] bg-white/[0.04] z-0">
+            <div 
+              className="h-full bg-gradient-to-r from-samridhi-secondary via-samridhi-primary to-samridhi-success transition-all duration-1000"
+              style={{ width: '100%' }}
+            ></div>
+          </div>
 
-          <div className="space-y-8 relative">
+          <div className="flex flex-col md:flex-row justify-between items-stretch gap-6 relative z-10 min-w-max md:min-w-0">
             
             {/* Milestone 1 */}
-            <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between w-full md:w-1/2 md:pr-8 md:text-right self-start pl-8 md:pl-0">
-              <div className="absolute left-2.5 md:left-auto md:right-0 md:translate-x-1/2 w-3.5 h-3.5 rounded-full bg-samridhi-secondary border-4 border-[#08080C] z-10"></div>
-              <div className="bg-samridhi-surface border border-samridhi-secondary/25 hover:border-samridhi-secondary/60 transition-all p-4 rounded-xl shadow-md w-full">
-                <span className="text-[10px] font-bold text-samridhi-secondary block">Jan 2026</span>
-                <h4 className="font-bold text-xs text-samridhi-textPrimary mt-0.5">Account Created</h4>
-                <p className="text-[10px] text-samridhi-textMuted mt-1">Platform onboarding complete. Initial baseline rating established.</p>
-                <span className="inline-block text-[10px] font-black text-samridhi-secondary mt-1">Score: 45</span>
+            <div className="flex-1 flex flex-col items-center text-center space-y-3 min-w-[200px] md:min-w-0">
+              <span className="text-[10px] font-black text-samridhi-secondary uppercase tracking-wider bg-samridhi-secondary/10 px-3 py-1 rounded-full border border-samridhi-secondary/20 font-mono">Jan 2026</span>
+              <div className="w-6 h-6 rounded-full bg-[#0d0e15] border-[3px] border-samridhi-secondary flex items-center justify-center shadow-[0_0_12px_rgba(0,229,255,0.4)] z-10 my-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-samridhi-secondary"></span>
+              </div>
+              <div className="bg-white/[0.02] border border-white/[0.06] hover:border-samridhi-secondary/35 hover:bg-white/[0.04] transition-all duration-300 p-4.5 rounded-2xl w-full flex-1 flex flex-col justify-between space-y-2.5">
+                <div>
+                  <h4 className="font-black text-[11px] text-white uppercase tracking-wide">Account Created</h4>
+                  <p className="text-[10px] text-samridhi-textMuted mt-1 leading-normal font-semibold">Platform onboarding complete. Initial baseline rating established.</p>
+                </div>
+                <div className="text-[10px] font-black text-samridhi-secondary font-mono mt-2 bg-samridhi-secondary/5 py-1 rounded border border-samridhi-secondary/10">Base Score: 45</div>
               </div>
             </div>
 
             {/* Milestone 2 */}
-            <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between w-full md:w-1/2 md:pl-8 self-end pl-8">
-              <div className="absolute left-2.5 md:left-0 md:-translate-x-1/2 w-3.5 h-3.5 rounded-full bg-samridhi-primary border-4 border-[#08080C] z-10"></div>
-              <div className="bg-samridhi-surface border border-samridhi-primary/25 hover:border-samridhi-primary/60 transition-all p-4 rounded-xl shadow-md w-full">
-                <span className="text-[10px] font-bold text-samridhi-primary block">Feb 2026</span>
-                <h4 className="font-bold text-xs text-samridhi-textPrimary mt-0.5">UPI Connected</h4>
-                <p className="text-[10px] text-samridhi-textMuted mt-1">Transactional stream linked. Verified active telemetry behavior.</p>
-                <span className="inline-block text-[10px] font-black text-samridhi-primary mt-1">Score: +8 &rarr; 53</span>
+            <div className="flex-1 flex flex-col items-center text-center space-y-3 min-w-[200px] md:min-w-0">
+              <span className="text-[10px] font-black text-samridhi-primary uppercase tracking-wider bg-samridhi-primary/10 px-3 py-1 rounded-full border border-samridhi-primary/20 font-mono">Feb 2026</span>
+              <div className="w-6 h-6 rounded-full bg-[#0d0e15] border-[3px] border-samridhi-primary flex items-center justify-center shadow-[0_0_12px_rgba(213,0,249,0.4)] z-10 my-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-samridhi-primary"></span>
+              </div>
+              <div className="bg-white/[0.02] border border-white/[0.06] hover:border-samridhi-primary/35 hover:bg-white/[0.04] transition-all duration-300 p-4.5 rounded-2xl w-full flex-1 flex flex-col justify-between space-y-2.5">
+                <div>
+                  <h4 className="font-black text-[11px] text-white uppercase tracking-wide">UPI Connected</h4>
+                  <p className="text-[10px] text-samridhi-textMuted mt-1 leading-normal font-semibold">Transactional stream linked. Verified active telemetry behavior.</p>
+                </div>
+                <div className="text-[10px] font-black text-samridhi-primary font-mono mt-2 bg-samridhi-primary/5 py-1 rounded border border-samridhi-primary/10">Score: +8 &rarr; 53</div>
               </div>
             </div>
 
             {/* Milestone 3 */}
-            <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between w-full md:w-1/2 md:pr-8 md:text-right self-start pl-8 md:pl-0">
-              <div className="absolute left-2.5 md:left-auto md:right-0 md:translate-x-1/2 w-3.5 h-3.5 rounded-full bg-samridhi-warning border-4 border-[#08080C] z-10"></div>
-              <div className="bg-samridhi-surface border border-samridhi-warning/25 hover:border-samridhi-warning/60 transition-all p-4 rounded-xl shadow-md w-full">
-                <span className="text-[10px] font-bold text-samridhi-warning block">Mar 2026</span>
-                <h4 className="font-bold text-xs text-samridhi-textPrimary mt-0.5">2 Certifications Added</h4>
-                <p className="text-[10px] text-samridhi-textMuted mt-1">Professional skills verified via Coursera and Wharton integration.</p>
-                <span className="inline-block text-[10px] font-black text-samridhi-warning mt-1">Score: +7 &rarr; 60</span>
+            <div className="flex-1 flex flex-col items-center text-center space-y-3 min-w-[200px] md:min-w-0">
+              <span className="text-[10px] font-black text-samridhi-warning uppercase tracking-wider bg-samridhi-warning/10 px-3 py-1 rounded-full border border-samridhi-warning/20 font-mono">Mar 2026</span>
+              <div className="w-6 h-6 rounded-full bg-[#0d0e15] border-[3px] border-samridhi-warning flex items-center justify-center shadow-[0_0_12px_rgba(255,214,0,0.4)] z-10 my-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-samridhi-warning"></span>
+              </div>
+              <div className="bg-white/[0.02] border border-white/[0.06] hover:border-samridhi-warning/35 hover:bg-white/[0.04] transition-all duration-300 p-4.5 rounded-2xl w-full flex-1 flex flex-col justify-between space-y-2.5">
+                <div>
+                  <h4 className="font-black text-[11px] text-white uppercase tracking-wide">Skills Verified</h4>
+                  <p className="text-[10px] text-samridhi-textMuted mt-1 leading-normal font-semibold">Professional credentials validated via Wharton & Coursera API.</p>
+                </div>
+                <div className="text-[10px] font-black text-samridhi-warning font-mono mt-2 bg-samridhi-warning/5 py-1 rounded border border-samridhi-warning/10">Score: +7 &rarr; 60</div>
               </div>
             </div>
 
             {/* Milestone 4 */}
-            <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between w-full md:w-1/2 md:pl-8 self-end pl-8">
-              <div className="absolute left-2.5 md:left-0 md:-translate-x-1/2 w-3.5 h-3.5 rounded-full bg-teal-500 border-4 border-[#08080C] z-10"></div>
-              <div className="bg-samridhi-surface border border-teal-500/25 hover:border-teal-500/60 transition-all p-4 rounded-xl shadow-md w-full">
-                <span className="text-[10px] font-bold text-teal-400 block">Apr 2026</span>
-                <h4 className="font-bold text-xs text-samridhi-textPrimary mt-0.5">Stable Income Verified</h4>
-                <p className="text-[10px] text-samridhi-textMuted mt-1">Steady cash inflows identified from contracting and gig platforms.</p>
-                <span className="inline-block text-[10px] font-black text-teal-400 mt-1">Score: +6 &rarr; 66</span>
+            <div className="flex-1 flex flex-col items-center text-center space-y-3 min-w-[200px] md:min-w-0">
+              <span className="text-[10px] font-black text-teal-400 uppercase tracking-wider bg-teal-400/10 px-3 py-1 rounded-full border border-teal-400/20 font-mono">Apr 2026</span>
+              <div className="w-6 h-6 rounded-full bg-[#0d0e15] border-[3px] border-teal-400 flex items-center justify-center shadow-[0_0_12px_rgba(45,212,191,0.4)] z-10 my-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
+              </div>
+              <div className="bg-white/[0.02] border border-white/[0.06] hover:border-teal-400/35 hover:bg-white/[0.04] transition-all duration-300 p-4.5 rounded-2xl w-full flex-1 flex flex-col justify-between space-y-2.5">
+                <div>
+                  <h4 className="font-black text-[11px] text-white uppercase tracking-wide">Income Verified</h4>
+                  <p className="text-[10px] text-samridhi-textMuted mt-1 leading-normal font-semibold">Steady cash inflows identified from contracting and gig platforms.</p>
+                </div>
+                <div className="text-[10px] font-black text-teal-400 font-mono mt-2 bg-teal-400/5 py-1 rounded border border-teal-400/10">Score: +6 &rarr; 66</div>
               </div>
             </div>
 
             {/* Milestone 5 */}
-            <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between w-full md:w-1/2 md:pr-8 md:text-right self-start pl-8 md:pl-0">
-              <div className="absolute left-2.5 md:left-auto md:right-0 md:translate-x-1/2 w-3.5 h-3.5 rounded-full bg-samridhi-success border-4 border-[#08080C] z-10"></div>
-              <div className="bg-samridhi-surface border border-samridhi-success/25 hover:border-samridhi-success/60 transition-all p-4 rounded-xl shadow-md w-full">
-                <span className="text-[10px] font-bold text-samridhi-success block">May 2026</span>
-                <h4 className="font-bold text-xs text-samridhi-textPrimary mt-0.5">Current Score</h4>
-                <p className="text-[10px] text-samridhi-textMuted mt-1">Latest alternative credit standing representing low underwriting risk.</p>
-                <span className="inline-block text-[10px] font-black text-samridhi-success mt-1">Score: {calculatedScore}</span>
+            <div className="flex-1 flex flex-col items-center text-center space-y-3 min-w-[200px] md:min-w-0">
+              <span className="text-[10px] font-black text-samridhi-success uppercase tracking-wider bg-samridhi-success/10 px-3 py-1 rounded-full border border-samridhi-success/20 font-mono">May 2026</span>
+              <div className="w-6 h-6 rounded-full bg-[#0d0e15] border-[3px] border-samridhi-success flex items-center justify-center shadow-[0_0_12px_rgba(0,230,118,0.4)] z-10 my-1 animate-pulse">
+                <span className="w-1.5 h-1.5 rounded-full bg-samridhi-success"></span>
+              </div>
+              <div className="bg-white/[0.02] border border-white/[0.06] hover:border-samridhi-success/35 hover:bg-white/[0.04] transition-all duration-300 p-4.5 rounded-2xl w-full flex-1 flex flex-col justify-between space-y-2.5 border-glow-success">
+                <div>
+                  <h4 className="font-black text-[11px] text-white uppercase tracking-wide">Current Rating</h4>
+                  <p className="text-[10px] text-samridhi-textMuted mt-1 leading-normal font-semibold">Latest alternative credit standing representing low underwriting risk.</p>
+                </div>
+                <div className="text-[10px] font-black text-samridhi-success font-mono mt-2 bg-samridhi-success/5 py-1 rounded border border-samridhi-success/10 text-glow-success">Live Score: {calculatedScore}</div>
               </div>
             </div>
 
@@ -387,39 +439,39 @@ window.DashboardOverviewTab = ({
       </div>
 
       {/* Active Loans Ledger */}
-      <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl space-y-4 shadow-lg">
-        <div className="flex items-center justify-between border-b border-samridhi-border/40 pb-3">
-          <h3 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider">Active Credit Portfolio</h3>
-          <span className="text-[10px] font-bold text-samridhi-textMuted uppercase">Collateral: Alternative Data</span>
+      <div className="glass-card p-6 rounded-3xl space-y-4 border border-white/[0.04] border-glow-secondary">
+        <div className="flex items-center justify-between border-b border-white/[0.04] pb-3">
+          <h3 className="font-extrabold text-sm text-white uppercase tracking-wider text-glow-secondary">Active Credit Portfolio</h3>
+          <span className="text-[9px] font-black text-samridhi-textMuted uppercase tracking-widest font-mono">Collateral: Alternative Data</span>
         </div>
 
         <div className="overflow-x-auto">
           {!dashboardState.loans || dashboardState.loans.length === 0 ? (
-            <div className="text-center py-6 text-xs text-samridhi-textMuted">
+            <div className="text-center py-6 text-xs text-samridhi-textMuted font-semibold">
               No active loans found. Apply in the "Apply for Loan" tab.
             </div>
           ) : (
-            <table className="w-full text-left text-xs text-samridhi-textMuted">
+            <table className="w-full text-left text-xs font-mono">
               <thead>
-                <tr className="border-b border-samridhi-border/60 text-samridhi-textPrimary font-extrabold uppercase">
-                  <th className="py-2.5">Date Approved</th>
-                  <th className="py-2.5">Lender</th>
-                  <th className="py-2.5 text-right">Principal</th>
-                  <th className="py-2.5 text-right">Interest Rate</th>
-                  <th className="py-2.5 text-right">Monthly EMI</th>
-                  <th className="py-2.5 text-right">Status</th>
+                <tr className="border-b border-white/[0.06] text-white font-extrabold uppercase tracking-wider text-[10px]">
+                  <th className="py-3 px-2">Date Approved</th>
+                  <th className="py-3 px-2">Lender</th>
+                  <th className="py-3 px-2 text-right">Principal</th>
+                  <th className="py-3 px-2 text-right">Interest Rate</th>
+                  <th className="py-3 px-2 text-right">Monthly EMI</th>
+                  <th className="py-3 px-2 text-right">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-samridhi-border/30">
+              <tbody className="divide-y divide-white/[0.02] text-samridhi-textMuted font-medium">
                 {dashboardState.loans.map((loan, idx) => (
-                  <tr key={loan.id || idx} className="hover:bg-samridhi-surface/30 transition-colors">
-                    <td className="py-3 font-semibold">{loan.date}</td>
-                    <td className="py-3 text-samridhi-textPrimary font-semibold">{loan.lender}</td>
-                    <td className="py-3 text-right font-bold text-samridhi-textPrimary">₹{parseInt(loan.amount).toLocaleString()}</td>
-                    <td className="py-3 text-right font-semibold text-samridhi-success">{loan.rate}</td>
-                    <td className="py-3 text-right font-black text-samridhi-secondary">{loan.emi}</td>
-                    <td className="py-3 text-right">
-                      <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold ${loan.status === 'Active' ? 'bg-samridhi-primary/15 border border-samridhi-primary/30 text-samridhi-primary' : 'bg-samridhi-success/15 border border-samridhi-success/30 text-samridhi-success'}`}>
+                  <tr key={loan.id || idx} className="hover:bg-white/[0.02] transition-colors">
+                    <td className="py-3.5 px-2 text-[11px]">{loan.date}</td>
+                    <td className="py-3.5 px-2 text-white font-bold font-sans">{loan.lender}</td>
+                    <td className="py-3.5 px-2 text-right font-black text-[12px] text-white">₹{parseInt(loan.amount).toLocaleString()}</td>
+                    <td className="py-3.5 px-2 text-right font-black text-samridhi-success">{loan.rate}</td>
+                    <td className="py-3.5 px-2 text-right font-black text-samridhi-secondary">{loan.emi}</td>
+                    <td className="py-3.5 px-2 text-right">
+                      <span className={`px-2.5 py-1 border rounded-lg text-[9px] font-black uppercase tracking-wider font-sans ${loan.status === 'Active' ? 'bg-samridhi-primary/10 border-samridhi-primary/20 text-samridhi-primary text-glow-primary' : 'bg-samridhi-success/10 border-samridhi-success/20 text-samridhi-success text-glow-success'}`}>
                         {loan.status}
                       </span>
                     </td>

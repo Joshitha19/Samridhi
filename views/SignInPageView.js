@@ -109,42 +109,6 @@ window.SignInPageView = ({ setPage, onSignIn }) => {
           <span>One-Click Live Demo Sign-In</span>
         </button>
 
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-samridhi-border/60"></div>
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-samridhi-card px-3 text-samridhi-textMuted font-bold">Sandbox Dev Quick Sign-In</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={() => onSignIn('demo.student@samridhi.in', 'password123', 'Student')}
-            className="py-2 px-3 bg-samridhi-surface hover:bg-samridhi-primary/10 border border-samridhi-border text-[11px] font-bold rounded-xl transition-all flex items-center justify-center space-x-1.5 hover:text-samridhi-secondary"
-          >
-            <span>Student</span>
-          </button>
-          <button
-            onClick={() => onSignIn('demo.freelancer@samridhi.in', 'password123', 'Freelancer')}
-            className="py-2 px-3 bg-samridhi-surface hover:bg-samridhi-primary/10 border border-samridhi-border text-[11px] font-bold rounded-xl transition-all flex items-center justify-center space-x-1.5 hover:text-samridhi-secondary"
-          >
-            <span>Freelancer</span>
-          </button>
-          <button
-            onClick={() => onSignIn('demo.entrepreneur@samridhi.in', 'password123', 'Entrepreneur')}
-            className="py-2 px-3 bg-samridhi-surface hover:bg-samridhi-primary/10 border border-samridhi-border text-[11px] font-bold rounded-xl transition-all flex items-center justify-center space-x-1.5 hover:text-samridhi-secondary"
-          >
-            <span>Merchant</span>
-          </button>
-          <button
-            onClick={() => onSignIn('demo.salaried@samridhi.in', 'password123', 'Salaried')}
-            className="py-2 px-3 bg-samridhi-surface hover:bg-samridhi-primary/10 border border-samridhi-border text-[11px] font-bold rounded-xl transition-all flex items-center justify-center space-x-1.5 hover:text-samridhi-secondary"
-          >
-            <span>Salaried</span>
-          </button>
-        </div>
-
         <div className="mt-8 text-center text-xs">
           <span className="text-samridhi-textMuted">Don't have an account? </span>
           <button 

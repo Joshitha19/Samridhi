@@ -51,9 +51,9 @@ window.DashboardOverviewTab = ({
       {/* Row 1: Grid Score & Quick Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Score Card (Col-4) */}
-        <div className="lg:col-span-4 bg-samridhi-card border border-samridhi-border p-6 rounded-2xl flex flex-col items-center justify-center shadow-lg relative">
+        <div className="lg:col-span-4 glass-card p-6 rounded-2xl flex flex-col items-center justify-center border border-white/[0.04] border-glow-secondary relative">
           <div className="absolute top-4 left-4">
-            <span className="text-[10px] uppercase font-bold text-samridhi-textMuted tracking-wider">AI Score Gauge</span>
+            <span className="text-[9px] uppercase font-bold text-samridhi-textMuted tracking-wider">AI Score Gauge</span>
           </div>
           <CircularGauge score={calculatedScore} />
         </div>
@@ -62,23 +62,23 @@ window.DashboardOverviewTab = ({
         <div className="lg:col-span-8 flex flex-col justify-between space-y-6">
           
           {/* Greetings Header */}
-          <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl flex flex-col justify-center h-full relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-samridhi-primary/5 to-transparent rounded-tr-2xl pointer-events-none"></div>
-            <h2 className="text-xl md:text-2xl font-black text-samridhi-textPrimary">Welcome back, {user.name}!</h2>
-            <p className="text-xs text-samridhi-textMuted mt-1 max-w-lg leading-relaxed">
+          <div className="glass-card p-6 rounded-2xl flex flex-col justify-center h-full relative overflow-hidden border border-white/[0.04] border-glow-primary">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-samridhi-primary/10 to-transparent rounded-tr-2xl pointer-events-none filter blur-2xl"></div>
+            <h2 className="text-xl md:text-2xl font-black text-white bg-gradient-to-r from-white via-white to-white/70 bg-clip-text">Welcome back, {user.name}!</h2>
+            <p className="text-xs text-samridhi-textMuted mt-1 max-w-lg leading-relaxed font-semibold">
               Your non-traditional AI credit file is calculated based on alternative cashflow parameters. Your profile is rated as <strong className="text-samridhi-secondary">{calculatedScore >= 71 ? 'LOW RISK' : 'STABLE'}</strong>. Let's maintain healthy digital transactions to qualify for lower rates.
             </p>
             
             <div className="mt-4 flex flex-wrap gap-3">
               <button
                 onClick={() => setActiveTab('apply')}
-                className="bg-samridhi-primary hover:bg-samridhi-primary/90 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-md transition-colors"
+                className="bg-samridhi-primary hover:bg-samridhi-primary/90 text-white text-xs font-black uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-lg shadow-samridhi-primary/15 transition-all duration-300"
               >
                 Apply for Loan
               </button>
               <button
                 onClick={() => setActiveTab('recommendations')}
-                className="bg-samridhi-surface hover:bg-samridhi-card border border-samridhi-border text-samridhi-textPrimary text-xs font-bold px-4 py-2.5 rounded-lg transition-all"
+                className="bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] hover:border-samridhi-primary/30 text-white text-xs font-black uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all"
               >
                 View Recommendations
               </button>
@@ -87,36 +87,36 @@ window.DashboardOverviewTab = ({
 
           {/* Quick Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-samridhi-card border border-samridhi-border p-4 rounded-xl flex items-center justify-between">
+            <div className="glass-card p-4 rounded-xl flex items-center justify-between border border-white/[0.04]">
               <div className="flex flex-col space-y-1">
-                <span className="text-[10px] font-bold text-samridhi-textMuted uppercase tracking-wider">Monthly Income</span>
-                <span className="text-base font-extrabold text-samridhi-textPrimary">₹45,000</span>
+                <span className="text-[9px] font-bold text-samridhi-textMuted uppercase tracking-wider">Monthly Income</span>
+                <span className="text-base font-extrabold text-white font-mono">₹45,000</span>
               </div>
-              <div className="w-8 h-8 rounded-lg bg-samridhi-success/15 border border-samridhi-success/30 flex items-center justify-center text-samridhi-success font-black text-xs">
+              <div className="w-8 h-8 rounded-lg bg-samridhi-success/10 border border-samridhi-success/20 flex items-center justify-center text-samridhi-success font-black text-xs shadow-inner">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
                 </svg>
               </div>
             </div>
 
-            <div className="bg-samridhi-card border border-samridhi-border p-4 rounded-xl flex items-center justify-between">
+            <div className="glass-card p-4 rounded-xl flex items-center justify-between border border-white/[0.04]">
               <div className="flex flex-col space-y-1">
-                <span className="text-[10px] font-bold text-samridhi-textMuted uppercase tracking-wider">UPI Transactions</span>
-                <span className="text-base font-extrabold text-samridhi-textPrimary">{dashboardState.transactions.length} this month</span>
+                <span className="text-[9px] font-bold text-samridhi-textMuted uppercase tracking-wider">UPI Transactions</span>
+                <span className="text-base font-extrabold text-white font-mono">{dashboardState.transactions.length} this month</span>
               </div>
-              <div className="w-8 h-8 rounded-lg bg-samridhi-secondary/15 border border-samridhi-secondary/30 flex items-center justify-center text-samridhi-secondary font-black text-xs">
+              <div className="w-8 h-8 rounded-lg bg-samridhi-secondary/10 border border-samridhi-secondary/20 flex items-center justify-center text-samridhi-secondary font-black text-xs shadow-inner">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
             </div>
 
-            <div className="bg-samridhi-card border border-samridhi-border p-4 rounded-xl flex items-center justify-between">
+            <div className="glass-card p-4 rounded-xl flex items-center justify-between border border-white/[0.04]">
               <div className="flex flex-col space-y-1">
-                <span className="text-[10px] font-bold text-samridhi-textMuted uppercase tracking-wider">Skills Certified</span>
-                <span className="text-base font-extrabold text-samridhi-textPrimary">{dashboardState.skills.filter(s => s.verified).length} verified</span>
+                <span className="text-[9px] font-bold text-samridhi-textMuted uppercase tracking-wider">Skills Certified</span>
+                <span className="text-base font-extrabold text-white font-mono">{dashboardState.skills.filter(s => s.verified).length} verified</span>
               </div>
-              <div className="w-8 h-8 rounded-lg bg-samridhi-primary/15 border border-samridhi-primary/30 flex items-center justify-center text-samridhi-primary font-black text-xs">
+              <div className="w-8 h-8 rounded-lg bg-samridhi-primary/10 border border-samridhi-primary/20 flex items-center justify-center text-samridhi-primary font-black text-xs shadow-inner">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
@@ -129,7 +129,7 @@ window.DashboardOverviewTab = ({
       {/* UPI TRANSACTION SIMULATOR AND RECENT TRANSACTIONS TABLE */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Recent Transactions list (Col-8) */}
-        <div className="lg:col-span-8 bg-samridhi-card border border-samridhi-border p-6 rounded-2xl space-y-4">
+        <div className="lg:col-span-8 glass-card p-6 rounded-2xl space-y-4 border border-white/[0.04]">
           <div className="flex items-center justify-between border-b border-samridhi-border/40 pb-3">
             <h3 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider">Recent UPI Transaction Stream</h3>
             <span className="text-[10px] font-bold text-samridhi-textMuted uppercase">UPI Sync Engine</span>
@@ -169,17 +169,17 @@ window.DashboardOverviewTab = ({
         <div className="lg:col-span-4 space-y-6">
           
           {/* Account Aggregator Consent panel */}
-          <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl flex flex-col justify-between shadow-lg relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-samridhi-primary/5 to-transparent pointer-events-none"></div>
+          <div className="glass-card p-6 rounded-3xl flex flex-col justify-between border border-white/[0.04] border-glow-secondary relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-samridhi-secondary/10 to-transparent rounded-tr-3xl pointer-events-none filter blur-xl"></div>
             <div>
-              <div className="flex items-center justify-between border-b border-samridhi-border/40 pb-3 mb-4">
+              <div className="flex items-center justify-between border-b border-white/[0.04] pb-3.5 mb-4">
                 <h4 className="font-extrabold text-xs text-white uppercase tracking-wider">Account Aggregator</h4>
-                <span className={`text-[9px] font-black px-2.5 py-1 rounded-full ${upiVerified ? 'bg-samridhi-success/15 text-samridhi-success border border-samridhi-success/20' : 'bg-samridhi-warning/15 text-samridhi-warning border border-samridhi-warning/20 animate-pulse'}`}>
+                <span className={`text-[8px] font-black px-2.5 py-1 rounded-full ${upiVerified ? 'bg-samridhi-success/15 text-samridhi-success border border-samridhi-success/20 text-glow-success' : 'bg-samridhi-warning/15 text-samridhi-warning border border-samridhi-warning/20 animate-pulse'}`}>
                   {upiVerified ? 'LINKED & VERIFIED' : 'NOT LINKED'}
                 </span>
               </div>
               
-              <p className="text-[11px] text-samridhi-textMuted leading-relaxed mb-4">
+              <p className="text-[11px] text-samridhi-textMuted leading-relaxed mb-4 font-semibold">
                 {upiVerified ? (
                   <>
                     Linked bank UPI VPA: <strong className="text-white font-mono">{vpaInput || user.upiVpa || 'Union Bank verified'}</strong>.<br/>
@@ -187,23 +187,23 @@ window.DashboardOverviewTab = ({
                   </>
                 ) : (
                   <>
-                    Link your Union Bank of India (or other major bank) transaction ledger securely via Sahamati Consent gateway to parse cashflow velocity and raise credit limits.
+                    Link your Union Bank of India (or other bank) transaction ledger securely via Sahamati Consent gateway to parse cashflow velocity and raise credit limits.
                   </>
                 )}
               </p>
 
               {upiVerified ? (
                 <div className="space-y-3">
-                  <div className="bg-samridhi-surface/50 p-4 border border-samridhi-border rounded-xl space-y-2.5 text-xs">
+                  <div className="bg-white/[0.02] p-4 border border-white/[0.06] rounded-xl space-y-2.5 text-xs">
                     <div className="flex justify-between items-center">
                       <span className="text-samridhi-textMuted">Institution:</span>
                       <span className="font-bold text-white flex items-center gap-1">🏦 Union Bank of India</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-samridhi-textMuted">Data Sync Pipeline:</span>
-                      <span className="font-bold text-samridhi-success flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-samridhi-success animate-ping"></span>
-                        Active Node
+                      <span className="font-bold text-samridhi-success flex items-center gap-1.5 font-mono">
+                        <span className="w-1.5 h-1.5 rounded-full bg-samridhi-success animate-ping"></span>
+                        ACTIVE NODE
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
@@ -218,13 +218,13 @@ window.DashboardOverviewTab = ({
                         setAaStep('select-bank');
                         setIsAaModalOpen(true);
                       }}
-                      className="flex-1 bg-samridhi-surface hover:bg-samridhi-card border border-samridhi-border text-samridhi-textPrimary font-bold py-2 px-3 rounded-xl text-[10px] transition-all hover:-translate-y-0.5 active:translate-y-0"
+                      className="flex-1 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] text-white font-bold py-2.5 px-3 rounded-xl text-[10px] uppercase tracking-wider transition-all"
                     >
                       Update Consent
                     </button>
                     <button
                       disabled
-                      className="flex-1 bg-samridhi-success/5 border border-samridhi-success/20 text-samridhi-success font-black py-2 px-3 rounded-xl text-[10px] cursor-not-allowed"
+                      className="flex-1 bg-samridhi-success/5 border border-samridhi-success/20 text-samridhi-success font-black py-2.5 px-3 rounded-xl text-[10px] uppercase tracking-wider cursor-not-allowed"
                     >
                       Verified Node ✔
                     </button>
@@ -232,16 +232,16 @@ window.DashboardOverviewTab = ({
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="flex flex-col items-center justify-center p-6 border border-dashed border-samridhi-border rounded-xl bg-samridhi-surface/20 space-y-2.5">
+                  <div className="flex flex-col items-center justify-center p-6 border border-dashed border-white/[0.08] rounded-xl bg-white/[0.01] space-y-2.5">
                     <span className="text-3xl animate-bounce">🏦</span>
-                    <p className="text-[10px] text-samridhi-textMuted text-center leading-relaxed">Secure data pipe fetches digital solvency parameters directly from Union Bank.</p>
+                    <p className="text-[10px] text-samridhi-textMuted text-center leading-relaxed font-semibold">Secure data pipe fetches digital solvency parameters directly from Union Bank.</p>
                   </div>
                   <button
                     onClick={() => {
                       setAaStep('select-bank');
                       setIsAaModalOpen(true);
                     }}
-                    className="w-full bg-samridhi-primary hover:bg-samridhi-primary/95 text-white font-extrabold py-2.5 rounded-xl text-xs transition-colors shadow-lg shadow-samridhi-primary/30 flex items-center justify-center gap-2 hover:-translate-y-0.5 active:translate-y-0"
+                    className="w-full bg-samridhi-primary hover:bg-samridhi-primary/95 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-samridhi-primary/20 flex items-center justify-center gap-2"
                   >
                     <span>Link Bank via AA Consent</span>
                   </button>
@@ -251,27 +251,27 @@ window.DashboardOverviewTab = ({
           </div>
 
           {/* Cashflow Analysis & Insights Card */}
-          <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl flex flex-col justify-between shadow-lg relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-samridhi-secondary/5 to-transparent pointer-events-none"></div>
+          <div className="glass-card p-6 rounded-3xl flex flex-col justify-between border border-white/[0.04] border-glow-primary relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-samridhi-primary/10 to-transparent rounded-tr-3xl pointer-events-none filter blur-xl"></div>
             <div>
-              <h4 className="font-extrabold text-xs text-white uppercase tracking-wider border-b border-samridhi-border/40 pb-3 mb-4">Alternative Cashflow Analyzer</h4>
+              <h4 className="font-extrabold text-xs text-white uppercase tracking-wider border-b border-white/[0.04] pb-3.5 mb-4">Alternative Cashflow Analyzer</h4>
               
               {!upiVerified ? (
                 <div className="text-center py-6 space-y-2">
                   <span className="text-2xl opacity-60">📊</span>
-                  <p className="text-[10px] text-samridhi-textMuted leading-relaxed">
+                  <p className="text-[10px] text-samridhi-textMuted leading-relaxed font-semibold">
                     Connect bank account via Account Aggregator to render live cashflow index, savings velocity, and stability metrics.
                   </p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-3.5">
-                    <div className="bg-samridhi-surface/40 border border-samridhi-border p-3 rounded-xl">
-                      <span className="block text-[9px] text-samridhi-textMuted uppercase font-bold">Total Inflows</span>
+                    <div className="bg-white/[0.02] border border-white/[0.06] p-3.5 rounded-xl">
+                      <span className="block text-[9px] text-samridhi-textMuted uppercase font-bold tracking-wider">Total Inflows</span>
                       <span className="text-sm font-black text-samridhi-success font-mono mt-1 block">₹{cashflowStats.inflow.toLocaleString()}</span>
                     </div>
-                    <div className="bg-samridhi-surface/40 border border-samridhi-border p-3 rounded-xl">
-                      <span className="block text-[9px] text-samridhi-textMuted uppercase font-bold">Total Outflows</span>
+                    <div className="bg-white/[0.02] border border-white/[0.06] p-3.5 rounded-xl">
+                      <span className="block text-[9px] text-samridhi-textMuted uppercase font-bold tracking-wider">Total Outflows</span>
                       <span className="text-sm font-black text-white font-mono mt-1 block">₹{cashflowStats.outflow.toLocaleString()}</span>
                     </div>
                   </div>
@@ -279,10 +279,10 @@ window.DashboardOverviewTab = ({
                   <div className="space-y-3">
                     <div>
                       <div className="flex justify-between items-center text-[10px] mb-1">
-                        <span className="text-samridhi-textMuted font-semibold">Ledger Savings Ratio</span>
+                        <span className="text-samridhi-textMuted font-bold uppercase tracking-wider">Ledger Savings Ratio</span>
                         <span className="font-bold text-samridhi-secondary font-mono">{cashflowStats.savingsRate}%</span>
                       </div>
-                      <div className="w-full bg-samridhi-surface h-2 rounded-full overflow-hidden border border-samridhi-border">
+                      <div className="w-full bg-white/[0.02] h-2 rounded-full overflow-hidden border border-white/[0.06]">
                         <div 
                           className="bg-gradient-to-r from-samridhi-primary to-samridhi-secondary h-full rounded-full transition-all duration-1000"
                           style={{ width: `${Math.min(100, Math.max(0, cashflowStats.savingsRate))}%` }}
@@ -292,10 +292,10 @@ window.DashboardOverviewTab = ({
 
                     <div>
                       <div className="flex justify-between items-center text-[10px] mb-1">
-                        <span className="text-samridhi-textMuted font-semibold">Cashflow Stability Rating</span>
+                        <span className="text-samridhi-textMuted font-bold uppercase tracking-wider">Cashflow Stability Rating</span>
                         <span className="font-bold text-samridhi-success font-mono">{cashflowStats.stabilityIndex}/100</span>
                       </div>
-                      <div className="w-full bg-samridhi-surface h-2 rounded-full overflow-hidden border border-samridhi-border">
+                      <div className="w-full bg-white/[0.02] h-2 rounded-full overflow-hidden border border-white/[0.06]">
                         <div 
                           className="bg-samridhi-success h-full rounded-full transition-all duration-1000"
                           style={{ width: `${cashflowStats.stabilityIndex}%` }}
@@ -304,7 +304,7 @@ window.DashboardOverviewTab = ({
                     </div>
                   </div>
 
-                  <div className="text-[10px] text-samridhi-textMuted bg-samridhi-surface/30 border border-samridhi-border p-3 rounded-xl leading-relaxed">
+                  <div className="text-[10px] text-samridhi-textMuted bg-white/[0.02] border border-white/[0.06] p-3.5 rounded-xl leading-relaxed font-semibold">
                     💡 <strong className="text-white">Underwriting Insight:</strong> Your digital cash ledger has high savings density, adding <strong className="text-samridhi-secondary">+15 credibility points</strong>.
                   </div>
                 </div>
@@ -314,7 +314,7 @@ window.DashboardOverviewTab = ({
         </div>
       </div>
 
-      {/* Credit Journey Timeline */}
+      {/* Credit Journey Timeline */}dit Journey Timeline */}
       <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl space-y-6 shadow-lg">
         <div className="flex items-center justify-between border-b border-samridhi-border/40 pb-3">
           <h3 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider">Credit Journey Timeline</h3>
@@ -433,14 +433,14 @@ window.DashboardOverviewTab = ({
 
       {/* Account Aggregator Consent Gateway Modal */}
       {isAaModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-md transition-opacity duration-300">
-          <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl w-full max-w-lg shadow-2xl relative overflow-hidden animate-slide-up">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md transition-opacity duration-300">
+          <div className="bg-[#090b10]/95 backdrop-blur-3xl border border-white/[0.08] p-6 rounded-3xl w-full max-w-lg shadow-[0_24px_80px_rgba(0,0,0,0.85)] relative overflow-hidden animate-slide-up border-glow-secondary">
             {/* Decorative neon gradient overlays */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-samridhi-primary/10 to-transparent pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-samridhi-secondary/5 to-transparent pointer-events-none"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-samridhi-primary/10 to-transparent pointer-events-none filter blur-xl"></div>
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-samridhi-secondary/5 to-transparent pointer-events-none filter blur-xl"></div>
 
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-samridhi-border/40 pb-3.5 mb-5">
+            <div className="flex items-center justify-between border-b border-white/[0.04] pb-3.5 mb-5">
               <div className="flex items-center space-x-2">
                 <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center text-samridhi-bg font-extrabold text-xs">
                   AA

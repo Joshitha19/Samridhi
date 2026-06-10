@@ -489,16 +489,17 @@ window.DashboardTransactionsTab = ({
       `}</style>
 
       {/* HEADER SCANNER CARD */}
-      <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl shadow-xl space-y-4">
+      <div className="glass-card p-6 rounded-3xl border border-white/[0.04] border-glow-primary space-y-4 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-samridhi-primary/10 to-transparent rounded-tr-3xl pointer-events-none filter blur-xl"></div>
         
         {uploadState === 'idle' && (
           <div className="space-y-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h3 className="text-sm font-extrabold text-samridhi-textPrimary uppercase tracking-wider">
+                <h3 className="text-sm font-black text-white uppercase tracking-wider text-glow-primary">
                   Alternative Underwriting: Bank Statement Scanner
                 </h3>
-                <p className="text-[10px] text-samridhi-textMuted mt-1">
+                <p className="text-[10px] text-samridhi-textMuted mt-1 font-semibold">
                   Secure client-side parsing of official PDF bank statements to calculate income stability indices (+7 credit points).
                 </p>
               </div>
@@ -511,11 +512,11 @@ window.DashboardTransactionsTab = ({
                     value={urlInput}
                     onChange={(e) => setUrlInput(e.target.value)}
                     placeholder="Paste statement PDF URL..."
-                    className="bg-samridhi-surface border border-samridhi-border px-3 py-1.5 rounded-lg text-[10px] text-samridhi-textPrimary focus:border-samridhi-primary focus:outline-none w-44"
+                    className="bg-white/[0.02] border border-white/[0.08] hover:border-samridhi-primary/30 focus:border-samridhi-primary px-3 py-1.5 rounded-lg text-[10px] text-white focus:outline-none w-44 transition-all"
                   />
                   <button
                     type="submit"
-                    className="bg-samridhi-primary hover:bg-samridhi-primary/90 text-white px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase"
+                    className="bg-samridhi-primary hover:bg-samridhi-primary/90 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-md shadow-samridhi-primary/15 transition-all"
                   >
                     Fetch
                   </button>
@@ -528,7 +529,7 @@ window.DashboardTransactionsTab = ({
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
                     placeholder="sk-ant-..."
-                    className="bg-samridhi-surface border border-samridhi-border px-3 py-1.5 rounded-lg text-[10px] text-samridhi-textPrimary focus:border-samridhi-primary focus:outline-none w-24"
+                    className="bg-white/[0.02] border border-white/[0.08] hover:border-samridhi-primary/30 focus:border-samridhi-primary px-3 py-1.5 rounded-lg text-[10px] text-white focus:outline-none w-24 transition-all"
                   />
                 </div>
               </div>
@@ -541,10 +542,10 @@ window.DashboardTransactionsTab = ({
               onDragLeave={handleDrag}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current && fileInputRef.current.click()}
-              className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 text-center ${
+              className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 text-center ${
                 dragActive 
-                  ? 'border-samridhi-secondary bg-samridhi-secondary/5 shadow-lg shadow-samridhi-secondary/5' 
-                  : 'border-samridhi-border hover:border-samridhi-primary hover:bg-samridhi-surface/30'
+                  ? 'border-samridhi-secondary bg-samridhi-secondary/5 shadow-lg shadow-samridhi-secondary/10' 
+                  : 'border-white/[0.08] hover:border-samridhi-primary/50 hover:bg-white/[0.02]'
               }`}
             >
               <input
@@ -555,17 +556,17 @@ window.DashboardTransactionsTab = ({
                 onChange={handleFileChange}
               />
               
-              <div className="p-3 bg-samridhi-surface border border-samridhi-border rounded-2xl mb-3 text-samridhi-textMuted group-hover:text-samridhi-primary transition-colors">
+              <div className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-2xl mb-3 text-samridhi-textMuted group-hover:text-samridhi-primary transition-colors">
                 <Icons.Upload className="w-7 h-7 text-samridhi-primary animate-pulse" />
               </div>
               
-              <p className="font-extrabold text-samridhi-textPrimary text-xs">
+              <p className="font-extrabold text-white text-xs">
                 Drag and drop your bank statement PDF here
               </p>
-              <p className="text-[10px] text-samridhi-textMuted mt-1">
+              <p className="text-[10px] text-samridhi-textMuted mt-1 font-semibold">
                 or click to browse from device storage (Only PDF format supported)
               </p>
-              <span className="mt-3 px-3 py-1 rounded bg-samridhi-surface border border-samridhi-border/60 text-[9px] font-black uppercase text-samridhi-textMuted tracking-wider">
+              <span className="mt-3 px-3 py-1 rounded-md bg-white/[0.02] border border-white/[0.06] text-[9px] font-black uppercase text-samridhi-textMuted tracking-wider">
                 100% Client-side sandbox
               </span>
             </div>
@@ -574,7 +575,7 @@ window.DashboardTransactionsTab = ({
 
         {uploadState === 'uploading' && (
           <div className="py-8 flex flex-col items-center justify-center space-y-4">
-            <div className="relative w-16 h-16 bg-samridhi-surface border border-samridhi-border rounded-2xl flex items-center justify-center animate-file-fly">
+            <div className="relative w-16 h-16 bg-white/[0.02] border border-white/[0.08] rounded-2xl flex items-center justify-center animate-file-fly">
               <svg className="w-8 h-8 text-samridhi-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
@@ -584,12 +585,12 @@ window.DashboardTransactionsTab = ({
             </div>
 
             <div className="text-center space-y-1">
-              <h4 className="font-extrabold text-samridhi-textPrimary">Uploading statement record...</h4>
-              <p className="text-[10px] text-samridhi-textMuted">Buffer streaming arrays into PDF.js runtime environment.</p>
+              <h4 className="font-extrabold text-white">Uploading statement record...</h4>
+              <p className="text-[10px] text-samridhi-textMuted font-semibold">Buffer streaming arrays into PDF.js runtime environment.</p>
             </div>
 
             {/* Cyberpunk progress track */}
-            <div className="w-full max-w-md bg-samridhi-surface border border-samridhi-border h-3.5 rounded-full p-0.5 relative overflow-hidden">
+            <div className="w-full max-w-md bg-white/[0.02] border border-white/[0.08] h-3.5 rounded-full p-0.5 relative overflow-hidden">
               <div 
                 className="bg-gradient-to-r from-samridhi-primary to-samridhi-secondary h-full rounded-full transition-all duration-75 relative"
                 style={{ width: `${progress}%` }}
@@ -602,22 +603,22 @@ window.DashboardTransactionsTab = ({
         )}
 
         {uploadState === 'scanning' && (
-          <div className="relative border border-samridhi-primary/40 bg-samridhi-surface/30 p-5 rounded-xl space-y-4 overflow-hidden pulse-border-purple">
+          <div className="relative border border-samridhi-primary/30 bg-white/[0.02] p-5 rounded-2xl space-y-4 overflow-hidden pulse-border-purple">
             {/* Animating Laser Scanner line */}
             <div className="scan-laser-line"></div>
             
-            <div className="flex items-center justify-between border-b border-samridhi-border pb-2">
+            <div className="flex items-center justify-between border-b border-white/[0.04] pb-2">
               <div className="flex items-center space-x-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-samridhi-secondary animate-ping"></div>
-                <span className="font-extrabold uppercase text-samridhi-textPrimary">PDF.js OCR Text Scanner Active</span>
+                <span className="font-extrabold uppercase text-white tracking-wider">PDF.js OCR Text Scanner Active</span>
               </div>
-              <span className="text-[9px] font-mono text-samridhi-textMuted uppercase">Page stream: 1/1</span>
+              <span className="text-[9px] font-mono text-samridhi-textMuted uppercase font-bold">Page stream: 1/1</span>
             </div>
 
             {/* Log Window */}
             <div 
               ref={scanConsoleRef}
-              className="bg-black/60 border border-samridhi-border/60 rounded-lg p-3 h-32 overflow-y-auto font-mono text-[9px] text-samridhi-textMuted space-y-1 scrollbar-thin"
+              className="bg-[#090b10]/80 border border-white/[0.06] rounded-xl p-3.5 h-32 overflow-y-auto font-mono text-[9px] text-samridhi-textMuted space-y-1 scrollbar-thin"
             >
               {scanLines.slice(0, scanIndex + 1).map((line, idx) => {
                 const isActive = idx === scanIndex;
@@ -636,15 +637,15 @@ window.DashboardTransactionsTab = ({
               })}
             </div>
 
-            <div className="flex items-center justify-between text-[9px] font-semibold text-samridhi-textMuted uppercase tracking-wider">
+            <div className="flex items-center justify-between text-[9px] font-bold text-samridhi-textMuted uppercase tracking-wider">
               <span>Status: Scanned {scanIndex + 1} string tokens</span>
-              <span className="animate-pulse text-samridhi-secondary">Analyzing cash velocity...</span>
+              <span className="animate-pulse text-samridhi-secondary font-black">Analyzing cash velocity...</span>
             </div>
           </div>
         )}
 
         {uploadState === 'completed' && (
-          <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 p-4 rounded-xl border border-samridhi-success/20 bg-samridhi-success/5">
+          <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 p-5 rounded-2xl border border-samridhi-success/20 bg-samridhi-success/[0.02]">
             <div className="flex items-start space-x-4">
               <div className="w-12 h-12 rounded-full bg-samridhi-success/15 border border-samridhi-success/30 flex items-center justify-center shrink-0">
                 <svg className="w-6 h-6 text-samridhi-success" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -654,18 +655,18 @@ window.DashboardTransactionsTab = ({
               
               <div className="space-y-1 text-left">
                 <div className="flex items-center space-x-2">
-                  <h4 className="font-extrabold text-samridhi-textPrimary text-sm">Bank Statement Scanning Complete</h4>
+                  <h4 className="font-extrabold text-white text-sm">Bank Statement Scanning Complete</h4>
                   <span className="px-2 py-0.5 bg-samridhi-success/20 text-samridhi-success border border-samridhi-success/30 rounded text-[9px] font-black uppercase">
                     Scanned Verified
                   </span>
                 </div>
-                <p className="text-[10px] text-samridhi-textMuted leading-relaxed max-w-xl">
+                <p className="text-[10px] text-samridhi-textMuted leading-relaxed max-w-xl font-semibold">
                   Alternative underwriting calculations finished successfully. Your direct salary cashflow patterns have been verified client-side via PDF.js parsing.
                 </p>
                 
                 {/* AI Insight Paragraph */}
                 {aiInsight && (
-                  <div className="mt-3.5 bg-samridhi-card/50 border border-samridhi-border p-3.5 rounded-xl text-[10px] text-samridhi-textPrimary leading-relaxed space-y-1">
+                  <div className="mt-3.5 bg-white/[0.02] border border-white/[0.06] p-3.5 rounded-xl text-[10px] text-white leading-relaxed space-y-1">
                     <span className="text-[9px] uppercase font-black text-samridhi-secondary block">AI Underwriter Insight:</span>
                     <p className="font-semibold text-samridhi-textMuted">{aiInsight.summary}</p>
                   </div>
@@ -674,13 +675,13 @@ window.DashboardTransactionsTab = ({
             </div>
 
             {/* Before / After Score Card */}
-            <div className="flex flex-col items-center justify-center p-4 bg-samridhi-card border border-samridhi-border rounded-xl w-full md:w-48 shadow-md shrink-0 space-y-2">
+            <div className="flex flex-col items-center justify-center p-4 bg-[#0d0e15]/60 border border-white/[0.06] rounded-2xl w-full md:w-48 shadow-md shrink-0 space-y-2">
               <span className="text-[9px] font-black text-samridhi-textMuted uppercase tracking-wider">Credibility Impact</span>
               
               <div className="flex items-center space-x-3.5">
                 <div className="flex flex-col items-center">
                   <span className="text-[8px] font-bold text-samridhi-textMuted uppercase">Before</span>
-                  <span className="text-sm font-bold text-samridhi-textMuted">{calculatedScore - 7}</span>
+                  <span className="text-sm font-bold text-samridhi-textMuted font-mono">{calculatedScore - 7}</span>
                 </div>
                 
                 <div className="p-1 bg-samridhi-success/15 rounded-lg text-samridhi-success border border-samridhi-success/20">
@@ -691,17 +692,17 @@ window.DashboardTransactionsTab = ({
 
                 <div className="flex flex-col items-center">
                   <span className="text-[8px] font-bold text-samridhi-success uppercase">After</span>
-                  <span className="text-base font-black text-samridhi-success">{calculatedScore}</span>
+                  <span className="text-base font-black text-samridhi-success font-mono">{calculatedScore}</span>
                 </div>
               </div>
 
-              <span className="text-[9px] font-bold text-samridhi-success tracking-wide uppercase mt-1">
+              <span className="text-[9px] font-black text-samridhi-success tracking-wide uppercase mt-1">
                 +7 points added!
               </span>
 
               <button
                 onClick={handleReset}
-                className="w-full mt-2 py-1.5 bg-samridhi-surface border border-samridhi-border text-[9px] font-black uppercase text-samridhi-textMuted hover:text-samridhi-textPrimary hover:border-samridhi-primary rounded-lg transition-all"
+                className="w-full mt-2 py-1.5 bg-white/[0.02] border border-white/[0.08] text-[9px] font-black uppercase text-samridhi-textMuted hover:text-white hover:border-samridhi-primary rounded-lg transition-all"
               >
                 Clear / Reset Upload
               </button>
@@ -715,39 +716,42 @@ window.DashboardTransactionsTab = ({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         
         {/* Stat 1 */}
-        <div className="bg-samridhi-card border border-samridhi-border p-5 rounded-2xl flex flex-col justify-between shadow-lg hover-glow-green min-h-[115px]">
+        <div className="glass-card p-5 rounded-2xl flex flex-col justify-between border border-white/[0.04] border-glow-success min-h-[115px] relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-samridhi-success/5 to-transparent rounded-tr-2xl pointer-events-none filter blur-xl"></div>
           <div className="flex flex-col space-y-1.5">
             <span className="text-[10px] font-extrabold text-samridhi-textMuted uppercase tracking-wider block">Total Transactions</span>
             <span className="text-2xl font-black text-white font-mono leading-none">{stats.count}</span>
           </div>
           <div className="mt-3.5 flex">
-            <span className="text-[9px] font-extrabold text-samridhi-textMuted uppercase tracking-wider leading-none px-2 py-1 bg-samridhi-surface border border-samridhi-border rounded-md select-none">
+            <span className="text-[9px] font-extrabold text-samridhi-textMuted uppercase tracking-wider leading-none px-2 py-1 bg-white/[0.02] border border-white/[0.06] rounded-md select-none font-bold">
               This Month
             </span>
           </div>
         </div>
 
         {/* Stat 2 */}
-        <div className="bg-samridhi-card border border-samridhi-border p-5 rounded-2xl flex flex-col justify-between shadow-lg hover-glow-green min-h-[115px]">
+        <div className="glass-card p-5 rounded-2xl flex flex-col justify-between border border-white/[0.04] border-glow-success min-h-[115px] relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-samridhi-success/5 to-transparent rounded-tr-2xl pointer-events-none filter blur-xl"></div>
           <div className="flex flex-col space-y-1.5">
             <span className="text-[10px] font-extrabold text-samridhi-textMuted uppercase tracking-wider block">Total Credited</span>
-            <span className="text-2xl font-black text-samridhi-success font-mono leading-none">₹{stats.credited.toLocaleString()}</span>
+            <span className="text-2xl font-black text-samridhi-success font-mono leading-none text-glow-success">₹{stats.credited.toLocaleString()}</span>
           </div>
           <div className="mt-3.5 flex">
-            <span className="text-[9px] font-extrabold text-samridhi-success uppercase tracking-wider leading-none px-2 py-1 bg-samridhi-success/10 border border-samridhi-success/20 rounded-md select-none">
+            <span className="text-[9px] font-extrabold text-samridhi-success uppercase tracking-wider leading-none px-2 py-1 bg-samridhi-success/10 border border-samridhi-success/20 rounded-md select-none font-bold">
               Active Inflow
             </span>
           </div>
         </div>
 
         {/* Stat 3 */}
-        <div className="bg-samridhi-card border border-samridhi-border p-5 rounded-2xl flex flex-col justify-between shadow-lg hover-glow-green min-h-[115px]">
+        <div className="glass-card p-5 rounded-2xl flex flex-col justify-between border border-white/[0.04] border-glow-success min-h-[115px] relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-samridhi-primary/5 to-transparent rounded-tr-2xl pointer-events-none filter blur-xl"></div>
           <div className="flex flex-col space-y-1.5">
             <span className="text-[10px] font-extrabold text-samridhi-textMuted uppercase tracking-wider block">Total Debited</span>
             <span className="text-2xl font-black text-samridhi-danger font-mono leading-none">₹{stats.debited.toLocaleString()}</span>
           </div>
           <div className="mt-3.5 flex">
-            <span className="text-[9px] font-extrabold text-samridhi-danger uppercase tracking-wider leading-none px-2 py-1 bg-samridhi-danger/10 border border-samridhi-danger/20 rounded-md select-none">
+            <span className="text-[9px] font-extrabold text-samridhi-danger uppercase tracking-wider leading-none px-2 py-1 bg-samridhi-danger/10 border border-samridhi-danger/20 rounded-md select-none font-bold">
               Outflow
             </span>
           </div>
@@ -757,7 +761,11 @@ window.DashboardTransactionsTab = ({
 
       {/* ANOMALY DETECTION BANNER */}
       {!bankStatementUploaded && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl border transition-all duration-300 bg-opacity-10 shadow-md bg-samridhi-card border-samridhi-border hover-glow-green">
+        <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl border transition-all duration-300 shadow-md ${
+          simulateFraud 
+            ? 'border-samridhi-danger/20 bg-samridhi-danger/[0.02]' 
+            : 'border-samridhi-success/20 bg-samridhi-success/[0.02]'
+        }`}>
           <div className="flex items-center space-x-3">
             {simulateFraud ? (
               <div className="flex-1 flex items-start space-x-3 text-samridhi-danger">
@@ -765,8 +773,8 @@ window.DashboardTransactionsTab = ({
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
                 <div>
-                  <h4 className="font-extrabold text-xs">2 anomalies flagged — Unusual transaction spike on 14 May.</h4>
-                  <p className="text-[10px] text-samridhi-textMuted mt-0.5">Underwriting reviews required before scoring adjustments.</p>
+                  <h4 className="font-extrabold text-xs uppercase tracking-wide">2 anomalies flagged — Unusual transaction spike on 14 May.</h4>
+                  <p className="text-[10px] text-samridhi-textMuted mt-0.5 font-semibold">Underwriting reviews required before scoring adjustments.</p>
                 </div>
               </div>
             ) : (
@@ -775,8 +783,8 @@ window.DashboardTransactionsTab = ({
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <div>
-                  <h4 className="font-extrabold text-xs">No anomalies detected — Isolation Forest: Clean.</h4>
-                  <p className="text-[10px] text-samridhi-textMuted mt-0.5">All {stats.count} transactions verified as legitimate footprint patterns.</p>
+                  <h4 className="font-extrabold text-xs uppercase tracking-wide">No anomalies detected — Isolation Forest: Clean.</h4>
+                  <p className="text-[10px] text-samridhi-textMuted mt-0.5 font-semibold">All {stats.count} transactions verified as legitimate footprint patterns.</p>
                 </div>
               </div>
             )}
@@ -784,11 +792,11 @@ window.DashboardTransactionsTab = ({
 
           {/* Toggle Simulation */}
           <div className="flex items-center space-x-2 shrink-0">
-            <span className="text-[10px] font-bold text-samridhi-textMuted uppercase">Simulate Fraud Detection</span>
+            <span className="text-[10px] font-bold text-samridhi-textMuted uppercase tracking-wider">Simulate Fraud Detection</span>
             <button
               onClick={() => setSimulateFraud(!simulateFraud)}
               className={`w-10 h-5.5 rounded-full p-0.5 transition-colors relative focus:outline-none ${
-                simulateFraud ? 'bg-samridhi-danger' : 'bg-samridhi-border'
+                simulateFraud ? 'bg-samridhi-danger' : 'bg-white/[0.08]'
               }`}
             >
               <div
@@ -811,8 +819,8 @@ window.DashboardTransactionsTab = ({
               onClick={() => setActiveCategory(category)}
               className={`px-3.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border ${
                 isActive 
-                  ? 'bg-samridhi-primary border-samridhi-primary text-white shadow-md' 
-                  : 'bg-samridhi-surface border-samridhi-border text-samridhi-textMuted hover:text-samridhi-textPrimary'
+                  ? 'bg-samridhi-primary border-samridhi-primary text-white shadow-lg shadow-samridhi-primary/20' 
+                  : 'bg-white/[0.02] border-white/[0.06] text-samridhi-textMuted hover:text-white hover:border-samridhi-primary/30'
               }`}
             >
               {category}
@@ -825,16 +833,16 @@ window.DashboardTransactionsTab = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Table (Col-8) */}
-        <div className="lg:col-span-8 bg-samridhi-card border border-samridhi-border p-5 rounded-2xl space-y-4 shadow-lg hover-glow-green">
-          <div className="flex justify-between items-center border-b border-samridhi-border/40 pb-2">
-            <h3 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider">Transaction Ledger</h3>
+        <div className="lg:col-span-8 glass-card p-6 rounded-3xl border border-white/[0.04] border-glow-success space-y-4 shadow-lg">
+          <div className="flex justify-between items-center border-b border-white/[0.04] pb-3">
+            <h3 className="font-extrabold text-sm text-white uppercase tracking-wider text-glow-success">Transaction Ledger</h3>
             <span className="text-[9px] font-bold text-samridhi-textMuted uppercase">Verified Ledger Nodes</span>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-samridhi-textMuted">
               <thead>
-                <tr className="border-b border-samridhi-border/60 text-samridhi-textPrimary font-extrabold uppercase text-[10px]">
+                <tr className="border-b border-white/[0.06] text-white font-extrabold uppercase text-[10px]">
                   <th className="py-2.5 pl-2">Date</th>
                   <th className="py-2.5">Merchant / Desc</th>
                   <th className="py-2.5">Category</th>
@@ -843,10 +851,10 @@ window.DashboardTransactionsTab = ({
                   <th className="py-2.5 text-right pr-2">Amount</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-samridhi-border/30 font-mono">
+              <tbody className="divide-y divide-white/[0.02] font-mono">
                 {filteredTransactions.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="py-6 text-center text-samridhi-textMuted">No transactions matching filter</td>
+                    <td colSpan="6" className="py-6 text-center text-samridhi-textMuted font-semibold">No transactions matching filter</td>
                   </tr>
                 ) : (
                   filteredTransactions.map((tx) => {
@@ -858,11 +866,11 @@ window.DashboardTransactionsTab = ({
                         className={`transition-colors ${
                           isAnomaly 
                             ? 'bg-samridhi-danger/5 hover:bg-samridhi-danger/10 border-l-2 border-samridhi-danger' 
-                            : 'hover:bg-samridhi-surface/30'
+                            : 'hover:bg-white/[0.02]'
                         }`}
                       >
                         <td className="py-3 font-semibold whitespace-nowrap pl-2">{tx.date}</td>
-                        <td className="py-3 text-samridhi-textPrimary font-extrabold flex items-center space-x-1.5 font-sans">
+                        <td className="py-3 text-white font-extrabold flex items-center space-x-1.5 font-sans">
                           {isAnomaly && (
                             <svg className="w-3.5 h-3.5 text-samridhi-danger shrink-0 animate-pulse" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -886,11 +894,13 @@ window.DashboardTransactionsTab = ({
                               Flagged Anomaly
                             </span>
                           ) : (
-                            <span className="text-[10px] font-bold text-samridhi-success font-sans">Verified</span>
+                            <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-samridhi-success/10 text-samridhi-success border border-samridhi-success/20">
+                              Verified
+                            </span>
                           )}
                         </td>
                         <td className={`py-3 text-right font-black pr-2 ${
-                          isCredit ? 'text-samridhi-success' : isAnomaly ? 'text-samridhi-danger' : 'text-samridhi-textPrimary'
+                          isCredit ? 'text-samridhi-success font-bold' : isAnomaly ? 'text-samridhi-danger font-bold' : 'text-white'
                         }`}>
                           {isCredit ? '+' : '-'}₹{tx.amount.toLocaleString()}
                         </td>
@@ -907,16 +917,16 @@ window.DashboardTransactionsTab = ({
         <div className="lg:col-span-4 space-y-6">
           
           {/* Spending Category Chart */}
-          <div className="bg-samridhi-card border border-samridhi-border p-5 rounded-2xl space-y-4 shadow-lg hover-glow-green">
-            <h3 className="font-extrabold text-xs text-samridhi-textPrimary uppercase tracking-wider border-b border-samridhi-border/40 pb-2">
+          <div className="glass-card p-6 rounded-3xl border border-white/[0.04] border-glow-secondary space-y-4 shadow-lg">
+            <h3 className="font-extrabold text-xs text-white uppercase tracking-wider border-b border-white/[0.04] pb-3 text-glow-secondary">
               Spending by Category
             </h3>
             
             {/* Custom SVG Bar Chart */}
             <div className="relative pt-4 flex flex-col items-center">
-              <svg className="w-full h-44 animate-float-coin" viewBox="0 0 240 140">
+              <svg className="w-full h-44" viewBox="0 0 240 140">
                 {/* Base Line */}
-                <line x1="10" y1="110" x2="230" y2="110" stroke="#1C2E25" strokeWidth="1.5" />
+                <line x1="10" y1="110" x2="230" y2="110" stroke="rgba(255, 255, 255, 0.08)" strokeWidth="1.5" />
                 
                 {chartData.map((d, index) => {
                   const barHeight = maxChartAmount > 1 ? (d.amount / maxChartAmount) * 90 : 0;
@@ -932,10 +942,10 @@ window.DashboardTransactionsTab = ({
                           y={y} 
                           width={14} 
                           height={barHeight} 
-                          fill={isHighest ? "#00E676" : "#1C2E25"} 
-                          stroke={isHighest ? "#B2FF59" : "transparent"}
-                          strokeWidth={isHighest ? 1 : 0}
-                          rx="1.5" 
+                          fill={isHighest ? "#00E676" : "rgba(0, 229, 255, 0.15)"} 
+                          stroke={isHighest ? "#B2FF59" : "rgba(0, 229, 255, 0.3)"}
+                          strokeWidth={1}
+                          rx="2" 
                         />
                       )}
                       {d.amount > 0 && (
@@ -958,7 +968,7 @@ window.DashboardTransactionsTab = ({
                         fontSize="6.5" 
                         fontWeight="bold" 
                         textAnchor="middle"
-                        className="font-sans"
+                        className="font-sans uppercase"
                       >
                         {d.category.substring(0, 4)}
                       </text>
@@ -970,8 +980,8 @@ window.DashboardTransactionsTab = ({
           </div>
 
           {/* UPI Health Score Card */}
-          <div className="bg-samridhi-card border border-samridhi-border p-5 rounded-2xl space-y-4 shadow-lg hover-glow-green">
-            <h3 className="font-extrabold text-xs text-samridhi-textPrimary uppercase tracking-wider border-b border-samridhi-border/40 pb-2">
+          <div className="glass-card p-6 rounded-3xl border border-white/[0.04] border-glow-secondary space-y-4 shadow-lg">
+            <h3 className="font-extrabold text-xs text-white uppercase tracking-wider border-b border-white/[0.04] pb-3 text-glow-secondary">
               UPI Health metrics
             </h3>
             
@@ -982,10 +992,10 @@ window.DashboardTransactionsTab = ({
                 { title: 'Transaction Velocity', val: 'Normal' },
                 { title: 'Avg Monthly Outflow', val: `₹${stats.debited.toLocaleString()}` }
               ].map((item, idx) => (
-                <div key={idx} className="bg-samridhi-surface/50 border border-samridhi-border/60 p-3 rounded-xl flex flex-col justify-between">
-                  <span className="text-[9px] font-bold text-samridhi-textMuted uppercase block leading-normal">{item.title}</span>
+                <div key={idx} className="bg-white/[0.02] border border-white/[0.06] p-3.5 rounded-xl flex flex-col justify-between">
+                  <span className="text-[9px] font-bold text-samridhi-textMuted uppercase block leading-normal tracking-wider">{item.title}</span>
                   <div className="flex items-center justify-between mt-2.5">
-                    <span className="font-extrabold text-samridhi-textPrimary font-mono">{item.val}</span>
+                    <span className="font-extrabold text-white font-mono">{item.val}</span>
                     <svg className="w-4 h-4 text-samridhi-success shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>

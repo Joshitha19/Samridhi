@@ -48,25 +48,26 @@ window.BankerPortalView = ({ setPage, onBankerSignIn, onBankerSignUp }) => {
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center py-16 px-6 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#0A160F] via-samridhi-bg to-samridhi-bg">
-      <div className="w-full max-w-md bg-samridhi-card border border-samridhi-border p-8 rounded-3xl shadow-2xl relative overflow-hidden animate-fade-in">
+    <div className="flex-1 flex items-center justify-center py-16 px-6 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#0A160F] via-[#090b10] to-[#090b10]">
+      <div className="w-full max-w-md glass-card p-8 rounded-3xl border border-white/[0.04] border-glow-secondary relative overflow-hidden animate-fade-in">
         {/* Header background accents */}
         <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-samridhi-success to-samridhi-secondary"></div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-samridhi-success/5 to-transparent rounded-tr-3xl pointer-events-none filter blur-xl"></div>
 
         <div className="flex flex-col items-center text-center mb-6">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-samridhi-success to-samridhi-secondary flex items-center justify-center shadow-lg shadow-samridhi-success/20 mb-4">
-            <span className="text-samridhi-bg font-extrabold text-xl">B</span>
+            <span className="text-[#090b10] font-black text-xl">B</span>
           </div>
-          <h2 className="text-2xl font-extrabold tracking-tight">
+          <h2 className="text-2xl font-black text-white uppercase tracking-wider text-glow-secondary">
             {isRegistering ? 'Banker Registration' : 'Banker Portal'}
           </h2>
-          <p className="text-xs text-samridhi-textMuted mt-1">
+          <p className="text-xs text-samridhi-textMuted mt-1 font-semibold">
             {isRegistering ? 'Register as an institutional credit evaluator' : 'Access the alternative credit underwriting terminal'}
           </p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3.5 bg-samridhi-danger/10 border border-samridhi-danger/30 rounded-xl text-xs font-bold text-samridhi-danger flex items-center space-x-2">
+          <div className="mb-4 p-3.5 bg-samridhi-danger/10 border border-samridhi-danger/30 rounded-xl text-xs font-bold text-samridhi-danger flex items-center space-x-2 font-semibold">
             <Icons.Lock className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
@@ -85,7 +86,7 @@ window.BankerPortalView = ({ setPage, onBankerSignIn, onBankerSignUp }) => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Officer Rohan Mehra"
-                  className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-success focus:ring-1 focus:ring-samridhi-success text-sm rounded-xl py-3 pl-10 pr-4 text-samridhi-textPrimary placeholder:text-samridhi-textMuted/50 focus:outline-none transition-colors"
+                  className="w-full bg-white/[0.02] border border-white/[0.08] hover:border-samridhi-success/30 focus:border-samridhi-success text-sm rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-samridhi-textMuted/50 focus:outline-none transition-all"
                 />
               </div>
             </div>
@@ -102,7 +103,7 @@ window.BankerPortalView = ({ setPage, onBankerSignIn, onBankerSignUp }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="officer@bank.in"
-                className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-success focus:ring-1 focus:ring-samridhi-success text-sm rounded-xl py-3 pl-10 pr-4 text-samridhi-textPrimary placeholder:text-samridhi-textMuted/50 focus:outline-none transition-colors"
+                className="w-full bg-white/[0.02] border border-white/[0.08] hover:border-samridhi-success/30 focus:border-samridhi-success text-sm rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-samridhi-textMuted/50 focus:outline-none transition-all"
               />
             </div>
           </div>
@@ -115,12 +116,12 @@ window.BankerPortalView = ({ setPage, onBankerSignIn, onBankerSignUp }) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-success focus:ring-1 focus:ring-samridhi-success text-sm rounded-xl py-3 px-4 text-samridhi-textPrimary placeholder:text-samridhi-textMuted/50 focus:outline-none transition-colors"
+                className="w-full bg-white/[0.02] border border-white/[0.08] hover:border-samridhi-success/30 focus:border-samridhi-success text-sm rounded-xl py-3 px-4 text-white placeholder:text-samridhi-textMuted/50 focus:outline-none transition-all"
               />
             </div>
 
             <div className="flex flex-col space-y-1.5">
-              <label className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">
+              <label className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider font-semibold">
                 {isRegistering ? 'Confirm' : 'Secured Code'}
               </label>
               <input
@@ -129,7 +130,7 @@ window.BankerPortalView = ({ setPage, onBankerSignIn, onBankerSignUp }) => {
                 disabled={!isRegistering}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder={isRegistering ? '••••••••' : 'Read-only'}
-                className="w-full bg-samridhi-bg border border-samridhi-border disabled:opacity-40 text-sm rounded-xl py-3 px-4 text-samridhi-textPrimary focus:outline-none transition-colors focus:border-samridhi-success focus:ring-1 focus:ring-samridhi-success"
+                className="w-full bg-white/[0.02] border border-white/[0.08] disabled:opacity-40 text-sm rounded-xl py-3 px-4 text-white focus:outline-none transition-all focus:border-samridhi-success"
               />
             </div>
           </div>
@@ -140,35 +141,35 @@ window.BankerPortalView = ({ setPage, onBankerSignIn, onBankerSignUp }) => {
               <select
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
-                className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-success focus:ring-1 focus:ring-samridhi-success text-sm rounded-xl py-3 px-4 text-samridhi-textPrimary focus:outline-none transition-colors"
+                className="w-full bg-white/[0.02] border border-white/[0.08] hover:border-samridhi-success/30 focus:border-samridhi-success text-sm rounded-xl py-3 px-4 text-white focus:outline-none transition-all"
               >
-                <option value="State Bank of India">State Bank of India (SBI)</option>
-                <option value="HDFC Bank">HDFC Bank</option>
-                <option value="ICICI Bank">ICICI Bank</option>
-                <option value="Axis Bank">Axis Bank</option>
-                <option value="Punjab National Bank">Punjab National Bank (PNB)</option>
+                <option value="State Bank of India" className="bg-samridhi-bg text-white">State Bank of India (SBI)</option>
+                <option value="HDFC Bank" className="bg-samridhi-bg text-white">HDFC Bank</option>
+                <option value="ICICI Bank" className="bg-samridhi-bg text-white">ICICI Bank</option>
+                <option value="Axis Bank" className="bg-samridhi-bg text-white">Axis Bank</option>
+                <option value="Punjab National Bank" className="bg-samridhi-bg text-white">Punjab National Bank (PNB)</option>
               </select>
             </div>
           )}
 
           <button
             type="submit"
-            className="w-full py-3 bg-samridhi-success hover:bg-samridhi-success/90 text-samridhi-bg font-extrabold rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center space-x-2 mt-6 active:scale-95 text-sm uppercase tracking-wider"
+            className="w-full py-3 bg-samridhi-success hover:bg-samridhi-success/90 text-[#090b10] font-black uppercase tracking-wider rounded-xl shadow-lg shadow-samridhi-success/10 transition-all duration-300 flex items-center justify-center space-x-2 mt-6 active:scale-95 text-sm"
           >
             <span>{isRegistering ? 'Register Banker' : 'Access Dashboard'}</span>
-            <Icons.ChevronRight className="w-4 h-4 text-samridhi-bg" />
+            <Icons.ChevronRight className="w-4 h-4 text-[#090b10]" />
           </button>
         </form>
 
         <button
           onClick={handleDemoLogin}
-          className="w-full mt-3 py-3 bg-samridhi-surface border border-samridhi-success text-samridhi-success font-extrabold rounded-xl shadow-lg hover:bg-samridhi-success/5 active:scale-95 transition-all flex items-center justify-center space-x-2 text-xs uppercase tracking-wider"
+          className="w-full mt-3 py-3 bg-white/[0.02] border border-samridhi-success/45 hover:border-samridhi-success text-samridhi-success font-black rounded-xl shadow-lg hover:bg-samridhi-success/5 transition-all flex items-center justify-center space-x-2 text-xs uppercase tracking-wider"
         >
           <span>One-Click Banker Demo Login</span>
         </button>
 
-        <div className="mt-8 text-center text-xs border-t border-samridhi-border/50 pt-4">
-          <span className="text-samridhi-textMuted">
+        <div className="mt-8 text-center text-xs border-t border-white/[0.04] pt-4">
+          <span className="text-samridhi-textMuted font-semibold">
             {isRegistering ? 'Already have a banker account? ' : 'Need to register a bank account? '}
           </span>
           <button 

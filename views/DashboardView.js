@@ -99,12 +99,12 @@ window.DashboardView = ({
     <div className="flex-1 flex flex-col md:flex-row bg-[#020204] min-h-screen relative font-sans">
       
       {/* SIDEBAR */}
-      <aside className="w-full md:w-64 bg-samridhi-surface/40 backdrop-blur-xl border-r border-white/[0.04] flex flex-col justify-between shrink-0">
+      <aside className="w-full md:w-64 bg-black/40 backdrop-blur-3xl border-r border-white/[0.02] flex flex-col justify-between shrink-0 relative z-20">
         <div>
           {/* Profile Card Header */}
-          <div className="p-6 border-b border-white/[0.04]">
+          <div className="p-6 border-b border-white/[0.03]">
             <div className="flex items-center space-x-3.5 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center font-extrabold text-sm text-samridhi-bg shadow-lg shadow-samridhi-primary/10">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center font-black text-sm text-samridhi-bg shadow-[0_0_15px_rgba(213,0,249,0.25)]">
                 {user.name ? user.name[0] : 'U'}
               </div>
               <div className="overflow-hidden">
@@ -114,14 +114,14 @@ window.DashboardView = ({
             </div>
             
             {/* User Type Badge */}
-            <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-white/[0.02] border border-white/[0.06] text-samridhi-secondary rounded-lg text-[9px] font-extrabold tracking-widest uppercase">
+            <div className="inline-flex items-center space-x-1.5 px-3 py-1 bg-white/[0.03] border border-white/[0.06] text-samridhi-secondary rounded-lg text-[9px] font-black tracking-widest uppercase">
               <span className="w-1.5 h-1.5 rounded-full bg-samridhi-secondary animate-pulse"></span>
               <span>{user.type}</span>
             </div>
           </div>
 
           {/* Navigation Items */}
-          <nav className="p-4 space-y-1">
+          <nav className="p-4 space-y-1.5">
             {[
               { id: 'overview', name: 'Overview', icon: <Icons.Home /> },
               { id: 'apply', name: 'Apply for Loan', icon: <Icons.Apply /> },
@@ -140,10 +140,10 @@ window.DashboardView = ({
                     setActiveTab(item.id);
                     setShowNotifications(false);
                   }}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-300 ${
                     isActive
-                      ? 'bg-gradient-to-r from-samridhi-primary/10 to-samridhi-secondary/5 border-l-4 border-samridhi-primary text-samridhi-textPrimary shadow-sm'
-                      : 'text-samridhi-textMuted hover:bg-white/[0.02] hover:text-samridhi-textPrimary border-l-4 border-transparent'
+                      ? 'bg-gradient-to-r from-samridhi-primary/10 via-samridhi-primary/5 to-transparent border-l-2 border-samridhi-primary text-white text-glow-primary shadow-[inset_1px_0_0_rgba(255,255,255,0.03)]'
+                      : 'text-samridhi-textMuted hover:bg-white/[0.02] hover:text-white border-l-2 border-transparent'
                   }`}
                 >
                   <span className={isActive ? 'text-samridhi-primary' : 'text-samridhi-textMuted'}>
@@ -157,10 +157,10 @@ window.DashboardView = ({
         </div>
 
         {/* Logout Footer button */}
-        <div className="p-4 border-t border-white/[0.04]">
+        <div className="p-4 border-t border-white/[0.03]">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-bold text-samridhi-danger hover:bg-samridhi-danger/10 transition-all border border-transparent hover:border-samridhi-danger/20"
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-bold text-samridhi-danger hover:bg-samridhi-danger/10 transition-all border border-transparent hover:border-samridhi-danger/25"
           >
             <Icons.Logout />
             <span>Logout</span>
@@ -172,7 +172,7 @@ window.DashboardView = ({
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* TOP BAR */}
-        <header className="sticky top-0 z-20 h-16 bg-[#020204]/75 backdrop-blur-xl border-b border-white/[0.04] px-6 flex items-center justify-between">
+        <header className="sticky top-0 z-20 h-16 bg-[#020204]/40 backdrop-blur-md border-b border-white/[0.02] px-6 flex items-center justify-between">
           <div>
             <h2 className="text-[10px] font-extrabold uppercase tracking-widest text-samridhi-textMuted">
               Terminal &gt; <span className="text-white font-black">{activeTab}</span>
@@ -375,12 +375,12 @@ window.DashboardView = ({
       {/* FLOATING AI CHAT ASSISTANT */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end font-sans">
         {chatOpen && (
-          <div className="w-80 h-96 bg-samridhi-card/90 backdrop-blur-xl border border-white/[0.05] rounded-2xl shadow-[0_24px_80px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col mb-4 animate-fade-in">
+          <div className="w-85 h-[430px] bg-black/60 backdrop-blur-2xl border border-white/[0.08] rounded-3xl shadow-[0_24px_80px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col mb-4 animate-fade-in relative z-50">
             {/* Header */}
-            <div className="bg-white/[0.02] border-b border-white/[0.05] px-4 py-3 flex items-center justify-between">
+            <div className="bg-white/[0.02] border-b border-white/[0.06] px-5 py-4 flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <span className="w-2 h-2 rounded-full bg-samridhi-success"></span>
-                <span className="font-extrabold text-xs text-white uppercase tracking-wider">Samridhi AI</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-samridhi-success animate-pulse"></span>
+                <span className="font-black text-xs text-white uppercase tracking-widest text-glow-success">Samridhi Copilot AI</span>
               </div>
               <button 
                 onClick={() => setChatOpen(false)}
@@ -393,13 +393,13 @@ window.DashboardView = ({
             </div>
             
             {/* Messages */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-3 scrollbar-thin">
+            <div className="flex-1 p-5 overflow-y-auto space-y-4 scrollbar-thin">
               {messages.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-[11px] leading-relaxed font-semibold ${
+                  <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-[11px] leading-relaxed font-bold tracking-wide ${
                     msg.sender === 'user'
-                      ? 'bg-white/[0.03] border border-white/[0.06] text-white rounded-tr-none'
-                      : 'bg-samridhi-primary text-white rounded-tl-none shadow-md shadow-samridhi-primary/10'
+                      ? 'bg-white/[0.04] border border-white/[0.08] text-white rounded-tr-none'
+                      : 'bg-gradient-to-r from-samridhi-primary to-samridhi-primary/80 text-white rounded-tl-none shadow-md shadow-samridhi-primary/10'
                   }`}>
                     {msg.text}
                   </div>
@@ -407,7 +407,7 @@ window.DashboardView = ({
               ))}
               {isTyping && (
                 <div className="flex justify-start">
-                  <div className="bg-samridhi-primary text-white rounded-2xl rounded-tl-none px-3.5 py-2 flex items-center space-x-1 shadow-md shadow-samridhi-primary/10">
+                  <div className="bg-gradient-to-r from-samridhi-primary to-samridhi-primary/80 text-white rounded-2xl rounded-tl-none px-4 py-2.5 flex items-center space-x-1.5 shadow-md shadow-samridhi-primary/10">
                     <div className="w-1.5 h-1.5 rounded-full bg-white animate-bounce" style={{ animationDelay: '0ms' }}></div>
                     <div className="w-1.5 h-1.5 rounded-full bg-white animate-bounce" style={{ animationDelay: '150ms' }}></div>
                     <div className="w-1.5 h-1.5 rounded-full bg-white animate-bounce" style={{ animationDelay: '300ms' }}></div>
@@ -419,18 +419,18 @@ window.DashboardView = ({
             {/* Input Form */}
             <form 
               onSubmit={handleSendMessage}
-              className="p-3 bg-white/[0.01] border-t border-white/[0.05] flex items-center gap-2"
+              className="p-4 bg-white/[0.01] border-t border-white/[0.06] flex items-center gap-2"
             >
               <input
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder="Ask anything..."
-                className="flex-1 bg-white/[0.02] border border-white/[0.05] rounded-xl px-3.5 py-2.5 text-[11px] text-white placeholder:text-samridhi-textMuted/40 focus:border-samridhi-primary focus:outline-none transition-colors"
+                placeholder="Ask anything about underwriting..."
+                className="flex-1 bg-white/[0.02] border border-white/[0.08] focus:border-samridhi-primary rounded-xl px-4 py-3 text-[11px] text-white placeholder:text-samridhi-textMuted/45 focus:outline-none transition-colors font-medium font-sans"
               />
               <button
                 type="submit"
-                className="p-2 bg-samridhi-primary hover:bg-samridhi-primary/90 text-white rounded-xl focus:outline-none shadow-lg shadow-samridhi-primary/10 shrink-0 transition-colors"
+                className="p-3 bg-samridhi-primary hover:bg-samridhi-primary/90 text-white rounded-xl focus:outline-none shadow-lg shadow-samridhi-primary/10 shrink-0 transition-colors"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -443,9 +443,9 @@ window.DashboardView = ({
         {/* Floating Button */}
         <button
           onClick={() => setChatOpen(!chatOpen)}
-          className="w-12 h-12 rounded-full bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center text-samridhi-bg hover:opacity-90 shadow-xl shadow-samridhi-primary/20 transition-all hover:scale-105 active:scale-95 focus:outline-none"
+          className="w-12 h-12 rounded-full bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center text-samridhi-bg hover:opacity-90 shadow-[0_0_20px_rgba(0,229,255,0.3)] transition-all hover:scale-105 active:scale-95 focus:outline-none"
         >
-          <svg className="w-5 h-5 text-samridhi-bg" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-samridhi-bg" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
         </button>

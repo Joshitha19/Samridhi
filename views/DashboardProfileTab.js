@@ -237,20 +237,21 @@ window.DashboardProfileTab = ({
       `}</style>
 
       {/* PROFILE HEADER CARD */}
-      <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl shadow-lg relative">
+      <div className="glass-card p-6 rounded-3xl border border-white/[0.04] border-glow-primary relative shadow-lg overflow-hidden">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-samridhi-primary/10 to-transparent rounded-tr-3xl pointer-events-none filter blur-2xl"></div>
         {/* Edit Profile / Save button */}
         <div className="absolute top-6 right-6">
           {isEditing ? (
             <button
               onClick={handleSaveProfile}
-              className="px-3 py-1.5 bg-samridhi-success text-samridhi-bg font-extrabold rounded-lg text-[10px] uppercase hover:opacity-90 transition-opacity"
+              className="px-3 py-1.5 bg-samridhi-success text-samridhi-bg font-black rounded-lg text-[10px] uppercase hover:opacity-90 transition-opacity"
             >
               Save Details
             </button>
           ) : (
             <button
               onClick={() => setIsEditing(true)}
-              className="px-3 py-1.5 bg-samridhi-surface border border-samridhi-border text-samridhi-textPrimary hover:border-samridhi-primary/40 font-bold rounded-lg text-[10px] uppercase transition-all flex items-center space-x-1"
+              className="px-3 py-1.5 bg-white/[0.02] border border-white/[0.08] text-white hover:border-samridhi-primary/40 font-black rounded-lg text-[10px] uppercase transition-all flex items-center space-x-1"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -267,7 +268,7 @@ window.DashboardProfileTab = ({
               {user.name ? user.name[0] : 'U'}
             </div>
             {kycCameraVerified && (
-              <div className="absolute -bottom-1 -right-1 bg-samridhi-success border-2 border-samridhi-card p-1 rounded-full text-white" title="Liveness KYC Verified">
+              <div className="absolute -bottom-1 -right-1 bg-samridhi-success border-2 border-[#090b10] p-1 rounded-full text-white" title="Liveness KYC Verified">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
@@ -283,10 +284,10 @@ window.DashboardProfileTab = ({
                     type="text"
                     value={editName}
                     onChange={(e) => setEditName(e.target.value.toUpperCase())}
-                    className="bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary font-extrabold text-lg px-2.5 py-1 rounded focus:border-samridhi-primary focus:outline-none"
+                    className="bg-white/[0.02] border border-white/[0.08] text-white font-extrabold text-lg px-2.5 py-1 rounded focus:border-samridhi-primary focus:outline-none transition-all"
                   />
                 ) : (
-                  <h2 className="text-lg font-black text-samridhi-textPrimary">{user.name}</h2>
+                  <h2 className="text-lg font-black text-white uppercase tracking-wider text-glow-primary">{user.name}</h2>
                 )}
                 {kycCameraVerified && (
                   <span className="inline-flex items-center space-x-0.5 px-2 py-0.5 bg-samridhi-success/15 border border-samridhi-success/35 text-samridhi-success rounded text-[9px] font-black uppercase">
@@ -307,44 +308,44 @@ window.DashboardProfileTab = ({
             </div>
 
             {/* 2x2 Info Grid */}
-            <div className="grid grid-cols-2 gap-4 pt-3 border-t border-samridhi-border/30 text-left text-xs font-semibold">
+            <div className="grid grid-cols-2 gap-4 pt-3 border-t border-white/[0.04] text-left text-xs font-semibold">
               <div>
-                <span className="block text-[9px] text-samridhi-textMuted uppercase font-bold">Monthly Income</span>
+                <span className="block text-[9px] text-samridhi-textMuted uppercase font-bold tracking-wider">Monthly Income</span>
                 {isEditing ? (
                   <input
                     type="number"
                     value={editIncome}
                     onChange={(e) => setEditIncome(parseInt(e.target.value) || 0)}
-                    className="bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary w-28 px-2 py-0.5 rounded text-xs"
+                    className="bg-white/[0.02] border border-white/[0.08] text-white w-28 px-2 py-0.5 rounded text-xs focus:outline-none focus:border-samridhi-primary transition-all"
                   />
                 ) : (
-                  <span className="text-samridhi-textPrimary font-bold">₹{editIncome.toLocaleString()}</span>
+                  <span className="text-white font-bold font-mono">₹{editIncome.toLocaleString()}</span>
                 )}
               </div>
               <div>
-                <span className="block text-[9px] text-samridhi-textMuted uppercase font-bold">Location</span>
+                <span className="block text-[9px] text-samridhi-textMuted uppercase font-bold tracking-wider">Location</span>
                 {isEditing ? (
                   <input
                     type="text"
                     value={editLocation}
                     onChange={(e) => setEditLocation(e.target.value)}
-                    className="bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary w-36 px-2 py-0.5 rounded text-xs"
+                    className="bg-white/[0.02] border border-white/[0.08] text-white w-36 px-2 py-0.5 rounded text-xs focus:outline-none focus:border-samridhi-primary transition-all"
                   />
                 ) : (
-                  <span className="text-samridhi-textPrimary font-bold">{editLocation}</span>
+                  <span className="text-white font-bold">{editLocation}</span>
                 )}
               </div>
               <div>
-                <span className="block text-[9px] text-samridhi-textMuted uppercase font-bold">Account Since</span>
-                <span className="text-samridhi-textPrimary font-bold">Jan 2026</span>
+                <span className="block text-[9px] text-samridhi-textMuted uppercase font-bold tracking-wider">Account Since</span>
+                <span className="text-white font-bold font-mono">Jan 2026</span>
               </div>
               <div>
-                <span className="block text-[9px] text-samridhi-textMuted uppercase font-bold">PAN</span>
+                <span className="block text-[9px] text-samridhi-textMuted uppercase font-bold tracking-wider">PAN Status</span>
                 <span className="text-samridhi-success font-bold flex items-center space-x-1">
                   <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
-                  <span>Verified</span>
+                  <span className="text-[10px] font-black uppercase">Verified</span>
                 </span>
               </div>
             </div>
@@ -353,18 +354,19 @@ window.DashboardProfileTab = ({
       </div>
 
       {/* KYC DEVICE CAMERA VERIFICATION CARD */}
-      <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl shadow-lg space-y-4">
-        <div className="border-b border-samridhi-border/40 pb-3">
-          <h3 className="text-sm font-extrabold text-samridhi-textPrimary uppercase tracking-wider">
+      <div className="glass-card p-6 rounded-3xl border border-white/[0.04] border-glow-secondary space-y-4 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-samridhi-secondary/5 to-transparent rounded-tr-3xl pointer-events-none filter blur-xl"></div>
+        <div className="border-b border-white/[0.04] pb-3">
+          <h3 className="text-sm font-black text-white uppercase tracking-wider text-glow-secondary">
             Liveness KYC Camera Authentication
           </h3>
-          <p className="text-[10px] text-samridhi-textMuted mt-0.5">
+          <p className="text-[10px] text-samridhi-textMuted mt-0.5 font-semibold">
             Use your device camera to pass liveness checks and unlock +8 credibility points.
           </p>
         </div>
 
         {kycStep === 'idle' && (
-          <div className="flex flex-col items-center justify-center p-6 bg-samridhi-surface/40 border border-dashed border-samridhi-border rounded-xl text-center space-y-4">
+          <div className="flex flex-col items-center justify-center p-6 bg-white/[0.02] border border-dashed border-white/[0.08] rounded-2xl text-center space-y-4">
             {kycCameraVerified ? (
               <div className="space-y-2 py-4">
                 <div className="w-12 h-12 rounded-full bg-samridhi-success/15 border border-samridhi-success/35 text-samridhi-success flex items-center justify-center mx-auto">
@@ -372,10 +374,10 @@ window.DashboardProfileTab = ({
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h4 className="font-extrabold text-sm text-samridhi-textPrimary">Liveness Check: PASSED</h4>
-                <p className="text-[10px] text-samridhi-textMuted max-w-sm">Identity authenticated via facial features. Mock Aadhaar data linked and verified.</p>
+                <h4 className="font-extrabold text-sm text-white uppercase tracking-wide">Liveness Check: PASSED</h4>
+                <p className="text-[10px] text-samridhi-textMuted max-w-sm font-semibold">Identity authenticated via facial features. Mock Aadhaar data linked and verified.</p>
                 <div className="pt-2">
-                  <span className="px-3.5 py-1 rounded bg-samridhi-success/10 border border-samridhi-success/30 text-samridhi-success font-black tracking-widest text-[9px]">
+                  <span className="px-3.5 py-1 rounded-md bg-samridhi-success/10 border border-samridhi-success/30 text-samridhi-success font-black tracking-widest text-[9px]">
                     +8 CREDIBILITY POINTS ACTIVE
                   </span>
                 </div>
@@ -388,12 +390,12 @@ window.DashboardProfileTab = ({
                   </svg>
                 </div>
                 <div>
-                  <h4 className="font-bold text-xs text-samridhi-textPrimary">Begin Identity Verification</h4>
-                  <p className="text-[10px] text-samridhi-textMuted max-w-xs leading-normal mt-0.5">Please ensure you are in a well-lit area before starting video parsing.</p>
+                  <h4 className="font-extrabold text-white uppercase tracking-wider">Begin Identity Verification</h4>
+                  <p className="text-[10px] text-samridhi-textMuted max-w-xs leading-normal mt-0.5 font-semibold">Please ensure you are in a well-lit area before starting video parsing.</p>
                 </div>
                 <button
                   onClick={startKycFlow}
-                  className="px-5 py-2.5 bg-samridhi-primary hover:bg-samridhi-primary/95 text-white font-extrabold rounded-xl shadow-md transition-colors"
+                  className="px-5 py-2.5 bg-samridhi-primary hover:bg-samridhi-primary/90 text-white font-black uppercase tracking-wider rounded-xl shadow-lg shadow-samridhi-primary/15 transition-all"
                 >
                   Verify Identity
                 </button>
@@ -405,13 +407,13 @@ window.DashboardProfileTab = ({
         {kycStep === 'camera' && (
           <div className="flex flex-col items-center justify-center space-y-4">
             {/* Webcam card container */}
-            <div className="relative w-80 h-52 bg-black rounded-2xl border-2 border-samridhi-border overflow-hidden">
+            <div className="relative w-80 h-52 bg-black rounded-2xl border-2 border-white/[0.08] overflow-hidden">
               <video 
                 ref={videoRef}
                 autoPlay 
                 playsInline 
                 muted
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover animate-fade-in"
               />
               
               {/* Corner brackets overlay */}
@@ -423,14 +425,14 @@ window.DashboardProfileTab = ({
               </div>
 
               {/* Cyan scanning line */}
-              <div className="absolute left-6 right-6 h-0.5 bg-samridhi-secondary opacity-80 animate-scan pointer-events-none"></div>
+              <div className="absolute left-6 right-6 h-0.5 bg-[#00D4FF] opacity-80 animate-scan pointer-events-none"></div>
             </div>
 
             <div className="flex flex-col items-center space-y-1.5">
-              <span className="text-xs font-bold text-samridhi-textPrimary uppercase tracking-wider">{instruction}</span>
+              <span className="text-xs font-black text-white uppercase tracking-wider">{instruction}</span>
               <div className="flex items-center space-x-1.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-samridhi-secondary animate-ping"></div>
-                <span className="text-[10px] text-samridhi-textMuted font-bold">Scanning facial geometry...</span>
+                <span className="text-[10px] text-samridhi-textMuted font-bold uppercase tracking-wide">Scanning facial geometry...</span>
               </div>
             </div>
             
@@ -442,7 +444,7 @@ window.DashboardProfileTab = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
             {/* Frozen frame snapshot */}
             <div className="flex flex-col items-center space-y-3">
-              <div className="relative w-72 h-48 rounded-xl overflow-hidden border border-samridhi-success/50">
+              <div className="relative w-72 h-48 rounded-2xl overflow-hidden border border-samridhi-success/50">
                 <img src={capturedImage} alt="Snapshot" className="w-full h-full object-cover opacity-80" />
                 <div className="absolute inset-0 bg-samridhi-success/5 flex items-center justify-center">
                   <div className="w-12 h-12 rounded-full bg-samridhi-success border-2 border-white flex items-center justify-center text-white shadow-xl animate-bounce">
@@ -458,25 +460,25 @@ window.DashboardProfileTab = ({
             </div>
 
             {/* Typewritten mock Aadhaar values */}
-            <div className="bg-samridhi-surface/70 border border-samridhi-border p-4.5 rounded-xl space-y-3 text-[10px] font-mono leading-relaxed">
-              <h4 className="font-extrabold text-[9px] text-samridhi-textMuted uppercase font-sans tracking-wider border-b border-samridhi-border/40 pb-1.5 mb-2.5">
+            <div className="bg-white/[0.02] border border-white/[0.06] p-4.5 rounded-xl space-y-3 text-[10px] font-mono leading-relaxed">
+              <h4 className="font-extrabold text-[9px] text-samridhi-textMuted uppercase font-sans tracking-wider border-b border-white/[0.04] pb-1.5 mb-2.5">
                 OCR Document Extraction
               </h4>
               <div>
-                <span className="text-samridhi-textMuted block font-sans">Aadhaar Card:</span>
+                <span className="text-samridhi-textMuted block font-sans uppercase tracking-wide text-[8px]">Aadhaar Card:</span>
                 <span className="text-samridhi-secondary font-bold font-mono">{ocrText.number || ' '}</span>
               </div>
               <div>
-                <span className="text-samridhi-textMuted block font-sans">Full Name:</span>
-                <span className="text-samridhi-textPrimary font-bold">{ocrText.name || ' '}</span>
+                <span className="text-samridhi-textMuted block font-sans uppercase tracking-wide text-[8px]">Full Name:</span>
+                <span className="text-white font-bold">{ocrText.name || ' '}</span>
               </div>
               <div>
-                <span className="text-samridhi-textMuted block font-sans">Date of Birth:</span>
-                <span className="text-samridhi-textPrimary font-bold">{ocrText.dob || ' '}</span>
+                <span className="text-samridhi-textMuted block font-sans uppercase tracking-wide text-[8px]">Date of Birth:</span>
+                <span className="text-white font-bold">{ocrText.dob || ' '}</span>
               </div>
               <div>
-                <span className="text-samridhi-textMuted block font-sans">Address:</span>
-                <span className="text-samridhi-textPrimary font-bold">{ocrText.address || ' '}</span>
+                <span className="text-samridhi-textMuted block font-sans uppercase tracking-wide text-[8px]">Address:</span>
+                <span className="text-white font-bold">{ocrText.address || ' '}</span>
               </div>
             </div>
           </div>
@@ -491,26 +493,26 @@ window.DashboardProfileTab = ({
             </div>
             
             <div className="space-y-1">
-              <h4 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider">KYC Verification complete</h4>
-              <p className="text-[10px] text-samridhi-textMuted max-w-sm">Facial liveness score and Aadhaar card successfully linked. Rating updated permanently.</p>
+              <h4 className="font-extrabold text-sm text-white uppercase tracking-wider">KYC Verification complete</h4>
+              <p className="text-[10px] text-samridhi-textMuted max-w-sm font-semibold">Facial liveness score and Aadhaar card successfully linked. Rating updated permanently.</p>
             </div>
 
-            <div className="bg-samridhi-surface/50 border border-samridhi-border p-4.5 rounded-xl w-full max-w-sm text-left grid grid-cols-2 gap-x-4 gap-y-2">
+            <div className="bg-white/[0.02] border border-white/[0.06] p-4.5 rounded-xl w-full max-w-sm text-left grid grid-cols-2 gap-x-4 gap-y-2 font-mono">
               <div>
-                <span className="text-samridhi-textMuted block text-[9px] uppercase font-sans">Document ID</span>
-                <span className="font-bold font-mono text-samridhi-textPrimary">XXXX XXXX 8742</span>
+                <span className="text-samridhi-textMuted block text-[9px] uppercase font-sans tracking-wide">Document ID</span>
+                <span className="font-bold text-white">XXXX XXXX 8742</span>
               </div>
               <div>
-                <span className="text-samridhi-textMuted block text-[9px] uppercase font-sans">Cardholder</span>
-                <span className="font-bold text-samridhi-textPrimary">Arjun Sharma</span>
+                <span className="text-samridhi-textMuted block text-[9px] uppercase font-sans tracking-wide">Cardholder</span>
+                <span className="font-bold text-white font-sans">Arjun Sharma</span>
               </div>
               <div>
-                <span className="text-samridhi-textMuted block text-[9px] uppercase font-sans">DOB</span>
-                <span className="font-bold text-samridhi-textPrimary">15/08/1998</span>
+                <span className="text-samridhi-textMuted block text-[9px] uppercase font-sans tracking-wide">DOB</span>
+                <span className="font-bold text-white">15/08/1998</span>
               </div>
               <div>
-                <span className="text-samridhi-textMuted block text-[9px] uppercase font-sans">State</span>
-                <span className="font-bold text-samridhi-textPrimary">Telangana</span>
+                <span className="text-samridhi-textMuted block text-[9px] uppercase font-sans tracking-wide">State</span>
+                <span className="font-bold text-white font-sans">Telangana</span>
               </div>
             </div>
 
@@ -520,7 +522,7 @@ window.DashboardProfileTab = ({
               </span>
               <button 
                 onClick={() => setKycStep('idle')}
-                className="text-[10px] font-bold text-samridhi-textMuted hover:text-samridhi-textPrimary underline uppercase block pt-1.5"
+                className="text-[10px] font-black text-samridhi-textMuted hover:text-white underline uppercase block pt-1.5"
               >
                 Reset Verification
               </button>
@@ -530,8 +532,8 @@ window.DashboardProfileTab = ({
       </div>
 
       {/* Gov ID Integrations Checklist */}
-      <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl shadow-lg space-y-6">
-        <h3 className="text-sm font-extrabold text-samridhi-textPrimary uppercase tracking-wider border-b border-samridhi-border/40 pb-3">
+      <div className="glass-card p-6 rounded-3xl border border-white/[0.04] border-glow-primary shadow-lg space-y-6">
+        <h3 className="text-sm font-black text-white uppercase tracking-wider border-b border-white/[0.04] pb-3 text-glow-primary">
           Profile Credentials & KYC Registry
         </h3>
         
@@ -539,41 +541,41 @@ window.DashboardProfileTab = ({
           {/* Personal info form */}
           <div className="space-y-4 text-xs">
             <div>
-              <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1">Full Name</label>
+              <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1 tracking-wider">Full Name</label>
               <input
                 type="text"
                 value={user.name}
                 onChange={(e) => setUser({ ...user, name: e.target.value.toUpperCase() })}
-                className="w-full bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary rounded-lg p-2.5 focus:border-samridhi-primary focus:outline-none font-bold"
+                className="w-full bg-white/[0.02] border border-white/[0.08] hover:border-samridhi-primary/30 focus:border-samridhi-primary text-white rounded-lg p-2.5 focus:outline-none transition-all font-bold uppercase"
               />
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1">Email Address</label>
+              <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1 tracking-wider">Email Address</label>
               <input
                 type="email"
                 value={user.email}
                 disabled
-                className="w-full bg-samridhi-bg border border-samridhi-border text-samridhi-textMuted rounded-lg p-2.5 cursor-not-allowed opacity-60 font-semibold"
+                className="w-full bg-white/[0.02] border border-white/[0.08] text-samridhi-textMuted rounded-lg p-2.5 cursor-not-allowed opacity-60 font-semibold"
               />
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1">Earning Profile Sector</label>
+              <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1 tracking-wider">Earning Profile Sector</label>
               <select
                 value={user.type}
                 onChange={(e) => setUser({ ...user, type: e.target.value })}
-                className="w-full bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary rounded-lg p-2.5 focus:border-samridhi-primary focus:outline-none font-bold"
+                className="w-full bg-white/[0.02] border border-white/[0.08] hover:border-samridhi-primary/30 focus:border-samridhi-primary text-white rounded-lg p-2.5 focus:outline-none transition-all font-bold"
               >
-                <option value="Salaried">Salaried Employee</option>
-                <option value="Freelancer">Freelancer / Gig Contractor</option>
-                <option value="Student">Student (Vocational/Tech)</option>
-                <option value="Entrepreneur">Micro-Entrepreneur / Merchant</option>
+                <option value="Salaried" className="bg-samridhi-bg text-white">Salaried Employee</option>
+                <option value="Freelancer" className="bg-samridhi-bg text-white">Freelancer / Gig Contractor</option>
+                <option value="Student" className="bg-samridhi-bg text-white">Student (Vocational/Tech)</option>
+                <option value="Entrepreneur" className="bg-samridhi-bg text-white">Micro-Entrepreneur / Merchant</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1">Linked UPI ID (VPA)</label>
+              <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1 tracking-wider">Linked UPI ID (VPA)</label>
               <input
                 type="text"
                 value={user.upiVpa || ''}
@@ -583,62 +585,62 @@ window.DashboardProfileTab = ({
                   setUpiLinked(val.trim() !== '');
                 }}
                 placeholder="e.g. yourname@okaxis"
-                className="w-full bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary rounded-lg p-2.5 focus:border-samridhi-primary focus:outline-none font-bold"
+                className="w-full bg-white/[0.02] border border-white/[0.08] hover:border-samridhi-primary/30 focus:border-samridhi-primary text-white rounded-lg p-2.5 focus:outline-none transition-all font-bold"
               />
             </div>
           </div>
 
           {/* KYC Checklist */}
           <div className="space-y-4">
-            <h4 className="font-bold text-xs text-samridhi-textPrimary uppercase tracking-wider border-b border-samridhi-border/40 pb-2.5">
+            <h4 className="font-extrabold text-xs text-white uppercase tracking-wider border-b border-white/[0.04] pb-2.5">
               Gov ID Integrations
             </h4>
             
             <div className="space-y-3.5 pt-1">
               {/* Aadhaar checkbox */}
-              <label className="flex items-center justify-between p-3 bg-samridhi-surface border border-samridhi-border/60 rounded-xl cursor-pointer hover:border-samridhi-border transition-colors">
+              <label className="flex items-center justify-between p-3.5 bg-white/[0.02] border border-white/[0.06] rounded-xl cursor-pointer hover:border-samridhi-primary/25 transition-colors">
                 <div className="flex items-center space-x-2.5">
                   <input
                     type="checkbox"
                     checked={aadhaarVerified}
                     onChange={(e) => setAadhaarVerified(e.target.checked)}
-                    className="rounded text-samridhi-primary border-samridhi-border focus:ring-samridhi-primary bg-samridhi-bg"
+                    className="rounded text-samridhi-primary border-white/[0.08] focus:ring-samridhi-primary bg-transparent"
                   />
-                  <span className="text-xs font-bold text-samridhi-textPrimary">Aadhaar Registry Sync</span>
+                  <span className="text-xs font-bold text-white">Aadhaar Registry Sync</span>
                 </div>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${aadhaarVerified ? 'bg-samridhi-success/10 text-samridhi-success' : 'bg-samridhi-border text-samridhi-textMuted'}`}>
+                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${aadhaarVerified ? 'bg-samridhi-success/10 text-samridhi-success border border-samridhi-success/20' : 'bg-white/[0.06] text-samridhi-textMuted'}`}>
                   {aadhaarVerified ? 'Verified (+4)' : 'Unlinked'}
                 </span>
               </label>
 
               {/* PAN */}
-              <label className="flex items-center justify-between p-3 bg-samridhi-surface border border-samridhi-border/60 rounded-xl cursor-pointer hover:border-samridhi-border transition-colors">
+              <label className="flex items-center justify-between p-3.5 bg-white/[0.02] border border-white/[0.06] rounded-xl cursor-pointer hover:border-samridhi-primary/25 transition-colors">
                 <div className="flex items-center space-x-2.5">
                   <input
                     type="checkbox"
                     checked={panVerified}
                     onChange={(e) => setPanVerified(e.target.checked)}
-                    className="rounded text-samridhi-primary border-samridhi-border focus:ring-samridhi-primary bg-samridhi-bg"
+                    className="rounded text-samridhi-primary border-white/[0.08] focus:ring-samridhi-primary bg-transparent"
                   />
-                  <span className="text-xs font-bold text-samridhi-textPrimary">PAN Registry Match</span>
+                  <span className="text-xs font-bold text-white">PAN Registry Match</span>
                 </div>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${panVerified ? 'bg-samridhi-success/10 text-samridhi-success' : 'bg-samridhi-border text-samridhi-textMuted'}`}>
+                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${panVerified ? 'bg-samridhi-success/10 text-samridhi-success border border-samridhi-success/20' : 'bg-white/[0.06] text-samridhi-textMuted'}`}>
                   {panVerified ? 'Verified (+3)' : 'Unlinked'}
                 </span>
               </label>
 
               {/* UPI */}
-              <label className="flex items-center justify-between p-3 bg-samridhi-surface border border-samridhi-border/60 rounded-xl cursor-pointer hover:border-samridhi-border transition-colors">
+              <label className="flex items-center justify-between p-3.5 bg-white/[0.02] border border-white/[0.06] rounded-xl cursor-pointer hover:border-samridhi-primary/25 transition-colors">
                 <div className="flex items-center space-x-2.5">
                   <input
                     type="checkbox"
                     checked={upiLinked}
                     onChange={(e) => setUpiLinked(e.target.checked)}
-                    className="rounded text-samridhi-primary border-samridhi-border focus:ring-samridhi-primary bg-samridhi-bg"
+                    className="rounded text-samridhi-primary border-white/[0.08] focus:ring-samridhi-primary bg-transparent"
                   />
-                  <span className="text-xs font-bold text-samridhi-textPrimary">UPI Aggregator Sync</span>
+                  <span className="text-xs font-bold text-white">UPI Aggregator Sync</span>
                 </div>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${upiLinked ? 'bg-samridhi-success/10 text-samridhi-success' : 'bg-samridhi-border text-samridhi-textMuted'}`}>
+                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${upiLinked ? 'bg-samridhi-success/10 text-samridhi-success border border-samridhi-success/20' : 'bg-white/[0.06] text-samridhi-textMuted'}`}>
                   {upiLinked ? 'Synced (+10)' : 'Disconnected'}
                 </span>
               </label>
@@ -648,19 +650,21 @@ window.DashboardProfileTab = ({
       </div>
 
       {/* SKILLS & CERTIFICATIONS CARD */}
-      <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl shadow-lg space-y-4">
-        <div>
-          <h3 className="text-sm font-extrabold text-samridhi-textPrimary uppercase tracking-wider">
-            Verified Skills & Certifications
-          </h3>
-          <span className="text-[10px] text-samridhi-textMuted font-bold uppercase block mt-0.5">
-            Skill Credibility Index: 14/20
-          </span>
+      <div className="glass-card p-6 rounded-3xl border border-white/[0.04] border-glow-success space-y-4 shadow-lg">
+        <div className="flex items-center justify-between border-b border-white/[0.04] pb-3">
+          <div>
+            <h3 className="text-sm font-black text-white uppercase tracking-wider text-glow-success">
+              Verified Skills & Certifications
+            </h3>
+            <span className="text-[10px] text-samridhi-textMuted font-bold uppercase block mt-0.5">
+              Skill Credibility Index: 14/20
+            </span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {dashboardState.skills.map((skill) => (
-            <div key={skill.id} className="bg-samridhi-surface border border-samridhi-border p-4 rounded-xl flex items-center justify-between">
+            <div key={skill.id} className="bg-white/[0.02] border border-white/[0.06] p-4 rounded-xl flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 rounded-lg bg-samridhi-primary/10 flex items-center justify-center text-samridhi-primary">
                   <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -668,8 +672,8 @@ window.DashboardProfileTab = ({
                   </svg>
                 </div>
                 <div>
-                  <h4 className="font-bold text-xs text-samridhi-textPrimary">{skill.name}</h4>
-                  <p className="text-[9px] text-samridhi-textMuted mt-0.5 truncate max-w-[150px]">{skill.issuer}</p>
+                  <h4 className="font-extrabold text-xs text-white">{skill.name}</h4>
+                  <p className="text-[9px] text-samridhi-textMuted mt-0.5 truncate max-w-[150px] font-semibold">{skill.issuer}</p>
                 </div>
               </div>
               <div className="text-[9px] font-black text-samridhi-success uppercase flex items-center space-x-0.5 shrink-0 bg-samridhi-success/5 border border-samridhi-success/20 px-2 py-0.5 rounded-md">
@@ -682,7 +686,7 @@ window.DashboardProfileTab = ({
           ))}
 
           {showAddForm ? (
-            <form onSubmit={handleAddCertSubmit} className="bg-samridhi-surface border-2 border-dashed border-samridhi-primary/40 p-4 rounded-xl space-y-3">
+            <form onSubmit={handleAddCertSubmit} className="bg-white/[0.02] border-2 border-dashed border-samridhi-primary/40 p-4 rounded-xl space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-[9px] font-bold text-samridhi-textMuted uppercase mb-0.5">Cert Name</label>
@@ -692,7 +696,7 @@ window.DashboardProfileTab = ({
                     placeholder="e.g. Google UX Certificate"
                     value={certName}
                     onChange={(e) => setCertName(e.target.value)}
-                    className="w-full bg-samridhi-bg border border-samridhi-border rounded p-1.5 focus:border-samridhi-primary focus:outline-none font-bold text-[10px]"
+                    className="w-full bg-white/[0.02] border border-white/[0.08] hover:border-samridhi-primary/35 rounded p-1.5 focus:border-samridhi-primary focus:outline-none font-bold text-[10px] text-white"
                   />
                 </div>
                 <div>
@@ -703,7 +707,7 @@ window.DashboardProfileTab = ({
                     placeholder="e.g. Coursera"
                     value={issuingBody}
                     onChange={(e) => setIssuingBody(e.target.value)}
-                    className="w-full bg-samridhi-bg border border-samridhi-border rounded p-1.5 focus:border-samridhi-primary focus:outline-none font-bold text-[10px]"
+                    className="w-full bg-white/[0.02] border border-white/[0.08] hover:border-samridhi-primary/35 rounded p-1.5 focus:border-samridhi-primary focus:outline-none font-bold text-[10px] text-white"
                   />
                 </div>
               </div>
@@ -714,10 +718,10 @@ window.DashboardProfileTab = ({
                   <select
                     value={certYear}
                     onChange={(e) => setCertYear(e.target.value)}
-                    className="w-full bg-samridhi-bg border border-samridhi-border rounded p-1.5 text-samridhi-textPrimary focus:outline-none text-[10px] font-bold"
+                    className="w-full bg-white/[0.02] border border-white/[0.08] hover:border-samridhi-primary/35 rounded p-1.5 text-white focus:outline-none text-[10px] font-bold"
                   >
                     {['2026', '2025', '2024', '2023', '2022', '2021'].map(y => (
-                      <option key={y} value={y}>{y}</option>
+                      <option key={y} value={y} className="bg-samridhi-bg text-white">{y}</option>
                     ))}
                   </select>
                 </div>
@@ -725,22 +729,22 @@ window.DashboardProfileTab = ({
                   <label className="block text-[9px] font-bold text-samridhi-textMuted uppercase mb-0.5">Upload File</label>
                   <input
                     type="file"
-                    className="w-full text-[9px] text-samridhi-textMuted file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[9px] file:font-bold file:bg-samridhi-border file:text-samridhi-textPrimary cursor-pointer focus:outline-none font-bold"
+                    className="w-full text-[9px] text-samridhi-textMuted file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[9px] file:font-bold file:bg-white/[0.06] file:text-white cursor-pointer focus:outline-none font-bold"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-2 pt-2 border-t border-samridhi-border/40">
+              <div className="flex justify-end space-x-2 pt-2 border-t border-white/[0.04]">
                 <button
                   type="button"
                   onClick={() => setShowAddForm(false)}
-                  className="px-2.5 py-1 bg-samridhi-bg border border-samridhi-border text-samridhi-textMuted rounded text-[10px] font-bold"
+                  className="px-2.5 py-1 bg-white/[0.02] border border-white/[0.08] text-samridhi-textMuted rounded text-[10px] font-black uppercase hover:text-white"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-3.5 py-1 bg-samridhi-primary text-white rounded text-[10px] font-bold shadow"
+                  className="px-3.5 py-1 bg-samridhi-primary text-white rounded text-[10px] font-black uppercase shadow shadow-samridhi-primary/25"
                 >
                   Add
                 </button>
@@ -749,30 +753,30 @@ window.DashboardProfileTab = ({
           ) : (
             <div 
               onClick={() => setShowAddForm(true)}
-              className="bg-samridhi-surface/30 border-2 border-dashed border-samridhi-border hover:border-samridhi-primary/45 transition-colors p-6 rounded-xl flex flex-col items-center justify-center cursor-pointer text-center group"
+              className="bg-white/[0.02] border-2 border-dashed border-white/[0.08] hover:border-samridhi-primary/45 transition-colors p-6 rounded-xl flex flex-col items-center justify-center cursor-pointer text-center group"
             >
-              <div className="w-7 h-7 rounded-full bg-samridhi-border group-hover:bg-samridhi-primary/10 transition-colors flex items-center justify-center mb-2 text-samridhi-textMuted group-hover:text-samridhi-primary font-black">
+              <div className="w-7 h-7 rounded-full bg-white/[0.06] group-hover:bg-samridhi-primary/10 transition-colors flex items-center justify-center mb-2 text-samridhi-textMuted group-hover:text-samridhi-primary font-black text-xs">
                 +
               </div>
-              <span className="font-extrabold text-xs text-samridhi-textPrimary">Add Certification</span>
-              <p className="text-[10px] text-samridhi-textMuted mt-1">Upload verified files to boost your trust index</p>
+              <span className="font-extrabold text-xs text-white uppercase tracking-wider">Add Certification</span>
+              <p className="text-[10px] text-samridhi-textMuted mt-1 font-semibold">Upload verified files to boost your trust index</p>
             </div>
           )}
         </div>
       </div>
 
       {/* LINKED ACCOUNTS CARD */}
-      <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl shadow-lg space-y-4">
+      <div className="glass-card p-6 rounded-3xl border border-white/[0.04] border-glow-secondary space-y-4 shadow-lg">
         <div>
-          <h3 className="text-sm font-extrabold text-samridhi-textPrimary uppercase tracking-wider">
+          <h3 className="text-sm font-black text-white uppercase tracking-wider text-glow-secondary">
             Linked Telemetry Accounts
           </h3>
-          <p className="text-[10px] text-samridhi-textMuted mt-0.5">Toggle live sync endpoints to adjust underwriting signals.</p>
+          <p className="text-[10px] text-samridhi-textMuted mt-0.5 font-semibold">Toggle live sync endpoints to adjust underwriting signals.</p>
         </div>
 
         <div className="space-y-3.5">
           {/* UPI */}
-          <div className="flex items-center justify-between p-3.5 bg-samridhi-surface border border-samridhi-border/60 rounded-xl">
+          <div className="flex items-center justify-between p-3.5 bg-white/[0.02] border border-white/[0.06] rounded-xl">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 rounded-lg bg-samridhi-secondary/10 flex items-center justify-center text-samridhi-secondary">
                 <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -780,15 +784,15 @@ window.DashboardProfileTab = ({
                 </svg>
               </div>
               <div>
-                <h4 className="font-extrabold text-xs text-samridhi-textPrimary">UPI / PhonePe Aggregator</h4>
-                <span className="text-[9px] font-bold text-samridhi-success">Connected</span>
+                <h4 className="font-extrabold text-xs text-white">UPI / PhonePe Aggregator</h4>
+                <span className="text-[9px] font-black uppercase text-samridhi-success">Connected</span>
               </div>
             </div>
             
             <button
               onClick={() => setLinkedUpi(!linkedUpi)}
               className={`w-9 h-5 rounded-full p-0.5 transition-colors relative focus:outline-none ${
-                linkedUpi ? 'bg-samridhi-success' : 'bg-samridhi-border'
+                linkedUpi ? 'bg-samridhi-success' : 'bg-white/[0.08]'
               }`}
             >
               <div className={`w-4 h-4 rounded-full bg-white transition-transform transform ${linkedUpi ? 'translate-x-4' : 'translate-x-0'}`}></div>
@@ -796,7 +800,7 @@ window.DashboardProfileTab = ({
           </div>
 
           {/* Bank */}
-          <div className="flex items-center justify-between p-3.5 bg-samridhi-surface border border-samridhi-border/60 rounded-xl">
+          <div className="flex items-center justify-between p-3.5 bg-white/[0.02] border border-white/[0.06] rounded-xl">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 rounded-lg bg-samridhi-success/10 flex items-center justify-center text-samridhi-success">
                 <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -804,15 +808,15 @@ window.DashboardProfileTab = ({
                 </svg>
               </div>
               <div>
-                <h4 className="font-extrabold text-xs text-samridhi-textPrimary">Bank Statement Parser</h4>
-                <span className="text-[9px] font-bold text-samridhi-success">Connected</span>
+                <h4 className="font-extrabold text-xs text-white">Bank Statement Parser</h4>
+                <span className="text-[9px] font-black uppercase text-samridhi-success">Connected</span>
               </div>
             </div>
             
             <button
               onClick={() => setLinkedBank(!linkedBank)}
               className={`w-9 h-5 rounded-full p-0.5 transition-colors relative focus:outline-none ${
-                linkedBank ? 'bg-samridhi-success' : 'bg-samridhi-border'
+                linkedBank ? 'bg-samridhi-success' : 'bg-white/[0.08]'
               }`}
             >
               <div className={`w-4 h-4 rounded-full bg-white transition-transform transform ${linkedBank ? 'translate-x-4' : 'translate-x-0'}`}></div>
@@ -820,30 +824,30 @@ window.DashboardProfileTab = ({
           </div>
 
           {/* LinkedIn */}
-          <div className="flex items-center justify-between p-3.5 bg-samridhi-surface border border-samridhi-border/60 rounded-xl">
+          <div className="flex items-center justify-between p-3.5 bg-white/[0.02] border border-white/[0.06] rounded-xl">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 rounded-lg bg-samridhi-primary/10 flex items-center justify-center text-samridhi-primary">
                 <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2H-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
               <div>
-                <h4 className="font-extrabold text-xs text-samridhi-textPrimary">LinkedIn Professional profile</h4>
-                <span className="text-[9px] font-bold text-samridhi-textMuted">Not Connected</span>
+                <h4 className="font-extrabold text-xs text-white">LinkedIn Professional profile</h4>
+                <span className="text-[9px] font-black uppercase text-samridhi-textMuted">Not Connected</span>
               </div>
             </div>
             
             <div className="flex items-center space-x-3">
               <button 
                 onClick={() => setLinkedLinkedIn(!linkedLinkedIn)}
-                className="text-[9px] font-extrabold uppercase border border-samridhi-border px-2.5 py-1 rounded-lg hover:border-samridhi-primary hover:text-samridhi-primary transition-colors"
+                className="text-[9px] font-black uppercase border border-white/[0.08] hover:border-samridhi-primary hover:text-samridhi-primary px-2.5 py-1 rounded-lg transition-colors"
               >
                 Connect
               </button>
               <button
                 onClick={() => setLinkedLinkedIn(!linkedLinkedIn)}
                 className={`w-9 h-5 rounded-full p-0.5 transition-colors relative focus:outline-none ${
-                  linkedLinkedIn ? 'bg-samridhi-success' : 'bg-samridhi-border'
+                  linkedLinkedIn ? 'bg-samridhi-success' : 'bg-white/[0.08]'
                 }`}
               >
                 <div className={`w-4 h-4 rounded-full bg-white transition-transform transform ${linkedLinkedIn ? 'translate-x-4' : 'translate-x-0'}`}></div>
@@ -852,7 +856,7 @@ window.DashboardProfileTab = ({
           </div>
 
           {/* Coursera */}
-          <div className="flex items-center justify-between p-3.5 bg-samridhi-surface border border-samridhi-border/60 rounded-xl">
+          <div className="flex items-center justify-between p-3.5 bg-white/[0.02] border border-white/[0.06] rounded-xl">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 rounded-lg bg-samridhi-warning/10 flex items-center justify-center text-samridhi-warning">
                 <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -860,15 +864,15 @@ window.DashboardProfileTab = ({
                 </svg>
               </div>
               <div>
-                <h4 className="font-extrabold text-xs text-samridhi-textPrimary">Coursera / Udemy certifications</h4>
-                <span className="text-[9px] font-bold text-samridhi-success">Connected</span>
+                <h4 className="font-extrabold text-xs text-white">Coursera / Udemy certifications</h4>
+                <span className="text-[9px] font-black uppercase text-samridhi-success">Connected</span>
               </div>
             </div>
             
             <button
               onClick={() => setLinkedCoursera(!linkedCoursera)}
               className={`w-9 h-5 rounded-full p-0.5 transition-colors relative focus:outline-none ${
-                linkedCoursera ? 'bg-samridhi-success' : 'bg-samridhi-border'
+                linkedCoursera ? 'bg-samridhi-success' : 'bg-white/[0.08]'
               }`}
             >
               <div className={`w-4 h-4 rounded-full bg-white transition-transform transform ${linkedCoursera ? 'translate-x-4' : 'translate-x-0'}`}></div>
@@ -878,55 +882,55 @@ window.DashboardProfileTab = ({
       </div>
 
       {/* NOTIFICATION PREFERENCES */}
-      <div className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl shadow-lg space-y-4">
-        <h3 className="text-sm font-extrabold text-samridhi-textPrimary uppercase tracking-wider border-b border-samridhi-border/40 pb-2">
+      <div className="glass-card p-6 rounded-3xl border border-white/[0.04] border-glow-primary space-y-4 shadow-lg">
+        <h3 className="text-sm font-black text-white uppercase tracking-wider border-b border-white/[0.04] pb-2 text-glow-primary">
           Notification Preferences
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           
-          <div className="flex items-center justify-between p-3 bg-samridhi-surface rounded-xl">
-            <span className="font-bold text-xs text-samridhi-textPrimary">Score change alerts</span>
+          <div className="flex items-center justify-between p-3.5 bg-white/[0.02] border border-white/[0.06] rounded-xl">
+            <span className="font-bold text-xs text-white">Score change alerts</span>
             <button
               onClick={() => setScoreAlerts(!scoreAlerts)}
               className={`w-9 h-5 rounded-full p-0.5 transition-colors relative focus:outline-none ${
-                scoreAlerts ? 'bg-samridhi-primary' : 'bg-samridhi-border'
+                scoreAlerts ? 'bg-samridhi-primary' : 'bg-white/[0.08]'
               }`}
             >
               <div className={`w-4 h-4 rounded-full bg-white transition-transform transform ${scoreAlerts ? 'translate-x-4' : 'translate-x-0'}`}></div>
             </button>
           </div>
 
-          <div className="flex items-center justify-between p-3 bg-samridhi-surface rounded-xl">
-            <span className="font-bold text-xs text-samridhi-textPrimary">Loan offer alerts</span>
+          <div className="flex items-center justify-between p-3.5 bg-white/[0.02] border border-white/[0.06] rounded-xl">
+            <span className="font-bold text-xs text-white">Loan offer alerts</span>
             <button
               onClick={() => setOfferAlerts(!offerAlerts)}
               className={`w-9 h-5 rounded-full p-0.5 transition-colors relative focus:outline-none ${
-                offerAlerts ? 'bg-samridhi-primary' : 'bg-samridhi-border'
+                offerAlerts ? 'bg-samridhi-primary' : 'bg-white/[0.08]'
               }`}
             >
               <div className={`w-4 h-4 rounded-full bg-white transition-transform transform ${offerAlerts ? 'translate-x-4' : 'translate-x-0'}`}></div>
             </button>
           </div>
 
-          <div className="flex items-center justify-between p-3 bg-samridhi-surface rounded-xl">
-            <span className="font-bold text-xs text-samridhi-textPrimary">Payment reminders</span>
+          <div className="flex items-center justify-between p-3.5 bg-white/[0.02] border border-white/[0.06] rounded-xl">
+            <span className="font-bold text-xs text-white">Payment reminders</span>
             <button
               onClick={() => setPaymentReminders(!paymentReminders)}
               className={`w-9 h-5 rounded-full p-0.5 transition-colors relative focus:outline-none ${
-                paymentReminders ? 'bg-samridhi-primary' : 'bg-samridhi-border'
+                paymentReminders ? 'bg-samridhi-primary' : 'bg-white/[0.08]'
               }`}
             >
               <div className={`w-4 h-4 rounded-full bg-white transition-transform transform ${paymentReminders ? 'translate-x-4' : 'translate-x-0'}`}></div>
             </button>
           </div>
 
-          <div className="flex items-center justify-between p-3 bg-samridhi-surface rounded-xl">
-            <span className="font-bold text-xs text-samridhi-textPrimary">Monthly report digest</span>
+          <div className="flex items-center justify-between p-3.5 bg-white/[0.02] border border-white/[0.06] rounded-xl">
+            <span className="font-bold text-xs text-white">Monthly report digest</span>
             <button
               onClick={() => setMonthlyReport(!monthlyReport)}
               className={`w-9 h-5 rounded-full p-0.5 transition-colors relative focus:outline-none ${
-                monthlyReport ? 'bg-samridhi-primary' : 'bg-samridhi-border'
+                monthlyReport ? 'bg-samridhi-primary' : 'bg-white/[0.08]'
               }`}
             >
               <div className={`w-4 h-4 rounded-full bg-white transition-transform transform ${monthlyReport ? 'translate-x-4' : 'translate-x-0'}`}></div>
@@ -937,24 +941,24 @@ window.DashboardProfileTab = ({
       </div>
 
       {/* DANGER ZONE */}
-      <div className="bg-samridhi-card border-2 border-samridhi-danger/35 p-6 rounded-2xl shadow-lg space-y-4">
-        <h3 className="text-sm font-extrabold text-samridhi-danger uppercase tracking-wider">
+      <div className="glass-card border-2 border-samridhi-danger/25 p-6 rounded-3xl shadow-lg space-y-4">
+        <h3 className="text-sm font-black text-samridhi-danger uppercase tracking-wider">
           Danger Zone
         </h3>
-        <p className="text-[10px] text-samridhi-textMuted leading-relaxed">
+        <p className="text-[10px] text-samridhi-textMuted leading-relaxed font-semibold">
           Critical operations. Once executed, details relating to alternative indexes, linked accounts, and transactions will be deleted permanently.
         </p>
 
         <div className="flex flex-wrap gap-4 pt-2">
           <button 
             onClick={() => alert("Clear all data requested. Confirm details via support channels.")}
-            className="px-4 py-2 border border-samridhi-danger text-samridhi-danger hover:bg-samridhi-danger/10 transition-colors font-extrabold rounded-xl text-[10px] uppercase"
+            className="px-4 py-2 border border-samridhi-danger text-samridhi-danger hover:bg-samridhi-danger/10 transition-colors font-black rounded-xl text-[10px] uppercase tracking-wider"
           >
             Clear All Data
           </button>
           <button
             onClick={() => alert("Delete account process initiated. Authentication will be disabled.")}
-            className="px-4 py-2 border border-samridhi-danger text-samridhi-danger hover:bg-samridhi-danger/10 transition-colors font-extrabold rounded-xl text-[10px] uppercase"
+            className="px-4 py-2 border border-samridhi-danger text-samridhi-danger hover:bg-samridhi-danger/10 transition-colors font-black rounded-xl text-[10px] uppercase tracking-wider"
           >
             Delete Account
           </button>
@@ -963,4 +967,5 @@ window.DashboardProfileTab = ({
 
     </div>
   );
+};
 };

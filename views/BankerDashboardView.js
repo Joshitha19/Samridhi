@@ -379,14 +379,22 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
           });
         }
 
-        // Merge and deduplicate loans
+        // Merge and deduplicate loans.
+        // DB entries are authoritative for core fields, but local-only fields
+        // (video_intent, intent_language, resolved_at) must survive polling cycles.
         const mergedLoansMap = new Map();
         localLoans.forEach(l => {
           mergedLoansMap.set(l.id, l);
         });
         if (dbLoans) {
           dbLoans.forEach(l => {
+            const existing = mergedLoansMap.get(l.id) || {};
             mergedLoansMap.set(l.id, {
+              // Preserve local-only fields that are not in the Supabase schema
+              video_intent: existing.video_intent || null,
+              intent_language: existing.intent_language || 'English',
+              resolved_at: existing.resolved_at || l.resolved_at || null,
+              // Overwrite with authoritative DB fields
               id: l.id,
               user_id: l.user_id,
               lender: l.lender,
@@ -398,6 +406,7 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
             });
           });
         }
+
 
         allProfiles = Array.from(mergedProfilesMap.values());
         const allLoans = Array.from(mergedLoansMap.values());
@@ -539,14 +548,26 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
 
   // Update loan status (Approve / Reject) in both localStorage and Supabase
   const handleUpdateStatus = async (loanId, newStatus) => {
-    // 1. Optimistic update
-    setLoans(prevLoans => prevLoans.map(l => l.id === loanId ? { ...l, status: newStatus } : l));
+    const resolvedAt = (newStatus !== 'Pending' && newStatus !== 'On Hold')
+      ? new Date().toISOString()
+      : null;
+
+    // 1. Optimistic update (preserve resolved_at so history tab shows it immediately)
+    setLoans(prevLoans => prevLoans.map(l =>
+      l.id === loanId
+        ? { ...l, status: newStatus, ...(resolvedAt ? { resolved_at: resolvedAt } : {}) }
+        : l
+    ));
     triggerToast(`Loan application successfully ${newStatus}!`);
 
-    // 2. Update localStorage
+    // 2. Update localStorage (preserve all fields including video_intent)
     try {
       const localLoans = JSON.parse(localStorage.getItem('samridhi_loans') || '[]');
-      const updatedLoans = localLoans.map(l => l.id === loanId ? { ...l, status: newStatus } : l);
+      const updatedLoans = localLoans.map(l =>
+        l.id === loanId
+          ? { ...l, status: newStatus, ...(resolvedAt ? { resolved_at: resolvedAt } : {}) }
+          : l
+      );
       localStorage.setItem('samridhi_loans', JSON.stringify(updatedLoans));
     } catch (e) {
       console.warn("Failed updating local storage loan status:", e);
@@ -555,9 +576,11 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
     // 3. Update Supabase
     if (window.supabaseClient) {
       try {
+        const updatePayload = { status: newStatus };
+        if (resolvedAt) updatePayload.resolved_at = resolvedAt;
         const { error } = await window.supabaseClient
           .from('loans')
-          .update({ status: newStatus })
+          .update(updatePayload)
           .eq('id', loanId);
         if (error) {
           console.warn("Supabase sync warning for loan status update: ", error.message);
@@ -831,7 +854,17 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
               : 'border-transparent text-samridhi-textMuted hover:text-white'
           }`}
         >
-          Credit Requests ({loans.length})
+          Credit Requests ({loans.filter(l => l.status === 'Pending' || l.status === 'On Hold').length})
+        </button>
+        <button
+          onClick={() => setActiveTab('history')}
+          className={`pb-3.5 text-xs uppercase tracking-wider font-extrabold px-6 border-b-2 transition-all duration-300 ${
+            activeTab === 'history'
+              ? 'border-samridhi-secondary text-samridhi-secondary'
+              : 'border-transparent text-samridhi-textMuted hover:text-white'
+          }`}
+        >
+          Decision History ({loans.filter(l => l.status !== 'Pending' && l.status !== 'On Hold').length})
         </button>
         <button
           onClick={() => setActiveTab('customers')}
@@ -860,69 +893,185 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
             {/* TAB A: CREDIT REQUESTS */}
             {activeTab === 'loans' && (
               <div className="overflow-x-auto w-full">
-                {loans.length === 0 ? (
-                  <div className="text-center py-20 text-xs text-samridhi-textMuted">
-                    No credit requests registered in the Supabase database.
-                  </div>
-                ) : (
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="bg-white/[0.02] border-b border-white/[0.05] text-samridhi-textMuted uppercase font-bold text-[10px] tracking-wider select-none">
-                        <th className="p-4">Applicant Profile</th>
-                        <th className="p-4">Requested Amt</th>
-                        <th className="p-4">Tenure / EMI</th>
-                        <th className="p-4">Status</th>
-                        <th className="p-4 text-center">Inspect</th>
-                        <th className="p-4 text-center">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/[0.03]">
-                      {loans.map((loan) => {
-                        const client = profiles.find(p => p.id === loan.user_id) || {};
-                        const scoreVal = client ? getCalculatedScore(client) : 72;
-                        return (
-                          <tr key={loan.id} className="hover:bg-white/[0.02] transition-colors">
-                            <td className="p-4">
-                              <div className="flex items-center space-x-3">
-                                <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-samridhi-primary/15 to-samridhi-secondary/15 border border-white/[0.06] flex items-center justify-center font-bold text-white text-xs">
-                                  {client.name ? client.name[0] : 'U'}
+                {(() => {
+                  const pendingLoans = loans.filter(l => l.status === 'Pending' || l.status === 'On Hold');
+                  if (pendingLoans.length === 0) {
+                    return (
+                      <div className="text-center py-20 text-xs text-samridhi-textMuted font-semibold">
+                        No pending credit requests at this time.
+                      </div>
+                    );
+                  }
+                  return (
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-white/[0.02] border-b border-white/[0.05] text-samridhi-textMuted uppercase font-bold text-[10px] tracking-wider select-none">
+                          <th className="p-4">Applicant Profile</th>
+                          <th className="p-4">Requested Amt</th>
+                          <th className="p-4">Tenure / EMI</th>
+                          <th className="p-4">Status</th>
+                          <th className="p-4 text-center">Inspect</th>
+                          <th className="p-4 text-center">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/[0.03]">
+                        {pendingLoans.map((loan) => {
+                          const client = profiles.find(p => p.id === loan.user_id) || {};
+                          const scoreVal = client ? getCalculatedScore(client) : 72;
+                          return (
+                            <tr key={loan.id} className="hover:bg-white/[0.02] transition-colors">
+                              <td className="p-4">
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-samridhi-primary/15 to-samridhi-secondary/15 border border-white/[0.06] flex items-center justify-center font-bold text-white text-xs">
+                                    {client.name ? client.name[0] : 'U'}
+                                  </div>
+                                  <div>
+                                    <button
+                                      onClick={() => handleInspectProfile(client, loan)}
+                                      className="text-samridhi-secondary hover:underline font-extrabold text-left block text-xs"
+                                    >
+                                      {client.name || 'UNKNOWN USER'}
+                                    </button>
+                                    <span className="text-[10px] text-samridhi-textMuted font-mono">
+                                      {client.email} &bull; Score: {scoreVal}/100
+                                    </span>
+                                  </div>
                                 </div>
-                                <div>
+                              </td>
+                              <td className="p-4">
+                                <span className="text-sm font-extrabold text-white font-mono">₹{loan.amount.toLocaleString()}</span>
+                                <span className="block text-[8px] text-samridhi-textMuted font-mono uppercase tracking-wider">{loan.lender}</span>
+                              </td>
+                              <td className="p-4">
+                                <span className="text-xs font-bold text-white font-mono">
+                                  {loan.emi ? `${loan.emi.toString().startsWith('₹') ? '' : '₹'}${loan.emi.toLocaleString()}/mo` : 'N/A'}
+                                </span>
+                                <span className="block text-[9px] uppercase font-bold tracking-wider text-samridhi-textMuted">
+                                  Tenure: 12 mos
+                                </span>
+                              </td>
+                              <td className="p-4">
+                                 <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                                   loan.status === 'Approved' ? 'bg-samridhi-success/15 text-samridhi-success border border-samridhi-success/20 text-glow-success' :
+                                   loan.status === 'Rejected' ? 'bg-samridhi-danger/15 text-samridhi-danger border border-samridhi-danger/20 text-glow-danger' :
+                                   loan.status === 'On Hold' ? 'bg-samridhi-warning/15 text-samridhi-warning border border-samridhi-warning/20 text-glow-warning animate-pulse' :
+                                   'bg-white/[0.04] text-white/80 border border-white/[0.08]'
+                                 }`}>
+                                   {loan.status}
+                                 </span>
+                               </td>
+                               <td className="p-4 text-center">
                                   <button
                                     onClick={() => handleInspectProfile(client, loan)}
-                                    className="text-samridhi-secondary hover:underline font-extrabold text-left block text-xs"
+                                    className="px-2.5 py-1 bg-samridhi-secondary/15 hover:bg-samridhi-secondary/25 border border-samridhi-secondary/35 text-samridhi-secondary text-[10px] font-black uppercase rounded-lg transition-all active:scale-95 text-glow-secondary"
                                   >
-                                    {client.name || 'UNKNOWN USER'}
+                                    Inspect Profile
                                   </button>
-                                  <span className="text-[10px] text-samridhi-textMuted font-mono">
-                                    {client.email} &bull; Score: {scoreVal}/100
-                                  </span>
+                                </td>
+                               <td className="p-4">
+                                 <div className="flex items-center justify-center gap-2">
+                                   <button
+                                     onClick={() => handleUpdateStatus(loan.id, 'Approved')}
+                                     className="px-3 py-1.5 bg-samridhi-success hover:bg-samridhi-success/90 text-samridhi-bg font-extrabold rounded-lg transition-all text-[10px] uppercase shadow-md active:translate-y-0.5"
+                                   >
+                                     Approve
+                                   </button>
+                                   {loan.status !== 'On Hold' && (
+                                     <button
+                                       onClick={() => handleUpdateStatus(loan.id, 'On Hold')}
+                                       className="px-3 py-1.5 bg-samridhi-warning hover:bg-samridhi-warning/90 text-samridhi-bg font-extrabold rounded-lg transition-all text-[10px] uppercase shadow-md active:translate-y-0.5"
+                                     >
+                                       Hold
+                                     </button>
+                                   )}
+                                   <button
+                                     onClick={() => handleUpdateStatus(loan.id, 'Rejected')}
+                                     className="px-3 py-1.5 bg-white/[0.04] border border-white/[0.08] hover:border-samridhi-danger/40 hover:text-samridhi-danger text-samridhi-textPrimary font-bold rounded-lg transition-all text-[10px] uppercase active:translate-y-0.5"
+                                   >
+                                     Reject
+                                   </button>
+                                 </div>
+                               </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* TAB B: DECISION HISTORY */}
+            {activeTab === 'history' && (
+              <div className="overflow-x-auto w-full animate-fade-in">
+                {(() => {
+                  const resolvedLoans = loans.filter(l => l.status !== 'Pending' && l.status !== 'On Hold');
+                  if (resolvedLoans.length === 0) {
+                    return (
+                      <div className="text-center py-20 text-xs text-samridhi-textMuted font-semibold">
+                        No resolved decisions in the history ledger yet.
+                      </div>
+                    );
+                  }
+                  return (
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-white/[0.02] border-b border-white/[0.05] text-samridhi-textMuted uppercase font-bold text-[10px] tracking-wider select-none">
+                          <th className="p-4">Applicant Profile</th>
+                          <th className="p-4">Requested Amt</th>
+                          <th className="p-4">Tenure / EMI</th>
+                          <th className="p-4">Decision Status</th>
+                          <th className="p-4 text-center">Inspect</th>
+                          <th className="p-4 text-center">Date Resolved</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/[0.03]">
+                        {resolvedLoans.map((loan) => {
+                          const client = profiles.find(p => p.id === loan.user_id) || {};
+                          const scoreVal = client ? getCalculatedScore(client) : 72;
+                          return (
+                            <tr key={loan.id} className="hover:bg-white/[0.02] transition-colors">
+                              <td className="p-4">
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-samridhi-primary/15 to-samridhi-secondary/15 border border-white/[0.06] flex items-center justify-center font-bold text-white text-xs">
+                                    {client.name ? client.name[0] : 'U'}
+                                  </div>
+                                  <div>
+                                    <button
+                                      onClick={() => handleInspectProfile(client, loan)}
+                                      className="text-samridhi-secondary hover:underline font-extrabold text-left block text-xs"
+                                    >
+                                      {client.name || 'UNKNOWN USER'}
+                                    </button>
+                                    <span className="text-[10px] text-samridhi-textMuted font-mono">
+                                      {client.email} &bull; Score: {scoreVal}/100
+                                    </span>
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
-                            <td className="p-4">
-                              <span className="text-sm font-extrabold text-white font-mono">₹{loan.amount.toLocaleString()}</span>
-                              <span className="block text-[8px] text-samridhi-textMuted font-mono uppercase tracking-wider">{loan.lender}</span>
-                            </td>
-                            <td className="p-4">
-                              <span className="text-xs font-bold text-white font-mono">
-                                {loan.emi ? `${loan.emi.toString().startsWith('₹') ? '' : '₹'}${loan.emi.toLocaleString()}/mo` : 'N/A'}
-                              </span>
-                              <span className="block text-[9px] uppercase font-bold tracking-wider text-samridhi-textMuted">
-                                Tenure: 12 mos
-                              </span>
-                            </td>
-                            <td className="p-4">
-                               <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                                 loan.status === 'Approved' ? 'bg-samridhi-success/15 text-samridhi-success border border-samridhi-success/20 text-glow-success' :
-                                 loan.status === 'Rejected' ? 'bg-samridhi-danger/15 text-samridhi-danger border border-samridhi-danger/20 text-glow-danger' :
-                                 loan.status === 'On Hold' ? 'bg-samridhi-warning/15 text-samridhi-warning border border-samridhi-warning/20 text-glow-warning animate-pulse' :
-                                 'bg-white/[0.04] text-white/80 border border-white/[0.08]'
-                               }`}>
-                                 {loan.status}
-                               </span>
-                             </td>
-                             <td className="p-4 text-center">
+                              </td>
+                              <td className="p-4">
+                                <span className="text-sm font-extrabold text-white font-mono">₹{loan.amount.toLocaleString()}</span>
+                                <span className="block text-[8px] text-samridhi-textMuted font-mono uppercase tracking-wider">{loan.lender}</span>
+                              </td>
+                              <td className="p-4">
+                                <span className="text-xs font-bold text-white font-mono">
+                                  {loan.emi ? `${loan.emi.toString().startsWith('₹') ? '' : '₹'}${loan.emi.toLocaleString()}/mo` : 'N/A'}
+                                </span>
+                                <span className="block text-[9px] uppercase font-bold tracking-wider text-samridhi-textMuted">
+                                  Tenure: 12 mos
+                                </span>
+                              </td>
+                              <td className="p-4">
+                                <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                                  loan.status === 'Approved' || loan.status === 'Active' ? 'bg-samridhi-success/15 text-samridhi-success border border-samridhi-success/20 text-glow-success' :
+                                  loan.status === 'Rejected' ? 'bg-samridhi-danger/15 text-samridhi-danger border border-samridhi-danger/20 text-glow-danger' :
+                                  'bg-white/[0.04] text-white/80 border border-white/[0.08]'
+                                }`}>
+                                  {loan.status}
+                                </span>
+                              </td>
+                              <td className="p-4 text-center">
                                 <button
                                   onClick={() => handleInspectProfile(client, loan)}
                                   className="px-2.5 py-1 bg-samridhi-secondary/15 hover:bg-samridhi-secondary/25 border border-samridhi-secondary/35 text-samridhi-secondary text-[10px] font-black uppercase rounded-lg transition-all active:scale-95 text-glow-secondary"
@@ -930,44 +1079,24 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
                                   Inspect Profile
                                 </button>
                               </td>
-                             <td className="p-4">
-                               <div className="flex items-center justify-center gap-2">
-                                 {loan.status === 'Pending' || loan.status === 'On Hold' ? (
-                                   <>
-                                     <button
-                                       onClick={() => handleUpdateStatus(loan.id, 'Approved')}
-                                       className="px-3 py-1.5 bg-samridhi-success hover:bg-samridhi-success/90 text-samridhi-bg font-extrabold rounded-lg transition-all text-[10px] uppercase shadow-md active:translate-y-0.5"
-                                     >
-                                       Approve
-                                     </button>
-                                     {loan.status !== 'On Hold' && (
-                                       <button
-                                         onClick={() => handleUpdateStatus(loan.id, 'On Hold')}
-                                         className="px-3 py-1.5 bg-samridhi-warning hover:bg-samridhi-warning/90 text-samridhi-bg font-extrabold rounded-lg transition-all text-[10px] uppercase shadow-md active:translate-y-0.5"
-                                       >
-                                         Hold
-                                       </button>
-                                     )}
-                                     <button
-                                       onClick={() => handleUpdateStatus(loan.id, 'Rejected')}
-                                       className="px-3 py-1.5 bg-white/[0.04] border border-white/[0.08] hover:border-samridhi-danger/40 hover:text-samridhi-danger text-samridhi-textPrimary font-bold rounded-lg transition-all text-[10px] uppercase active:translate-y-0.5"
-                                     >
-                                       Reject
-                                     </button>
-                                   </>
-                                 ) : (
-                                   <span className="text-[10px] text-samridhi-textMuted font-bold uppercase select-none tracking-wider bg-white/[0.02] px-2.5 py-1 rounded-lg border border-white/[0.04]">
-                                     Resolved
-                                   </span>
-                                 )}
-                               </div>
-                             </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                )}
+                              <td className="p-4 text-center font-mono text-[10px] text-samridhi-textMuted select-none">
+                                {loan.resolved_at
+                                  ? new Date(loan.resolved_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+                                  : loan.date || '—'
+                                }
+                                {loan.resolved_at && (
+                                  <span className="block text-[8px] text-samridhi-textMuted/60 font-mono">
+                                    {new Date(loan.resolved_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  );
+                })()}
               </div>
             )}
 

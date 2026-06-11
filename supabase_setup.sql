@@ -22,8 +22,17 @@ CREATE TABLE IF NOT EXISTS public.loans (
     rate TEXT NOT NULL,
     emi TEXT NOT NULL,
     status TEXT DEFAULT 'Pending',
-    date DATE DEFAULT CURRENT_DATE
+    date DATE DEFAULT CURRENT_DATE,
+    video_intent TEXT,          -- base64 / blob URL of 30s intent statement video
+    intent_language TEXT DEFAULT 'English',  -- language of the recorded statement
+    resolved_at TIMESTAMPTZ     -- timestamp when banker approved / rejected / actioned
 );
+
+-- If the loans table already exists, add the new columns safely:
+ALTER TABLE public.loans ADD COLUMN IF NOT EXISTS video_intent TEXT;
+ALTER TABLE public.loans ADD COLUMN IF NOT EXISTS intent_language TEXT DEFAULT 'English';
+ALTER TABLE public.loans ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ;
+
 
 -- 3. Create Transactions Table
 CREATE TABLE IF NOT EXISTS public.transactions (

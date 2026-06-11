@@ -700,7 +700,10 @@ function App() {
             rate: action.payload.rate,
             emi: action.payload.emi,
             status: action.payload.status,
-            date: action.payload.date
+            date: action.payload.date,
+            intent_language: action.payload.intent_language || 'English',
+            // Note: video_intent may be a large base64 string; only sync if present
+            ...(action.payload.video_intent ? { video_intent: action.payload.video_intent } : {})
           })
           .then(({ error }) => {
             if (error) {
@@ -711,6 +714,7 @@ function App() {
             }
           });
         break;
+
 
       case 'TOGGLE_SKILL_VERIFICATION': {
         const targetSkill = dashboardState.skills.find(s => s.id === action.payload);

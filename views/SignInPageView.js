@@ -89,8 +89,8 @@ window.SignInPageView = ({ setPage, onSignIn, onSendOtp, onVerifyOtp }) => {
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center py-16 px-6 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#081A0F] via-samridhi-bg to-samridhi-bg">
-      <div className="w-full max-w-md bg-samridhi-card border border-samridhi-border p-8 rounded-3xl shadow-2xl relative overflow-hidden animate-fade-in">
+    <div className="flex-1 flex items-center justify-center py-8 sm:py-16 px-4 sm:px-6 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#081A0F] via-samridhi-bg to-samridhi-bg">
+      <div className="w-full max-w-md bg-samridhi-card border border-samridhi-border p-5 sm:p-8 rounded-3xl shadow-2xl relative overflow-hidden animate-fade-in">
         {/* Header background accents */}
         <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-samridhi-primary to-samridhi-secondary"></div>
 

@@ -358,6 +358,7 @@ function App() {
 
   // Routing State: 'landing' | 'signin' | 'signup' | 'dashboard'
   const [page, setPage] = useState('landing');
+  const [landingMobileMenuOpen, setLandingMobileMenuOpen] = useState(false);
   
   // Authentication State
   const [user, setUser] = useState(null);
@@ -1687,11 +1688,11 @@ function App() {
       {/* STICKY NAVBAR */}
       {page !== 'dashboard' && page !== 'banker-dashboard' && (
         <header className="sticky top-0 z-50 w-full bg-samridhi-bg/85 border-b border-samridhi-border blur-nav">
-          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
             {/* Logo */}
             <div 
               className="flex items-center space-x-2 cursor-pointer"
-              onClick={() => setPage('landing')}
+              onClick={() => { setPage('landing'); setLandingMobileMenuOpen(false); }}
             >
               <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center shadow-lg shadow-samridhi-primary/20">
                 <span className="text-samridhi-bg font-extrabold text-lg">₹</span>
@@ -1705,40 +1706,100 @@ function App() {
             <nav className="hidden md:flex items-center space-x-8 text-sm font-semibold tracking-wide">
               <button 
                 onClick={() => scrollToSection('home')} 
-                className="text-samridhi-textPrimary hover:text-samridhi-secondary transition-colors"
+                className="text-samridhi-textPrimary hover:text-samridhi-secondary transition-colors bg-transparent border-none cursor-pointer"
               >
                 Home
               </button>
               <button 
                 onClick={() => scrollToSection('features')} 
-                className="text-samridhi-textMuted hover:text-samridhi-textPrimary transition-colors"
+                className="text-samridhi-textMuted hover:text-samridhi-textPrimary transition-colors bg-transparent border-none cursor-pointer"
               >
                 Features
               </button>
               <button 
                 onClick={() => scrollToSection('how-it-works')} 
-                className="text-samridhi-textMuted hover:text-samridhi-textPrimary transition-colors"
+                className="text-samridhi-textMuted hover:text-samridhi-textPrimary transition-colors bg-transparent border-none cursor-pointer"
               >
                 How It Works
               </button>
             </nav>
 
             {/* CTA Buttons */}
-            <div className="flex items-center space-x-4">
+            <div className="hidden md:flex items-center space-x-4">
               <button 
                 onClick={() => setPage('signin')}
-                className="text-sm font-bold text-samridhi-textPrimary hover:text-samridhi-primary transition-colors px-4 py-2"
+                className="text-sm font-bold text-samridhi-textPrimary hover:text-samridhi-primary transition-colors px-4 py-2 bg-transparent border-none cursor-pointer"
               >
                 Sign In
               </button>
               <button 
                 onClick={() => setPage('signup')}
-                className="text-sm font-bold bg-samridhi-primary hover:bg-samridhi-primary/90 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-samridhi-primary/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 active:scale-95"
+                className="text-sm font-bold bg-samridhi-primary hover:bg-samridhi-primary/90 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-samridhi-primary/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 active:scale-95 cursor-pointer"
               >
                 Get Started
               </button>
             </div>
+
+            {/* Hamburger Button (Mobile) */}
+            <div className="flex md:hidden">
+              <button
+                onClick={() => setLandingMobileMenuOpen(!landingMobileMenuOpen)}
+                className="p-2 text-samridhi-textMuted hover:text-white focus:outline-none bg-transparent border-none cursor-pointer"
+                aria-label="Toggle menu"
+              >
+                {landingMobileMenuOpen ? (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
+
+          {/* Mobile Menu Dropdown */}
+          {landingMobileMenuOpen && (
+            <div className="md:hidden border-t border-samridhi-border bg-samridhi-bg/95 backdrop-blur-xl animate-fade-in">
+              <div className="px-4 pt-2 pb-6 space-y-3 flex flex-col">
+                <button 
+                  onClick={() => { scrollToSection('home'); setLandingMobileMenuOpen(false); }} 
+                  className="text-left py-2 text-sm font-semibold text-samridhi-textPrimary hover:text-samridhi-secondary bg-transparent border-none cursor-pointer"
+                >
+                  Home
+                </button>
+                <button 
+                  onClick={() => { scrollToSection('features'); setLandingMobileMenuOpen(false); }} 
+                  className="text-left py-2 text-sm font-semibold text-samridhi-textMuted hover:text-samridhi-textPrimary bg-transparent border-none cursor-pointer"
+                >
+                  Features
+                </button>
+                <button 
+                  onClick={() => { scrollToSection('how-it-works'); setLandingMobileMenuOpen(false); }} 
+                  className="text-left py-2 text-sm font-semibold text-samridhi-textMuted hover:text-samridhi-textPrimary bg-transparent border-none cursor-pointer"
+                >
+                  How It Works
+                </button>
+                
+                <div className="h-px bg-samridhi-border my-2"></div>
+
+                <button 
+                  onClick={() => { setPage('signin'); setLandingMobileMenuOpen(false); }}
+                  className="w-full text-center py-2.5 text-sm font-bold text-samridhi-textPrimary hover:text-samridhi-primary bg-white/[0.03] border border-white/[0.08] rounded-xl cursor-pointer"
+                >
+                  Sign In
+                </button>
+                <button 
+                  onClick={() => { setPage('signup'); setLandingMobileMenuOpen(false); }}
+                  className="w-full text-center py-2.5 text-sm font-bold bg-samridhi-primary hover:bg-samridhi-primary/90 text-white rounded-xl shadow-lg shadow-samridhi-primary/30 cursor-pointer"
+                >
+                  Get Started
+                </button>
+              </div>
+            </div>
+          )}
         </header>
       )}
 

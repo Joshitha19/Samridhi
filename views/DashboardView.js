@@ -168,6 +168,20 @@ window.DashboardView = ({
               })}
             </div>
 
+            {/* Voice Control Toggle (Mobile Drawer) */}
+            <div className="px-4 py-3 border-t border-white/[0.03] flex items-center justify-between">
+              <span className="text-[10px] uppercase font-bold text-samridhi-textMuted tracking-wider">Voice Control</span>
+              <button
+                onClick={() => setVoiceNavigationActive(!voiceNavigationActive)}
+                className={`w-8 h-4.5 rounded-full p-0.5 transition-colors relative focus:outline-none ${
+                  voiceNavigationActive ? 'bg-samridhi-primary' : 'bg-white/[0.08]'
+                }`}
+                title="Toggle continuous voice commands navigation"
+              >
+                <div className={`w-3.5 h-3.5 rounded-full bg-white transition-transform transform ${voiceNavigationActive ? 'translate-x-3.5' : 'translate-x-0'}`}></div>
+              </button>
+            </div>
+
             {/* Logout Footer button */}
             <div className="p-4 border-t border-white/[0.03]">
               <button
@@ -277,7 +291,7 @@ window.DashboardView = ({
           <div className="flex items-center space-x-4 relative">
             
             {/* Voice Control Toggle */}
-            <div className="flex items-center space-x-2 bg-white/[0.02] border border-white/[0.05] px-3 py-1.5 rounded-xl">
+            <div className="hidden sm:flex items-center space-x-2 bg-white/[0.02] border border-white/[0.05] px-3 py-1.5 rounded-xl">
               <span className="text-[9px] uppercase font-black text-samridhi-textMuted tracking-wider">Voice Control</span>
               <button
                 onClick={() => setVoiceNavigationActive(!voiceNavigationActive)}

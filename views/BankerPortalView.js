@@ -69,8 +69,8 @@ window.BankerPortalView = ({ setPage, onBankerSignIn, onBankerSignUp }) => {
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center py-16 px-6 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#0A160F] via-[#090b10] to-[#090b10]">
-      <div className="w-full max-w-md glass-card p-8 rounded-3xl border border-white/[0.04] border-glow-secondary relative overflow-hidden animate-fade-in">
+    <div className="flex-1 flex items-center justify-center py-8 sm:py-16 px-4 sm:px-6 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#0A160F] via-[#090b10] to-[#090b10]">
+      <div className="w-full max-w-md glass-card p-5 sm:p-8 rounded-3xl border border-white/[0.04] border-glow-secondary relative overflow-hidden animate-fade-in">
         {/* Header background accents */}
         <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-samridhi-success to-samridhi-secondary"></div>
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-samridhi-success/5 to-transparent rounded-tr-3xl pointer-events-none filter blur-xl"></div>

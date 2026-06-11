@@ -10,6 +10,43 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 window.supabaseClient = supabaseClient;
 
+// Personalized transaction ledger generator helper
+window.personalizeTransactions = (baseTransactions, upiVpa, userName) => {
+  if (!upiVpa) return baseTransactions;
+  
+  const prefix = upiVpa.split('@')[0] || 'User';
+  const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const cleanName = capitalize(prefix);
+  
+  const suffix = upiVpa.split('@')[1] || 'unionbank';
+  let bankName = 'Union Bank';
+  if (suffix.includes('sbi')) bankName = 'SBI';
+  else if (suffix.includes('axis')) bankName = 'Axis Bank';
+  else if (suffix.includes('hdfc')) bankName = 'HDFC Bank';
+  else if (suffix.includes('icici')) bankName = 'ICICI Bank';
+  else if (suffix.includes('ybl') || suffix.includes('paytm')) bankName = 'UPI Partner';
+  
+  return baseTransactions.map(t => {
+    let merchant = t.merchant;
+    if (t.type === 'Credit') {
+      if (t.merchant.toLowerCase().includes('salary') || t.merchant.toLowerCase().includes('corp')) {
+        merchant = `${bankName} Salary / ${cleanName} Payout`;
+      } else if (t.merchant.toLowerCase().includes('upwork') || t.merchant.toLowerCase().includes('freelance')) {
+        merchant = `${cleanName} Invoice / Upwork Escrow`;
+      } else if (t.merchant.toLowerCase().includes('razorpay')) {
+        merchant = `${cleanName} Freelance / Razorpay Gateway`;
+      } else {
+        merchant = `${cleanName} Payout / ${t.merchant}`;
+      }
+    } else {
+      if (t.merchant.toLowerCase().includes('atm') || t.merchant.toLowerCase().includes('withdrawal')) {
+        merchant = `${bankName} ATM Cash Withdrawal`;
+      }
+    }
+    return { ...t, merchant };
+  });
+};
+
 // --- STARTUP SPLASH SCREEN ---
 function SplashScreen({ onComplete }) {
   const [progress, setProgress] = useState(0);
@@ -756,7 +793,8 @@ function App() {
         // If empty user tables, seed them with beautiful default records
         console.log("Seeding mock ledger details to Supabase tables...");
         
-        const insertTxs = REDUCER_INITIAL_STATE.transactions.map(t => ({
+        const baseTxs = personalizeTransactions(REDUCER_INITIAL_STATE.transactions, activeProfile.upi_vpa, activeProfile.name);
+        const insertTxs = baseTxs.map(t => ({
           user_id: userId,
           date: t.date,
           merchant: t.merchant,
@@ -901,7 +939,8 @@ function App() {
     
     // If no transactions found for this user, seed default values
     if (userTxs.length === 0) {
-      const seededTxs = REDUCER_INITIAL_STATE.transactions.map((t, idx) => ({
+      const baseTxs = personalizeTransactions(REDUCER_INITIAL_STATE.transactions, profile.upi_vpa, profile.name);
+      const seededTxs = baseTxs.map((t, idx) => ({
         id: `t-demo-${userId}-${idx}`,
         user_id: userId,
         date: t.date,

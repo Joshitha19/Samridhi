@@ -1064,7 +1064,7 @@ window.DashboardOverviewTab = ({
                       
                       const interval = setInterval(() => {
                         progress += 20;
-                        setSyncProgress(progress);
+                            setSyncProgress(progress);
                         const txtIdx = Math.min(Math.floor(progress / 20), progressTexts.length - 1);
                         setSyncStageText(progressTexts[txtIdx]);
 
@@ -1081,7 +1081,7 @@ window.DashboardOverviewTab = ({
                             return d.toISOString().split('T')[0];
                           };
 
-                          const injectedTransactions = [
+                          const baseInjectedTransactions = [
                             { date: daysAgo(1), merchant: "Union Bank Salary Credit / Corp Payout", amount: 45000, category: "Freelance Income", type: "Credit" },
                             { date: daysAgo(2), merchant: "Amazon Web Services", amount: -4200, category: "Business Expense", type: "Debit" },
                             { date: daysAgo(3), merchant: "Zomato Food Delivery", amount: -450, category: "Food & Beverage", type: "Debit" },
@@ -1095,6 +1095,35 @@ window.DashboardOverviewTab = ({
                             { date: daysAgo(14), merchant: "Swiggy Instamart Grocery", amount: -1200, category: "Food & Beverage", type: "Debit" },
                             { date: daysAgo(16), merchant: "Rent Payout / PG Accommodation", amount: -10000, category: "Utility Bills", type: "Debit" }
                           ];
+
+                          const prefix = userVpaValue.split('@')[0] || 'User';
+                          const cleanName = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+                          const suffix = userVpaValue.split('@')[1] || 'unionbank';
+                          
+                          let bankShort = 'Union Bank';
+                          if (suffix.includes('sbi')) bankShort = 'SBI';
+                          else if (suffix.includes('axis')) bankShort = 'Axis Bank';
+                          else if (suffix.includes('hdfc')) bankShort = 'HDFC Bank';
+                          else if (suffix.includes('icici')) bankShort = 'ICICI Bank';
+                          else if (suffix.includes('ybl') || suffix.includes('paytm')) bankShort = 'UPI Partner';
+
+                          const injectedTransactions = baseInjectedTransactions.map(t => {
+                            let merchant = t.merchant;
+                            if (t.type === 'Credit') {
+                              if (t.merchant.toLowerCase().includes('salary') || t.merchant.toLowerCase().includes('corp')) {
+                                merchant = `${bankShort} Salary / ${cleanName} Payout`;
+                              } else if (t.merchant.toLowerCase().includes('upwork') || t.merchant.toLowerCase().includes('freelance')) {
+                                merchant = `${cleanName} Invoice / Upwork Escrow`;
+                              } else if (t.merchant.toLowerCase().includes('razorpay')) {
+                                merchant = `${cleanName} Freelance / Razorpay Gateway`;
+                              }
+                            } else {
+                              if (t.merchant.toLowerCase().includes('atm') || t.merchant.toLowerCase().includes('withdrawal')) {
+                                merchant = `${bankShort} ATM Cash Withdrawal`;
+                              }
+                            }
+                            return { ...t, merchant };
+                          });
 
                           // Send to database
                           dispatch({ type: 'ADD_TRANSACTION_BULK', payload: injectedTransactions });

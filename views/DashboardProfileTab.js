@@ -176,7 +176,7 @@ window.DashboardProfileTab = ({
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       // Draw Grid Lines
-      ctx.strokeStyle = 'rgba(213, 0, 249, 0.08)';
+      ctx.strokeStyle = 'rgba(59, 130, 246, 0.08)';
       ctx.lineWidth = 1;
       for (let i = 0; i < canvas.width; i += 20) {
         ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
@@ -206,7 +206,7 @@ window.DashboardProfileTab = ({
       }
       
       // Mouth
-      ctx.strokeStyle = '#D500F9';
+      ctx.strokeStyle = '#3b82f6';
       ctx.lineWidth = 2.5;
       ctx.beginPath();
       ctx.arc(canvas.width / 2, canvas.height / 2 + 20, 10 + Math.sin(frame * 0.4) * 3, 0, Math.PI);

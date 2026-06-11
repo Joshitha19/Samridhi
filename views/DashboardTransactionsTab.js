@@ -1064,7 +1064,7 @@ window.DashboardTransactionsTab = ({
                   {/* Anomaly area (0.58 onwards) */}
                   <div className="absolute left-[58%] top-0 bottom-0 bg-samridhi-danger/25 w-[42%]"></div>
                   {/* Split line */}
-                  <div className="absolute left-[58%] top-0 bottom-0 w-0.5 bg-samridhi-primary shadow-[0_0_8px_#D500F9]"></div>
+                  <div className="absolute left-[58%] top-0 bottom-0 w-0.5 bg-samridhi-primary shadow-[0_0_8px_#3b82f6]"></div>
                 </div>
               </div>
 

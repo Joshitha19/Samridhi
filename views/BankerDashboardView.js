@@ -59,7 +59,7 @@ const LivenessMockPlayer = () => {
       }
       
       // Mouth (slight animation)
-      ctx.strokeStyle = '#D500F9';
+      ctx.strokeStyle = '#3b82f6';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(canvas.width / 2, canvas.height / 2 + 15, 8 + Math.sin(frame * 0.1) * 2, 0, Math.PI);

@@ -202,7 +202,7 @@ window.DashboardView = ({
           {/* Profile Card Header */}
           <div className="p-6 border-b border-white/[0.03]">
             <div className="flex items-center space-x-3.5 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center font-black text-sm text-samridhi-bg shadow-[0_0_15px_rgba(213,0,249,0.25)]">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center font-black text-sm text-samridhi-bg shadow-[0_0_15px_rgba(59,130,246,0.25)]">
                 {user.name ? user.name[0] : 'U'}
               </div>
               <div className="overflow-hidden">

@@ -38,15 +38,15 @@
         extend: {
           colors: {
             samridhi: {
-              bg: '#020204',
-              surface: '#07070C',
-              card: '#0D0E15',
-              border: '#1E202E',
-              primary: '#D500F9',
+              bg: '#030712',
+              surface: '#090e1a',
+              card: '#0f172a',
+              border: '#1e293b',
+              primary: '#3b82f6',
               secondary: '#00E5FF',
               success: '#00E676',
-              warning: '#FFD600',
-              danger: '#FF1744',
+              warning: '#facc15',
+              danger: '#ef4444',
               textPrimary: '#FFFFFF',
               textMuted: '#8E91A8',
             }
@@ -74,7 +74,7 @@
       border-radius: 9999px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #D500F9;
+      background: #3b82f6;
     }
 
     /* Keyframes and Animations */
@@ -123,13 +123,13 @@
     .bg-grid-glow {
       background-size: 40px 40px;
       background-image: 
-        linear-gradient(to right, rgba(213, 0, 249, 0.02) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(213, 0, 249, 0.02) 1px, transparent 1px);
+        linear-gradient(to right, rgba(59, 130, 246, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(59, 130, 246, 0.02) 1px, transparent 1px);
     }
 
     /* Custom utilities for gradients and borders */
     .border-gradient-green-lime {
-      border-image: linear-gradient(to right, #D500F9, #00E5FF) 1;
+      border-image: linear-gradient(to right, #3b82f6, #00E5FF) 1;
     }
     
     /* Backdrop blur fallback */
@@ -176,8 +176,8 @@
 
     /* Neon Pulsing Box Shadows */
     @keyframes neonGlowPulse {
-      0%, 100% { box-shadow: 0 0 5px rgba(213, 0, 249, 0.1), inset 0 0 5px rgba(213, 0, 249, 0.05); }
-      50% { box-shadow: 0 0 15px rgba(213, 0, 249, 0.3), inset 0 0 8px rgba(213, 0, 249, 0.1); }
+      0%, 100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.1), inset 0 0 5px rgba(59, 130, 246, 0.05); }
+      50% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.3), inset 0 0 8px rgba(59, 130, 246, 0.1); }
     }
     .animate-neon-glow {
       animation: neonGlowPulse 2.5s infinite ease-in-out;
@@ -195,7 +195,7 @@
 
     /* Premium Glassmorphic FinTech styling */
     .glass-card {
-      background: rgba(13, 14, 21, 0.45);
+      background: rgba(15, 23, 42, 0.45);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.03);
@@ -203,7 +203,7 @@
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .glass-card:hover {
-      background: rgba(20, 21, 30, 0.55);
+      background: rgba(22, 33, 62, 0.55);
       border-color: rgba(0, 229, 255, 0.15);
       box-shadow: 0 12px 40px 0 rgba(0, 229, 255, 0.04);
       transform: translateY(-1px);
@@ -212,8 +212,8 @@
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .border-glow-primary:hover {
-      box-shadow: 0 0 20px rgba(213, 0, 249, 0.15);
-      border-color: rgba(213, 0, 249, 0.35);
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+      border-color: rgba(59, 130, 246, 0.35);
       transform: translateY(-1px);
     }
     .border-glow-secondary {
@@ -233,7 +233,7 @@
       transform: translateY(-1px);
     }
     .text-glow-primary {
-      text-shadow: 0 0 10px rgba(213, 0, 249, 0.6);
+      text-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
     }
     .text-glow-secondary {
       text-shadow: 0 0 10px rgba(0, 229, 255, 0.6);

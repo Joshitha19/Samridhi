@@ -722,7 +722,7 @@ window.DashboardOverviewTab = ({
             {/* Milestone 2 */}
             <div className="flex-1 flex flex-col items-center text-center space-y-3 min-w-[200px] md:min-w-0">
               <span className="text-[10px] font-black text-samridhi-primary uppercase tracking-wider bg-samridhi-primary/10 px-3 py-1 rounded-full border border-samridhi-primary/20 font-mono">Feb 2026</span>
-              <div className="w-6 h-6 rounded-full bg-[#0d0e15] border-[3px] border-samridhi-primary flex items-center justify-center shadow-[0_0_12px_rgba(213,0,249,0.4)] z-10 my-1">
+              <div className="w-6 h-6 rounded-full bg-[#0d0e15] border-[3px] border-samridhi-primary flex items-center justify-center shadow-[0_0_12px_rgba(59,130,246,0.4)] z-10 my-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-samridhi-primary"></span>
               </div>
               <div className="bg-white/[0.02] border border-white/[0.06] hover:border-samridhi-primary/35 hover:bg-white/[0.04] transition-all duration-300 p-4.5 rounded-2xl w-full flex-1 flex flex-col justify-between space-y-2.5">
@@ -1553,9 +1553,9 @@ window.DashboardOverviewTab = ({
                   <path d="M41 38 H59" stroke={isPlaying ? '#00E5FF' : '#6c63ff'} strokeWidth="3" strokeLinecap="round" className={isPlaying ? 'animate-pulse' : ''} />
                   
                   {/* Audio Headset */}
-                  <path d="M30 42 C30 30 35 20 50 20 C65 20 70 30 70 42" stroke="#D500F9" strokeWidth="1.5" strokeLinecap="round" />
-                  <rect x="27" y="38" width="4" height="8" rx="2.5" fill="#D500F9" />
-                  <rect x="69" y="38" width="4" height="8" rx="2.5" fill="#D500F9" />
+                  <path d="M30 42 C30 30 35 20 50 20 C65 20 70 30 70 42" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" />
+                  <rect x="27" y="38" width="4" height="8" rx="2.5" fill="#3b82f6" />
+                  <rect x="69" y="38" width="4" height="8" rx="2.5" fill="#3b82f6" />
                   
                   {/* Neck */}
                   <path d="M46 60 V70 H54 V60" fill="#06090F" stroke="#6c63ff" strokeWidth="1.5" />

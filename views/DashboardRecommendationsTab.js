@@ -328,9 +328,9 @@ window.DashboardRecommendationsTab = ({
               <div className="relative w-11 h-11 flex items-center justify-center shrink-0">
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                   <circle cx="18" cy="18" r="16" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="3.5" />
-                  <circle cx="18" cy="18" r="16" fill="none" stroke="#D500F9" strokeWidth="3.5" strokeDasharray="100" strokeDashoffset="24" strokeLinecap="round" />
+                  <circle cx="18" cy="18" r="16" fill="none" stroke="#3b82f6" strokeWidth="3.5" strokeDasharray="100" strokeDashoffset="24" strokeLinecap="round" />
                 </svg>
-                <span className="absolute text-[9px] font-black text-[#D500F9] font-mono">76%</span>
+                <span className="absolute text-[9px] font-black text-[#3b82f6] font-mono">76%</span>
               </div>
               <span className="text-[8px] text-samridhi-textMuted font-bold uppercase hidden sm:block">AI Fit</span>
             </div>
@@ -351,7 +351,7 @@ window.DashboardRecommendationsTab = ({
             </div>
             <div>
               <span className="text-[9px] text-samridhi-textMuted uppercase font-bold block">Rate p.a.</span>
-              <span className="font-extrabold text-[#D500F9] font-mono">13.2%</span>
+              <span className="font-extrabold text-[#3b82f6] font-mono">13.2%</span>
             </div>
             <div className="col-span-2 sm:col-span-1">
               <span className="text-[9px] text-samridhi-textMuted uppercase font-bold block">Requirements</span>

@@ -591,7 +591,9 @@ function App() {
             rate: action.payload.rate,
             emi: action.payload.emi,
             status: action.payload.status,
-            date: action.payload.date
+            date: action.payload.date,
+            video_intent: action.payload.video_intent,
+            intent_language: action.payload.intent_language
           });
           localStorage.setItem('samridhi_loans', JSON.stringify(localLoans));
           break;

@@ -14,6 +14,135 @@ window.DashboardOverviewTab = ({
 }) => {
   const { useState, useEffect } = React;
 
+  // AI Avatar Explainer States
+  const [showExplainerModal, setShowExplainerModal] = useState(false);
+  const [explainerLang, setExplainerLang] = useState('hi'); // 'hi' | 'gu'
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [activeWordIdx, setActiveWordIdx] = useState(-1);
+
+  const synthRef = React.useRef(window.speechSynthesis);
+  const utteranceRef = React.useRef(null);
+  const timerRef = React.useRef(null);
+
+  const EXPLAINER_DATA = React.useMemo(() => ({
+    hi: {
+      langCode: 'hi-IN',
+      label: 'Hindi (हिंदी)',
+      text: `नमस्ते ${user.name || 'ग्राहक'}, मैं आपकी एआई अंडरराइटर प्रिया हूँ। आपका समृद्धि क्रेडिट स्कोर ${calculatedScore || 300} है। यह एक बहुत ही स्थिर और सुरक्षित प्रोफाइल दर्शाता है। इसे और भी बेहतर बनाने के लिए, समय पर अपने बिलों का भुगतान करें, अपने बैंक खातों में न्यूनतम शेष राशि बनाए रखें और सक्रिय डिजिटल लेनदेन का उपयोग करें। समृद्धि आपके उज्जवल वित्तीय भविष्य की कामना करती है।`
+    },
+    gu: {
+      langCode: 'gu-IN',
+      label: 'Gujarati (ગુજરાતી)',
+      text: `નમસ્તે ${user.name || 'ગ્રાહક'}, હું તમારી એઆઈ અંડરરાઇટર પ્રિયા છું. તમારો સમૃદ્ધિ ક્રેડિટ સ્કોર ${calculatedScore || 300} છે. આ એક ખૂબ જ સ્થિર અને સુરક્ષિત પ્રોફાઇલ દર્શાવે છે. આને વધુ સુધારવા માટે, સમયસર તમારા બીલોની ચુકવણી કરો, તમારા બેંક ખાતામાં ન્યૂનતમ બેલેન્સ જાળવો અને ડિજિટલ વ્યવહારો સક્રિય રાખો. સમૃદ્ધિ તમારા ઉજ્જવળ આર્થિક ભવિષ્યની કામના કરે છે.`
+    }
+  }), [user.name, calculatedScore]);
+
+  const stopSpeech = () => {
+    if (synthRef.current) {
+      synthRef.current.cancel();
+    }
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setIsPlaying(false);
+    setActiveWordIdx(-1);
+  };
+
+  const startSpeech = (langToUse) => {
+    stopSpeech();
+    
+    const activeLang = langToUse || explainerLang;
+    const data = EXPLAINER_DATA[activeLang];
+    if (!data) return;
+    
+    const text = data.text;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utteranceRef.current = utterance;
+    
+    const voices = synthRef.current ? synthRef.current.getVoices() : [];
+    const langVoice = voices.find(v => v.lang.startsWith(activeLang));
+    if (langVoice) {
+      utterance.voice = langVoice;
+    }
+    utterance.lang = data.langCode;
+    
+    const words = text.split(/\s+/);
+    const ranges = [];
+    let curIdx = 0;
+    words.forEach(w => {
+      ranges.push({
+        word: w,
+        start: curIdx,
+        end: curIdx + w.length
+      });
+      curIdx += w.length + 1;
+    });
+
+    let boundaryCalled = false;
+    utterance.onboundary = (e) => {
+      if (e.name === 'word') {
+        boundaryCalled = true;
+        const charIdx = e.charIndex;
+        const wordIdx = ranges.findIndex(r => charIdx >= r.start && charIdx <= r.end + 1);
+        if (wordIdx !== -1) {
+          setActiveWordIdx(wordIdx);
+        }
+      }
+    };
+
+    utterance.onend = () => {
+      stopSpeech();
+    };
+
+    utterance.onerror = (e) => {
+      console.warn("Speech synthesis error:", e);
+      stopSpeech();
+    };
+
+    setIsPlaying(true);
+    synthRef.current.speak(utterance);
+
+    // Fallback simulation timer
+    let checkBoundaryTimeout = setTimeout(() => {
+      if (!boundaryCalled && synthRef.current && synthRef.current.speaking) {
+        console.log("Boundary event not firing, running fallback simulation...");
+        let currentWord = 0;
+        timerRef.current = setInterval(() => {
+          if (currentWord < words.length) {
+            setActiveWordIdx(currentWord);
+            currentWord++;
+          } else {
+            stopSpeech();
+          }
+        }, 320);
+      }
+    }, 1500);
+  };
+
+  const selectLanguage = (lang) => {
+    setExplainerLang(lang);
+    if (isPlaying) {
+      stopSpeech();
+      setTimeout(() => {
+        startSpeech(lang);
+      }, 100);
+    } else {
+      setActiveWordIdx(-1);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (synthRef.current) {
+        synthRef.current.cancel();
+      }
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
+
   // Account Aggregator States
   const [isAaModalOpen, setIsAaModalOpen] = useState(false);
   const [aaStep, setAaStep] = useState('select-bank'); // 'select-bank' | 'enter-phone-vpa' | 'consent-request' | 'verify-otp' | 'syncing' | 'success'
@@ -153,6 +282,17 @@ window.DashboardOverviewTab = ({
           </div>
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-samridhi-secondary/5 to-transparent rounded-tr-3xl pointer-events-none filter blur-2xl"></div>
           <CircularGauge score={calculatedScore} />
+          
+          <button
+            onClick={() => setShowExplainerModal(true)}
+            className="mt-4 flex items-center space-x-1.5 bg-gradient-to-r from-samridhi-secondary/20 to-samridhi-secondary/5 border border-samridhi-secondary/30 hover:border-samridhi-secondary/55 text-samridhi-secondary text-[9px] font-black uppercase tracking-wider px-3.5 py-2.5 rounded-xl transition-all duration-300 transform hover:scale-[1.03] active:scale-95 text-glow-secondary"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Play AI Avatar Explainer</span>
+          </button>
         </div>
 
         {/* Dashboard Welcome & Stats (Col-8) */}
@@ -1314,6 +1454,198 @@ window.DashboardOverviewTab = ({
             >
               Done
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* AI Avatar Explainer Modal */}
+      {showExplainerModal && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/85 backdrop-blur-md transition-opacity duration-300 animate-fade-in">
+          <div className="bg-[#090b10]/95 backdrop-blur-3xl border border-white/[0.08] p-6 rounded-3xl w-full max-w-xl shadow-[0_24px_80px_rgba(0,0,0,0.85)] relative overflow-hidden animate-slide-up border-glow-secondary flex flex-col items-center">
+            
+            <style>{`
+              @keyframes spin-slow {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+              @keyframes pulse-ring {
+                0% { transform: scale(0.97); opacity: 0.5; }
+                50% { transform: scale(1.03); opacity: 0.8; }
+                100% { transform: scale(0.97); opacity: 0.5; }
+              }
+              @keyframes voice-wave {
+                0%, 100% { height: 6px; }
+                50% { height: 32px; }
+              }
+              .animate-spin-slow {
+                animation: spin-slow 16s linear infinite;
+              }
+              .animate-pulse-ring {
+                animation: pulse-ring 3s ease-in-out infinite;
+              }
+              .voice-bar {
+                width: 3.5px;
+                background: linear-gradient(to top, #6C63FF, #00E5FF);
+                border-radius: 2px;
+                transition: height 0.1s ease;
+                height: 6px;
+              }
+              .voice-bar-active-1 { animation: voice-wave 1.1s ease-in-out infinite alternate; }
+              .voice-bar-active-2 { animation: voice-wave 0.7s ease-in-out infinite alternate-reverse; }
+              .voice-bar-active-3 { animation: voice-wave 1.4s ease-in-out infinite alternate; }
+              .voice-bar-active-4 { animation: voice-wave 0.9s ease-in-out infinite alternate-reverse; }
+              .voice-bar-active-5 { animation: voice-wave 1.2s ease-in-out infinite alternate; }
+            `}</style>
+
+            {/* Decorative glows */}
+            <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-bl from-samridhi-secondary/15 to-transparent pointer-events-none filter blur-2xl"></div>
+            <div className="absolute bottom-0 left-0 w-36 h-36 bg-gradient-to-tr from-samridhi-primary/10 to-transparent pointer-events-none filter blur-2xl"></div>
+
+            {/* Close Button */}
+            <button
+              onClick={() => {
+                stopSpeech();
+                setShowExplainerModal(false);
+              }}
+              className="absolute top-5 right-5 text-samridhi-textMuted hover:text-white transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Title / Header */}
+            <div className="text-center mb-6">
+              <span className="text-[9px] font-black text-samridhi-secondary uppercase tracking-widest font-mono text-glow-secondary">AI Underwriter Priya</span>
+              <h3 className="text-lg font-black text-white mt-1">Personalized Credit Score Explainer</h3>
+            </div>
+
+            {/* Avatar & Pulse Rings */}
+            <div className="relative w-36 h-36 flex items-center justify-center mb-5 select-none">
+              {/* Outer pulsing ring */}
+              <div className={`absolute inset-0 rounded-full border border-samridhi-secondary/20 bg-samridhi-secondary/5 ${isPlaying ? 'animate-pulse-ring' : ''}`}></div>
+              
+              {/* Inner rotating gradient border */}
+              <div className="absolute inset-1.5 rounded-full p-[1.5px] bg-gradient-to-tr from-samridhi-primary via-samridhi-secondary to-[#00E5FF] animate-spin-slow">
+                <div className="w-full h-full rounded-full bg-[#090b10]"></div>
+              </div>
+              
+              {/* Core Avatar Image Container */}
+              <div className="relative w-28 h-28 rounded-full overflow-hidden bg-[#0A0E17] border border-white/10 flex items-center justify-center">
+                <svg className="w-full h-full text-samridhi-secondary" viewBox="0 0 100 100" fill="none">
+                  <circle cx="50" cy="50" r="46" fill="url(#avatar-bg-grad)" stroke="rgba(0, 229, 255, 0.15)" strokeWidth="1" />
+                  <path d="M50 10 A40 40 0 0 1 90 50" stroke="#00E5FF" strokeWidth="1" strokeDasharray="3 3" />
+                  
+                  {/* Face silhouette */}
+                  <path d="M50 25 C40 25 36 32 36 42 C36 52 40 60 50 60 C60 60 64 52 64 42 C64 32 60 25 50 25 Z" fill="#06090F" stroke="#6c63ff" strokeWidth="2" />
+                  
+                  {/* Visor/Eyes */}
+                  <path d="M41 38 H59" stroke={isPlaying ? '#00E5FF' : '#6c63ff'} strokeWidth="3" strokeLinecap="round" className={isPlaying ? 'animate-pulse' : ''} />
+                  
+                  {/* Audio Headset */}
+                  <path d="M30 42 C30 30 35 20 50 20 C65 20 70 30 70 42" stroke="#D500F9" strokeWidth="1.5" strokeLinecap="round" />
+                  <rect x="27" y="38" width="4" height="8" rx="2.5" fill="#D500F9" />
+                  <rect x="69" y="38" width="4" height="8" rx="2.5" fill="#D500F9" />
+                  
+                  {/* Neck */}
+                  <path d="M46 60 V70 H54 V60" fill="#06090F" stroke="#6c63ff" strokeWidth="1.5" />
+                  <path d="M44 64 H56" stroke="#00E5FF" strokeWidth="1" />
+                  
+                  {/* Cyber shoulders */}
+                  <path d="M26 78 C33 73 41 71 50 71 C59 71 67 73 74 78 V85 H26 Z" fill="#0A0E18" stroke="#6c63ff" strokeWidth="1.5" />
+                  
+                  <defs>
+                    <linearGradient id="avatar-bg-grad" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor="#0B132B" />
+                      <stop offset="100%" stopColor="#1C2541" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+            </div>
+
+            {/* Sound Wave Frequency Visualizer */}
+            <div className="flex justify-center items-center space-x-1 h-9 mb-6 w-full">
+              {[1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2].map((waveType, idx) => (
+                <div
+                  key={idx}
+                  className={`voice-bar ${isPlaying ? `voice-bar-active-${waveType}` : ''}`}
+                />
+              ))}
+            </div>
+
+            {/* Subtitles Area */}
+            <div className="bg-black/30 border border-white/[0.04] p-5 rounded-2xl w-full min-h-[100px] flex items-center justify-center mb-6 relative">
+              {activeWordIdx === -1 ? (
+                <p className="text-xs text-samridhi-textMuted font-mono italic text-center uppercase tracking-wide">
+                  Press Play to begin personalized analysis explanation...
+                </p>
+              ) : (
+                <div className="flex flex-wrap justify-center gap-x-1.5 gap-y-1 text-xs md:text-sm font-semibold leading-relaxed max-w-md text-center max-h-[90px] overflow-y-auto pr-1">
+                  {EXPLAINER_DATA[explainerLang].text.split(/\s+/).map((word, idx) => {
+                    const isHighlighted = idx === activeWordIdx;
+                    return (
+                      <span
+                        key={idx}
+                        className={`transition-all duration-200 rounded px-1 py-0.5 ${
+                          isHighlighted
+                            ? 'bg-gradient-to-r from-samridhi-secondary to-[#00E5FF] text-[#090a10] font-black scale-105 shadow-md shadow-samridhi-secondary/35'
+                            : 'text-white/40 font-medium'
+                        }`}
+                      >
+                        {word}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Language & Playback Controls */}
+            <div className="w-full flex items-center justify-between border-t border-white/[0.04] pt-4 select-none">
+              {/* Language Selection Buttons */}
+              <div className="flex space-x-1 bg-white/[0.02] border border-white/[0.06] p-1 rounded-xl">
+                {['hi', 'gu'].map((lang) => (
+                  <button
+                    key={lang}
+                    onClick={() => selectLanguage(lang)}
+                    className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all duration-300 ${
+                      explainerLang === lang
+                        ? 'bg-samridhi-secondary text-samridhi-bg font-extrabold shadow-sm'
+                        : 'text-samridhi-textMuted hover:text-white'
+                    }`}
+                  >
+                    {EXPLAINER_DATA[lang].label ? EXPLAINER_DATA[lang].label.split(' ')[0] : lang.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+
+              {/* Playback trigger */}
+              <div className="flex space-x-2">
+                {isPlaying ? (
+                  <button
+                    onClick={stopSpeech}
+                    className="flex items-center space-x-1.5 bg-[#FF1744]/20 border border-[#FF1744]/35 hover:bg-[#FF1744]/30 text-[#FF1744] text-[9px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all active:scale-95 text-glow-danger"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <rect x="6" y="6" width="12" height="12" rx="1.5" />
+                    </svg>
+                    <span>Pause</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => startSpeech()}
+                    className="flex items-center space-x-1.5 bg-samridhi-success/20 border border-samridhi-success/35 hover:bg-samridhi-success/30 text-samridhi-success text-[9px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all active:scale-95 text-glow-success"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    </svg>
+                    <span>Play Explainer</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
           </div>
         </div>
       )}

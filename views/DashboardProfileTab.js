@@ -46,72 +46,219 @@ window.DashboardProfileTab = ({
   const [instruction, setInstruction] = useState('');
   const [ocrText, setOcrText] = useState({ number: '', name: '', dob: '', address: '' });
   const [capturedImage, setCapturedImage] = useState(null);
+  const [capturedVideo, setCapturedVideo] = useState(() => {
+    return localStorage.getItem(`samridhi_kyc_video_${user.id}`) || '';
+  });
+  const [kycCountdown, setKycCountdown] = useState(5);
   
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const videoChunksRef = useRef([]);
 
   const startKycFlow = async () => {
     setKycStep('camera');
     setInstruction('Position your face in the frame');
     setOcrText({ number: '', name: '', dob: '', address: '' });
     setCapturedImage(null);
+    setCapturedVideo('');
+    setKycCountdown(5);
+    videoChunksRef.current = [];
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 300, height: 200 } });
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { width: 320, height: 240 },
+        audio: false 
+      });
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
+      
+      // Start recording
+      let options = { mimeType: 'video/webm;codecs=vp9' };
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        options = { mimeType: 'video/webm;codecs=vp8' };
+        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+          options = { mimeType: 'video/webm' };
+          if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+            options = { mimeType: 'video/mp4' };
+          }
+        }
+      }
+
+      const recorder = new MediaRecorder(stream, options);
+      mediaRecorderRef.current = recorder;
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          videoChunksRef.current.push(e.data);
+        }
+      };
+      
+      recorder.onstop = () => {
+        const blob = new Blob(videoChunksRef.current, { type: 'video/webm' });
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = () => {
+          const base64Video = reader.result;
+          setCapturedVideo(base64Video);
+          localStorage.setItem(`samridhi_kyc_video_${user.id}`, base64Video);
+          
+          // Capture single frame for snapshot display
+          const canvas = canvasRef.current;
+          const video = videoRef.current;
+          if (video && canvas) {
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            setCapturedImage(canvas.toDataURL('image/png'));
+          }
+          
+          setKycStep('ocr');
+          startOcrTypewriter();
+        };
+      };
+      
+      recorder.start();
     } catch (err) {
-      console.error("Camera access failed: ", err);
-      setInstruction('Camera access denied. Please allow webcam permissions.');
+      console.warn("Camera access failed or blocked, running high-fidelity KYC simulation: ", err);
+      setInstruction('Sandbox KYC Liveness Simulator Active');
+      runCanvasSimulation();
     }
   };
 
-  // Handle liveness 3s sequencing
+  // Canvas Liveness Scan Recorder Fallback
+  const runCanvasSimulation = () => {
+    const canvas = canvasRef.current || document.createElement('canvas');
+    canvas.width = 320;
+    canvas.height = 240;
+    const ctx = canvas.getContext('2d');
+    
+    // Create canvas stream
+    const canvasStream = canvas.captureStream(10); // 10 fps
+    videoChunksRef.current = [];
+    
+    let options = { mimeType: 'video/webm' };
+    const recorder = new MediaRecorder(canvasStream, options);
+    mediaRecorderRef.current = recorder;
+    
+    recorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) videoChunksRef.current.push(e.data);
+    };
+    
+    recorder.onstop = () => {
+      const blob = new Blob(videoChunksRef.current, { type: 'video/webm' });
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onloadend = () => {
+        const base64Video = reader.result;
+        setCapturedVideo(base64Video);
+        localStorage.setItem(`samridhi_kyc_video_${user.id}`, base64Video);
+        setCapturedImage(canvas.toDataURL('image/png'));
+        setKycStep('ocr');
+        startOcrTypewriter();
+      };
+    };
+    
+    recorder.start();
+    
+    // Draw animation loop for 5 seconds (50 frames at 100ms)
+    let frame = 0;
+    const interval = setInterval(() => {
+      if (frame >= 50) {
+        clearInterval(interval);
+        if (recorder.state !== 'inactive') recorder.stop();
+        return;
+      }
+      
+      // Clear background
+      ctx.fillStyle = '#020204';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw Grid Lines
+      ctx.strokeStyle = 'rgba(213, 0, 249, 0.08)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < canvas.width; i += 20) {
+        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+      }
+      for (let i = 0; i < canvas.height; i += 20) {
+        ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+      }
+      
+      // Draw Face Oval Outline
+      ctx.strokeStyle = '#00E5FF';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.ellipse(canvas.width / 2, canvas.height / 2, 50, 70, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      // Eyes (blinking at frame 25)
+      ctx.fillStyle = '#00E5FF';
+      ctx.beginPath();
+      if (frame === 24 || frame === 25 || frame === 26) {
+        ctx.rect(canvas.width / 2 - 25, canvas.height / 2 - 15, 10, 2);
+        ctx.rect(canvas.width / 2 + 15, canvas.height / 2 - 15, 10, 2);
+        ctx.fill();
+      } else {
+        ctx.arc(canvas.width / 2 - 20, canvas.height / 2 - 15, 5, 0, Math.PI * 2);
+        ctx.arc(canvas.width / 2 + 20, canvas.height / 2 - 15, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      
+      // Mouth
+      ctx.strokeStyle = '#D500F9';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, canvas.height / 2 + 20, 10 + Math.sin(frame * 0.4) * 3, 0, Math.PI);
+      ctx.stroke();
+      
+      // Scanning overlay sweep
+      const sweepY = (frame * 6) % canvas.height;
+      ctx.strokeStyle = 'rgba(0, 230, 118, 0.4)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(10, sweepY);
+      ctx.lineTo(canvas.width - 10, sweepY);
+      ctx.stroke();
+      
+      // Status message on canvas
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 9px monospace';
+      ctx.fillText(`LIVENESS RECORDING: ${Math.round(frame * 2)}%`, 20, 30);
+      
+      frame++;
+    }, 100);
+  };
+
+  // Handle liveness 5s sequencing
   useEffect(() => {
     if (kycStep !== 'camera') return;
 
-    // Timer 1: Transition instruction to "Hold still..." at 1s
-    const t1 = setTimeout(() => {
-      setInstruction('Hold still...');
-    }, 1200);
-
-    // Timer 2: Transition instruction to "Face Detected" at 2.4s
-    const t2 = setTimeout(() => {
-      setInstruction('Face Detected');
-    }, 2400);
-
-    // Timer 3: Capture and freeze at 3.2s
-    const t3 = setTimeout(() => {
-      captureSnapshot();
-    }, 3200);
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-    };
-  }, [kycStep]);
-
-  const captureSnapshot = () => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (video && canvas) {
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      setCapturedImage(canvas.toDataURL('image/png'));
+    if (kycCountdown > 0) {
+      const timer = setTimeout(() => {
+        setKycCountdown(prev => prev - 1);
+        if (kycCountdown === 5) {
+          setInstruction('Look straight and blink...');
+        } else if (kycCountdown === 3) {
+          setInstruction('Turn slightly to the left...');
+        } else if (kycCountdown === 2) {
+          setInstruction('Turn slightly to the right...');
+        } else if (kycCountdown === 1) {
+          setInstruction('Finalizing analysis...');
+        }
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else {
+      // End Recording
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
       
-      // Stop stream tracks
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
-      
-      setKycStep('ocr');
-      startOcrTypewriter();
     }
-  };
+  }, [kycStep, kycCountdown]);
 
   const startOcrTypewriter = () => {
     const data = {
@@ -168,7 +315,7 @@ window.DashboardProfileTab = ({
       type: 'ADD_NOTIFICATION',
       payload: {
         id: `n-kyc-${Date.now()}`,
-        text: "Identity verified successfully via Liveness Face ID. Credibility score raised (+8 points).",
+        text: "Identity verified successfully via 5-second Video liveness. Credibility score raised (+8 points).",
         read: false,
         date: "Just now"
       }
@@ -368,18 +515,36 @@ window.DashboardProfileTab = ({
         {kycStep === 'idle' && (
           <div className="flex flex-col items-center justify-center p-6 bg-white/[0.02] border border-dashed border-white/[0.08] rounded-2xl text-center space-y-4">
             {kycCameraVerified ? (
-              <div className="space-y-2 py-4">
-                <div className="w-12 h-12 rounded-full bg-samridhi-success/15 border border-samridhi-success/35 text-samridhi-success flex items-center justify-center mx-auto">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <h4 className="font-extrabold text-sm text-white uppercase tracking-wide">Liveness Check: PASSED</h4>
-                <p className="text-[10px] text-samridhi-textMuted max-w-sm font-semibold">Identity authenticated via facial features. Mock Aadhaar data linked and verified.</p>
-                <div className="pt-2">
-                  <span className="px-3.5 py-1 rounded-md bg-samridhi-success/10 border border-samridhi-success/30 text-samridhi-success font-black tracking-widest text-[9px]">
-                    +8 CREDIBILITY POINTS ACTIVE
-                  </span>
+              <div className="space-y-4 py-4 flex flex-col items-center">
+                {capturedVideo && (
+                  <div className="relative w-48 h-32 bg-black rounded-2xl overflow-hidden border border-samridhi-success/30 shadow-2xl">
+                    <video 
+                      src={capturedVideo} 
+                      autoPlay 
+                      loop 
+                      muted 
+                      playsInline
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute top-2 right-2 bg-samridhi-success/80 text-samridhi-bg px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider">
+                      Liveness Loop
+                    </div>
+                  </div>
+                )}
+                
+                <div className="text-center space-y-2">
+                  <div className="w-10 h-10 rounded-full bg-samridhi-success/15 border border-samridhi-success/30 text-samridhi-success flex items-center justify-center mx-auto">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h4 className="font-extrabold text-xs text-white uppercase tracking-wide">Liveness Check: PASSED</h4>
+                  <p className="text-[10px] text-samridhi-textMuted max-w-sm font-semibold">Identity authenticated via 5s liveness video scan. Verified Aadhaar records connected.</p>
+                  <div className="pt-2">
+                    <span className="px-3.5 py-1 rounded bg-samridhi-success/10 border border-samridhi-success/30 text-samridhi-success font-black tracking-widest text-[9px] uppercase">
+                      +8 CREDIBILITY POINTS ACTIVE
+                    </span>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -391,13 +556,13 @@ window.DashboardProfileTab = ({
                 </div>
                 <div>
                   <h4 className="font-extrabold text-white uppercase tracking-wider">Begin Identity Verification</h4>
-                  <p className="text-[10px] text-samridhi-textMuted max-w-xs leading-normal mt-0.5 font-semibold">Please ensure you are in a well-lit area before starting video parsing.</p>
+                  <p className="text-[10px] text-samridhi-textMuted max-w-xs leading-normal mt-0.5 font-semibold">Please position your device camera in a well-lit area. You will record a 5-second selfie video.</p>
                 </div>
                 <button
                   onClick={startKycFlow}
                   className="px-5 py-2.5 bg-samridhi-primary hover:bg-samridhi-primary/90 text-white font-black uppercase tracking-wider rounded-xl shadow-lg shadow-samridhi-primary/15 transition-all"
                 >
-                  Verify Identity
+                  Start Video KYC (5s)
                 </button>
               </div>
             )}
@@ -424,6 +589,12 @@ window.DashboardProfileTab = ({
                 <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-samridhi-secondary"></div>
               </div>
 
+              {/* Blinking REC indicator */}
+              <div className="absolute top-4 left-4 flex items-center space-x-1.5 bg-black/60 px-2 py-1 rounded-md">
+                <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
+                <span className="text-[8px] font-black uppercase text-white tracking-widest font-mono">REC {kycCountdown}s</span>
+              </div>
+
               {/* Cyan scanning line */}
               <div className="absolute left-6 right-6 h-0.5 bg-[#00D4FF] opacity-80 animate-scan pointer-events-none"></div>
             </div>
@@ -432,11 +603,11 @@ window.DashboardProfileTab = ({
               <span className="text-xs font-black text-white uppercase tracking-wider">{instruction}</span>
               <div className="flex items-center space-x-1.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-samridhi-secondary animate-ping"></div>
-                <span className="text-[10px] text-samridhi-textMuted font-bold uppercase tracking-wide">Scanning facial geometry...</span>
+                <span className="text-[10px] text-samridhi-textMuted font-bold uppercase tracking-wide">Recording 5s liveness selfie...</span>
               </div>
             </div>
             
-            <canvas ref={canvasRef} width="300" height="200" className="hidden" />
+            <canvas ref={canvasRef} width="320" height="240" className="hidden" />
           </div>
         )}
 

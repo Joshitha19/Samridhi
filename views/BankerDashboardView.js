@@ -1,6 +1,251 @@
 // Banker Dashboard View Component for Samridhi
 // Exposes BankerDashboardView globally
 
+const LivenessMockPlayer = () => {
+  const canvasRef = React.useRef(null);
+  
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let animationFrameId;
+    let frame = 0;
+    
+    const render = () => {
+      frame++;
+      // Clear background
+      ctx.fillStyle = '#090a10';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw Grid Lines
+      ctx.strokeStyle = 'rgba(0, 229, 255, 0.05)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < canvas.width; i += 20) {
+        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+      }
+      for (let i = 0; i < canvas.height; i += 20) {
+        ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+      }
+      
+      // Draw Face Oval Outline
+      ctx.strokeStyle = '#00E5FF';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(canvas.width / 2, canvas.height / 2, 45, 60, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      // Face Mesh lines
+      ctx.strokeStyle = 'rgba(0, 229, 255, 0.15)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(canvas.width / 2 - 45, canvas.height / 2);
+      ctx.lineTo(canvas.width / 2 + 45, canvas.height / 2);
+      ctx.moveTo(canvas.width / 2, canvas.height / 2 - 60);
+      ctx.lineTo(canvas.width / 2, canvas.height / 2 + 60);
+      ctx.stroke();
+      
+      // Eyes (blinking)
+      ctx.fillStyle = '#00E5FF';
+      ctx.beginPath();
+      const isBlink = (frame % 80) > 76;
+      if (isBlink) {
+        ctx.rect(canvas.width / 2 - 20, canvas.height / 2 - 12, 8, 2);
+        ctx.rect(canvas.width / 2 + 12, canvas.height / 2 - 12, 8, 2);
+        ctx.fill();
+      } else {
+        ctx.arc(canvas.width / 2 - 16, canvas.height / 2 - 12, 4, 0, Math.PI * 2);
+        ctx.arc(canvas.width / 2 + 16, canvas.height / 2 - 12, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      
+      // Mouth (slight animation)
+      ctx.strokeStyle = '#D500F9';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, canvas.height / 2 + 15, 8 + Math.sin(frame * 0.1) * 2, 0, Math.PI);
+      ctx.stroke();
+      
+      // Scanning line
+      const sweepY = (frame * 2.5) % canvas.height;
+      ctx.strokeStyle = 'rgba(0, 230, 118, 0.5)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(10, sweepY);
+      ctx.lineTo(canvas.width - 10, sweepY);
+      ctx.stroke();
+      
+      // Blinking red dot
+      ctx.fillStyle = (frame % 30) < 15 ? '#FF1744' : 'rgba(255, 23, 68, 0.2)';
+      ctx.beginPath();
+      ctx.arc(20, 20, 4, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Text info
+      ctx.fillStyle = '#00E5FF';
+      ctx.font = 'bold 9px monospace';
+      ctx.fillText('LIVENESS STREAM', 32, 23);
+      
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.fillText('CONFIRMED / SECURE', canvas.width - 120, canvas.height - 15);
+      
+      animationFrameId = requestAnimationFrame(render);
+    };
+    
+    render();
+    
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+  
+  return <canvas ref={canvasRef} width="320" height="155" className="w-full h-full object-cover" />;
+};
+
+const IntentMockPlayer = ({ language, name }) => {
+  const canvasRef = React.useRef(null);
+  
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let animationFrameId;
+    let frame = 0;
+    
+    // Subtitle cues based on language
+    const subtitles = {
+      English: [
+        "Hello, my name is " + name + ".",
+        "I am applying for a micro-loan on Samridhi.",
+        "The funds will be used directly to purchase raw materials...",
+        "...and upgrade inventory for my local business operations.",
+        "I pledge to repay the loan on time monthly. Thank you."
+      ],
+      Hindi: [
+        "नमस्ते, मेरा नाम " + name + " है।",
+        "मैं समृद्धि पर एक छोटे व्यवसाय ऋण के लिए आवेदन कर रहा हूँ।",
+        "इस राशि का उपयोग सीधे कच्चा माल खरीदने...",
+        "...और मेरे व्यापार की सूची को उन्नत करने के लिए किया जाएगा।",
+        "मैं समय पर मासिक भुगतान करने का संकल्प लेता हूँ। धन्यवाद।"
+      ],
+      Gujarati: [
+        "નમસ્તે, મારું નામ " + name + " છે.",
+        "હું સમૃદ્ધિ પ્લેટફોર્મ પર લોન માટે અરજી કરી રહ્યો છું.",
+        "આ ભંડોળનો ઉપયોગ કાચો માલ ખરીદવા માટે કરવામાં આવશે...",
+        "...અને મારા સ્થાનಿಕ વ્યવસાયના વિકાસ માટે કરવામાં આવશે.",
+        "હું સમયસર માસિક હપ્તા ચૂકવવા માટે બંધાયેલો છું. આભાર."
+      ],
+      Tamil: [
+        "வணக்கம், என் பெயர் " + name + ".",
+        "நான் சம்ரிதியில் கடன் பெற விண்ணப்பிக்கிறேன்.",
+        "இந்த நிதி எனது தொழில் வளர்ச்சிக்கு பயன்படும்...",
+        "மாதாந்திர தவணைகளை சரியான நேரத்தில் செலுத்துவேன். நன்றி."
+      ],
+      Telugu: [
+        "నమస్తే, నా పేరు " + name + ".",
+        "నేను సమృద్ధి లోన్ కోసం దరఖాస్తు చేస్తున్నాను.",
+        "ఈ నిధులు నా వ్యాపార అవసరాలకు ఉపయోగపడతాయి...",
+        "నేను నెలవారీ వాయిదాలను సమయానికి చెల్లిస్తాను. ధన్యవాదాలు."
+      ],
+      Kannada: [
+        "ನಮಸ್ತೆ, ನನ್ನ ಹೆಸರು " + name + ".",
+        "ನಾನು ಸಮೃದ್ಧಿ ಸಾಲಕ್ಕಾಗಿ ಅರ್ಜಿ ಸಲ್ಲಿಸುತ್ತಿದ್ದೇನೆ.",
+        "ಈ ಹಣವನ್ನು ನನ್ನ ವ್ಯವಹಾರದ ಅಭಿವೃದ್ಧಿಗೆ ಬಳಸುತ್ತೇನೆ...",
+        "ಮಾಸಿಕ ಕಂತುಗಳನ್ನು ಸಮಯಕ್ಕೆ ಪಾವತಿಸಲು ಬದ್ಧನಾಗಿದ್ದೇನೆ. ಧನ್ಯವಾದಗಳು."
+      ],
+      Bengali: [
+        "নমস্কার, আমার নাম " + name + "।",
+        "আমি সমৃদ্ধি লোনের জন্য আবেদন করছি।",
+        "এই অর্থ আমার ব্যবসার কাঁচামাল কিনতে সাহায্য করবে...",
+        "আমি সময়মতো মাসিক কিস্তি পরিশোধ করার অঙ্গীকার করছি। ধন্যবাদ।"
+      ]
+    };
+    
+    const lang = subtitles[language] ? language : 'English';
+    const lines = subtitles[lang];
+    
+    const render = () => {
+      frame++;
+      // Clear background
+      ctx.fillStyle = '#090a10';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw animated voice waves
+      const barCount = 18;
+      const barWidth = 4;
+      const barGap = 3;
+      const startX = (canvas.width - (barCount * (barWidth + barGap))) / 2;
+      const centerY = canvas.height / 2 - 10;
+      
+      ctx.fillStyle = 'rgba(108, 99, 255, 0.7)';
+      for (let i = 0; i < barCount; i++) {
+        const bounce = Math.sin(frame * 0.15 + i * 0.3) * Math.cos(frame * 0.05 + i * 0.5);
+        const barHeight = Math.max(4, Math.abs(bounce) * 40);
+        
+        ctx.fillRect(
+          startX + i * (barWidth + barGap),
+          centerY - barHeight / 2,
+          barWidth,
+          barHeight
+        );
+      }
+      
+      // Play icon indicator
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.beginPath();
+      ctx.arc(25, 25, 12, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.fillStyle = '#6C63FF';
+      ctx.beginPath();
+      ctx.moveTo(22, 20);
+      ctx.lineTo(31, 25);
+      ctx.lineTo(22, 30);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Subtitle line selection
+      const totalDuration = 600;
+      const currentProgress = frame % totalDuration;
+      const lineIndex = Math.floor((currentProgress / totalDuration) * lines.length);
+      const activeLine = lines[lineIndex];
+      
+      // Draw subtitle background box
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+      ctx.fillRect(10, canvas.height - 40, canvas.width - 20, 26);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(10, canvas.height - 40, canvas.width - 20, 26);
+      
+      // Draw subtitles
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(activeLine, canvas.width / 2, canvas.height - 24);
+      
+      // Draw language tag
+      ctx.fillStyle = 'rgba(108, 99, 255, 0.2)';
+      ctx.fillRect(canvas.width - 70, 15, 60, 15);
+      ctx.strokeStyle = 'rgba(108, 99, 255, 0.4)';
+      ctx.strokeRect(canvas.width - 70, 15, 60, 15);
+      
+      ctx.fillStyle = '#6C63FF';
+      ctx.font = 'bold 8px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(lang.toUpperCase(), canvas.width - 40, 25);
+      
+      animationFrameId = requestAnimationFrame(render);
+    };
+    
+    render();
+    
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [language, name]);
+  
+  return <canvas ref={canvasRef} width="320" height="155" className="w-full h-full object-cover" />;
+};
+
 window.BankerDashboardView = ({ user, handleLogout }) => {
   const { useState, useEffect, useMemo, useRef } = React;
   
@@ -1227,6 +1472,65 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
                         </p>
                       </div>
                     )}
+                  </div>
+
+                  {/* Selfie Liveness Verification */}
+                  <div className="bg-white/[0.01] border border-white/[0.06] p-5 rounded-2xl flex flex-col space-y-4">
+                    <div className="flex items-center justify-between border-b border-white/[0.05] pb-2">
+                      <span className="text-[10px] font-black text-white uppercase tracking-wider flex items-center space-x-1.5">
+                        <Icons.CheckCircle className="w-3.5 h-3.5 text-samridhi-success" />
+                        <span>Selfie Liveness Check (KYC)</span>
+                      </span>
+                      <span className="text-[8px] bg-samridhi-success/15 border border-samridhi-success/20 text-samridhi-success px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider">
+                        Liveness Passed
+                      </span>
+                    </div>
+                    
+                    <div className="relative bg-black/[0.4] border border-white/[0.08] rounded-xl h-[155px] overflow-hidden flex flex-col justify-center items-center shadow-inner">
+                      {(() => {
+                        const kycVideo = localStorage.getItem(`samridhi_kyc_video_${selectedProfile.id}`);
+                        if (kycVideo) {
+                          return <video src={kycVideo} controls loop autoPlay muted className="w-full h-full object-cover" />;
+                        } else {
+                          return <LivenessMockPlayer />;
+                        }
+                      })()}
+                    </div>
+                    <p className="text-[9px] text-samridhi-textMuted italic leading-relaxed">
+                      Interactive 5-second WebRTC recording verifying user presence. Prevents presentation attacks and deepfakes.
+                    </p>
+                  </div>
+
+                  {/* Video Loan Intent Statement */}
+                  <div className="bg-white/[0.01] border border-white/[0.06] p-5 rounded-2xl flex flex-col space-y-4">
+                    {(() => {
+                      const intentVideo = associatedLoan?.video_intent;
+                      const intentLanguage = associatedLoan?.intent_language || 'English';
+                      return (
+                        <>
+                          <div className="flex items-center justify-between border-b border-white/[0.05] pb-2">
+                            <span className="text-[10px] font-black text-white uppercase tracking-wider flex items-center space-x-1.5">
+                              <Icons.Simulator className="w-3.5 h-3.5 text-samridhi-primary" />
+                              <span>Video Loan Intent Statement</span>
+                            </span>
+                            <span className="text-[8px] bg-samridhi-primary/15 border border-samridhi-primary/20 text-samridhi-primary px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider">
+                              {intentLanguage.toUpperCase()} Statement
+                            </span>
+                          </div>
+                          
+                          <div className="relative bg-black/[0.4] border border-white/[0.08] rounded-xl h-[155px] overflow-hidden flex flex-col justify-center items-center shadow-inner">
+                            {intentVideo ? (
+                              <video src={intentVideo} controls className="w-full h-full object-cover" />
+                            ) : (
+                              <IntentMockPlayer language={intentLanguage} name={selectedProfile.name} />
+                            )}
+                          </div>
+                          <p className="text-[9px] text-samridhi-textMuted italic leading-relaxed">
+                            30-second localized loan declaration statement. Matches verbal explanation of loan utility for localized underwriter underwriting.
+                          </p>
+                        </>
+                      );
+                    })()}
                   </div>
 
                 </div>

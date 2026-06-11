@@ -4,7 +4,7 @@
 window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab, voiceNavigationActive, setVoiceNavigationActive }) => {
   const { useState, useEffect, useMemo, useRef } = React;
   
-  const [step, setStep] = useState(1); // 1, 2, 3
+  const [step, setStep] = useState(1); // 1, 2, 3, 4
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [appId, setAppId] = useState('');
@@ -24,6 +24,19 @@ window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab, voiceNavig
   const [aadhaarLast4, setAadhaarLast4] = useState('1234');
   const [bankAccount, setBankAccount] = useState('987654321098');
   const [ifscCode, setIfscCode] = useState('HDFC0000123');
+
+  // Video Loan Intent Form fields
+  const [intentLanguage, setIntentLanguage] = useState('English');
+  const [intentVideo, setIntentVideo] = useState('');
+  const [recordingIntent, setRecordingIntent] = useState(false);
+  const [intentCountdown, setIntentCountdown] = useState(30);
+  const [micLevel, setMicLevel] = useState(0);
+
+  const intentVideoRef = useRef(null);
+  const intentStreamRef = useRef(null);
+  const intentRecorderRef = useRef(null);
+  const intentChunksRef = useRef([]);
+  const animFrameIdRef = useRef(null);
 
   // Web Speech state
   const [isListening, setIsListening] = useState(false);
@@ -57,13 +70,200 @@ window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab, voiceNavig
   }, [loanAmount, tenure]);
 
   const handleNextStep = (e) => {
-    e.preventDefault();
-    if (step < 3) setStep(step + 1);
+    if (e) e.preventDefault();
+    if (step < 4) setStep(step + 1);
   };
 
   const handlePrevStep = () => {
     if (step > 1) setStep(step - 1);
   };
+
+  // Video Intent Recorder logic
+  const startIntentRecording = async () => {
+    setRecordingIntent(true);
+    setIntentCountdown(30);
+    intentChunksRef.current = [];
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { width: 320, height: 240 },
+        audio: true 
+      });
+      intentStreamRef.current = stream;
+      if (intentVideoRef.current) {
+        intentVideoRef.current.srcObject = stream;
+      }
+      
+      simulateMicLevel();
+
+      let options = { mimeType: 'video/webm;codecs=vp9' };
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        options = { mimeType: 'video/webm;codecs=vp8' };
+        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+          options = { mimeType: 'video/webm' };
+          if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+            options = { mimeType: 'video/mp4' };
+          }
+        }
+      }
+
+      const recorder = new MediaRecorder(stream, options);
+      intentRecorderRef.current = recorder;
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          intentChunksRef.current.push(e.data);
+        }
+      };
+
+      recorder.onstop = () => {
+        const blob = new Blob(intentChunksRef.current, { type: 'video/webm' });
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = () => {
+          setIntentVideo(reader.result);
+        };
+        
+        if (intentStreamRef.current) {
+          intentStreamRef.current.getTracks().forEach(t => t.stop());
+        }
+        cancelAnimationFrame(animFrameIdRef.current);
+        setRecordingIntent(false);
+      };
+
+      recorder.start();
+    } catch (err) {
+      console.warn("Liveness intent camera failed, using high-fidelity canvas recorder simulator:", err);
+      runIntentCanvasSimulation();
+    }
+  };
+
+  const simulateMicLevel = () => {
+    const updateMic = () => {
+      setMicLevel(Math.floor(15 + Math.random() * 65));
+      animFrameIdRef.current = requestAnimationFrame(updateMic);
+    };
+    animFrameIdRef.current = requestAnimationFrame(updateMic);
+  };
+
+  const stopIntentRecording = () => {
+    if (intentRecorderRef.current && intentRecorderRef.current.state !== 'inactive') {
+      intentRecorderRef.current.stop();
+    }
+  };
+
+  const runIntentCanvasSimulation = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 320;
+    canvas.height = 240;
+    const ctx = canvas.getContext('2d');
+    
+    const canvasStream = canvas.captureStream(10); // 10 fps
+    intentChunksRef.current = [];
+    
+    let options = { mimeType: 'video/webm' };
+    const recorder = new MediaRecorder(canvasStream, options);
+    intentRecorderRef.current = recorder;
+    
+    recorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) intentChunksRef.current.push(e.data);
+    };
+    
+    recorder.onstop = () => {
+      const blob = new Blob(intentChunksRef.current, { type: 'video/webm' });
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onloadend = () => {
+        setIntentVideo(reader.result);
+        setRecordingIntent(false);
+      };
+    };
+    
+    recorder.start();
+    simulateMicLevel();
+
+    let frame = 0;
+    const interval = setInterval(() => {
+      if (frame >= 300 || recorder.state === 'inactive') { 
+        clearInterval(interval);
+        cancelAnimationFrame(animFrameIdRef.current);
+        return;
+      }
+      
+      // Clear
+      ctx.fillStyle = '#020204';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw Grid
+      ctx.strokeStyle = 'rgba(0, 229, 255, 0.06)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < canvas.width; i += 20) {
+        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+      }
+      for (let i = 0; i < canvas.height; i += 20) {
+        ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+      }
+      
+      // Draw User Avatar shape speaking
+      ctx.fillStyle = '#11131E';
+      ctx.strokeStyle = '#00E5FF';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, 80, 32, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      
+      ctx.beginPath();
+      ctx.ellipse(canvas.width / 2, 165, 55, 35, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      
+      const mouthHeight = 2 + (Math.random() * 7);
+      ctx.fillStyle = '#FF1744';
+      ctx.beginPath();
+      ctx.ellipse(canvas.width / 2, 90, 7, mouthHeight, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Waveform visualizer
+      ctx.strokeStyle = '#00E676';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (let x = 20; x <= 60; x += 8) {
+        ctx.moveTo(x, 205);
+        ctx.lineTo(x, 205 - Math.random() * 25);
+      }
+      ctx.stroke();
+      
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 9px monospace';
+      ctx.fillText(`RECORDING INTENT (${intentLanguage.toUpperCase()}): ${Math.round(frame / 10)}s`, 20, 25);
+      ctx.fillStyle = '#8E91A8';
+      ctx.fillText(`"Explaining micro-loan statement..."`, 20, 37);
+      
+      frame++;
+    }, 100);
+  };
+
+  useEffect(() => {
+    if (!recordingIntent) return;
+    
+    if (intentCountdown > 0) {
+      const timer = setTimeout(() => {
+        setIntentCountdown(prev => prev - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else {
+      stopIntentRecording();
+    }
+  }, [recordingIntent, intentCountdown]);
+
+  useEffect(() => {
+    return () => {
+      if (intentStreamRef.current) {
+        intentStreamRef.current.getTracks().forEach(t => t.stop());
+      }
+      cancelAnimationFrame(animFrameIdRef.current);
+    };
+  }, []);
 
   const handleSubmit = () => {
     setSubmitting(true);
@@ -82,7 +282,9 @@ window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab, voiceNavig
           rate: "11.5%",
           emi: `₹${Math.round(emiCalculations.emi).toLocaleString()}`,
           status: "Pending",
-          date: new Date().toISOString().split('T')[0]
+          date: new Date().toISOString().split('T')[0],
+          video_intent: intentVideo || null,
+          intent_language: intentLanguage
         }
       });
 
@@ -104,6 +306,8 @@ window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab, voiceNavig
     setLoanAmount(100000);
     setLoanPurpose('Business');
     setTenure(12);
+    setIntentVideo('');
+    setIntentLanguage('English');
   };
 
   // Helper to restore voice navigation
@@ -391,19 +595,20 @@ window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab, voiceNavig
         </div>
       )}
 
-      {/* 3-Step Progress Indicator */}
-      <div className="relative">
+      {/* 4-Step Progress Indicator */}
+      <div className="relative font-sans">
         <div className="absolute top-4 left-4 right-4 h-0.5 bg-samridhi-border z-0"></div>
         <div 
           className="absolute top-4 left-4 h-0.5 bg-samridhi-primary transition-all duration-300 z-0" 
-          style={{ width: step === 1 ? '0%' : step === 2 ? '50%' : '100%' }}
+          style={{ width: step === 1 ? '0%' : step === 2 ? '33.3%' : step === 3 ? '66.6%' : '100%' }}
         ></div>
 
         <div className="relative z-10 flex justify-between">
           {[
             { id: 1, name: 'Loan Details' },
             { id: 2, name: 'Financial Info' },
-            { id: 3, name: 'Review & Submit' }
+            { id: 3, name: 'Video Intent' },
+            { id: 4, name: 'Review & Submit' }
           ].map((item) => {
             const isCompleted = step > item.id;
             const isActive = step === item.id;
@@ -761,7 +966,7 @@ window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab, voiceNavig
               type="submit"
               className="px-6 py-2.5 bg-samridhi-primary hover:bg-samridhi-primary/95 text-white font-bold rounded-xl text-xs shadow-lg transition-colors flex items-center space-x-1"
             >
-              <span>Review Application</span>
+              <span>Next: Video Statement</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
@@ -771,7 +976,166 @@ window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab, voiceNavig
       )}
 
       {step === 3 && (
-        <div className="space-y-6 animate-fade-in">
+        <div className="space-y-6 animate-fade-in text-xs">
+          <div className="bg-samridhi-surface border border-samridhi-border p-5 rounded-2xl space-y-5">
+            <div>
+              <h4 className="font-extrabold text-sm text-white uppercase tracking-wider">Video Loan Intent Statement</h4>
+              <p className="text-[10px] text-samridhi-textMuted mt-1 leading-relaxed">
+                Record a 30-second statement explaining why you need the loan in your preferred language. This video is attached to your credit file and sent to bankers to humanize your request.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+              {/* Left column: Controls */}
+              <div className="space-y-4">
+                <div className="flex flex-col space-y-1.5">
+                  <label className="text-[9px] font-bold text-samridhi-textMuted uppercase tracking-wider">Preferred Language</label>
+                  <select
+                    value={intentLanguage}
+                    onChange={(e) => setIntentLanguage(e.target.value)}
+                    className="w-full bg-samridhi-bg border border-samridhi-border focus:border-samridhi-primary focus:ring-1 focus:ring-samridhi-primary rounded-xl py-3 px-4 text-samridhi-textPrimary focus:outline-none text-xs font-bold"
+                    disabled={recordingIntent}
+                  >
+                    <option value="English">English</option>
+                    <option value="Hindi">Hindi (हिंदी)</option>
+                    <option value="Gujarati">Gujarati (ગુજરાતી)</option>
+                    <option value="Tamil">Tamil (தமிழ்)</option>
+                    <option value="Telugu">Telugu (తెలుగు)</option>
+                    <option value="Kannada">Kannada (કನ್ನಡ)</option>
+                    <option value="Bengali">Bengali (বাংলা)</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  {!recordingIntent && !intentVideo && (
+                    <button
+                      type="button"
+                      onClick={startIntentRecording}
+                      className="w-full py-3 bg-samridhi-primary hover:bg-samridhi-primary/95 text-white font-black uppercase tracking-wider rounded-xl shadow-lg shadow-samridhi-primary/10 transition-all flex items-center justify-center space-x-2 cursor-pointer"
+                    >
+                      <svg className="w-4 h-4 fill-current text-white" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2"/>
+                        <circle cx="12" cy="12" r="4" fill="currentColor"/>
+                      </svg>
+                      <span>Record Video Intent (30s)</span>
+                    </button>
+                  )}
+
+                  {recordingIntent && (
+                    <button
+                      type="button"
+                      onClick={stopIntentRecording}
+                      className="w-full py-3 bg-samridhi-danger hover:bg-samridhi-danger/95 text-white font-black uppercase tracking-wider rounded-xl shadow-lg shadow-samridhi-danger/10 transition-all flex items-center justify-center space-x-2 animate-pulse cursor-pointer"
+                    >
+                      <svg className="w-4 h-4 fill-current text-white" viewBox="0 0 24 24">
+                        <rect x="6" y="6" width="12" height="12" fill="currentColor"/>
+                      </svg>
+                      <span>Stop Recording ({intentCountdown}s)</span>
+                    </button>
+                  )}
+
+                  {intentVideo && !recordingIntent && (
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={startIntentRecording}
+                        className="flex-1 py-3 bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] text-white font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer"
+                      >
+                        Re-Record
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setStep(4)}
+                        className="flex-1 py-3 bg-samridhi-primary hover:bg-samridhi-primary/95 text-white font-black uppercase tracking-wider rounded-xl shadow-lg transition-all cursor-pointer"
+                      >
+                        Confirm Video
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right column: HUD video frame */}
+              <div className="flex flex-col items-center">
+                <div className="relative w-full max-w-sm h-52 bg-black rounded-2xl border border-white/[0.08] overflow-hidden flex items-center justify-center">
+                  {recordingIntent && (
+                    <>
+                      <video
+                        ref={intentVideoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-4 border border-transparent pointer-events-none">
+                        <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-samridhi-primary"></div>
+                        <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-samridhi-primary"></div>
+                        <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-samridhi-primary"></div>
+                        <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-samridhi-primary"></div>
+                      </div>
+                      
+                      {/* Audio Level waveform */}
+                      <div className="absolute bottom-4 left-4 right-4 flex items-center space-x-1.5 bg-black/60 px-3 py-1.5 rounded-lg border border-white/[0.05]">
+                        <span className="text-[8px] font-bold text-samridhi-textMuted uppercase font-mono tracking-wider">Audio level</span>
+                        <div className="flex-1 bg-white/[0.08] h-1.5 rounded overflow-hidden">
+                          <div className="bg-samridhi-success h-full transition-all duration-75" style={{ width: `${micLevel}%` }}></div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {!recordingIntent && intentVideo && (
+                    <video
+                      src={intentVideo}
+                      controls
+                      playsInline
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+
+                  {!recordingIntent && !intentVideo && (
+                    <div className="text-center p-6 space-y-2">
+                      <div className="w-9 h-9 rounded-full bg-white/[0.02] border border-white/[0.08] flex items-center justify-center mx-auto text-samridhi-textMuted">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <span className="text-[9px] font-black uppercase text-samridhi-textMuted tracking-wider block">Camera Preview Idle</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-between pt-4 border-t border-samridhi-border/40">
+            <button
+              type="button"
+              onClick={handlePrevStep}
+              className="px-5 py-2.5 bg-samridhi-surface border border-samridhi-border hover:bg-samridhi-card text-samridhi-textMuted hover:text-samridhi-textPrimary font-bold rounded-xl text-xs transition-colors flex items-center space-x-1 cursor-pointer"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+              <span>Back</span>
+            </button>
+            
+            <button
+              type="button"
+              onClick={() => setStep(4)}
+              className="px-6 py-2.5 bg-samridhi-surface border border-samridhi-border hover:bg-samridhi-card text-samridhi-textMuted hover:text-samridhi-textPrimary font-bold rounded-xl text-xs shadow-lg transition-colors flex items-center space-x-1 cursor-pointer"
+            >
+              <span>Skip Video (Default Draft)</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === 4 && (
+        <div className="space-y-6 animate-fade-in text-xs">
           {/* Review Summary Cards */}
           <div className="bg-samridhi-surface border border-samridhi-border p-6 rounded-2xl space-y-5">
             <h4 className="font-extrabold text-[10px] text-samridhi-textMuted uppercase tracking-wider border-b border-samridhi-border/30 pb-2">Application Summary</h4>
@@ -842,7 +1206,29 @@ window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab, voiceNavig
 
             <div className="border-t border-samridhi-border/40"></div>
 
-            {/* Section 3: Score Info */}
+            {/* Section 3: Video Intent Statement Review */}
+            <div className="space-y-2.5">
+              <h5 className="text-[10px] font-black text-samridhi-primary uppercase tracking-widest font-bold">Video Intent Statement</h5>
+              {intentVideo ? (
+                <div className="flex items-center space-x-4 bg-samridhi-card/50 border border-samridhi-border p-3.5 rounded-xl">
+                  <div className="relative w-24 h-16 bg-black rounded-lg overflow-hidden shrink-0 border border-white/[0.04]">
+                    <video src={intentVideo} muted className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-white block">Statement Recorded ({intentLanguage})</span>
+                    <span className="text-[9px] text-samridhi-textMuted font-medium font-mono leading-none">Lender Transmission: READY</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-[10px] text-samridhi-warning font-bold bg-samridhi-warning/5 border border-samridhi-warning/10 p-3.5 rounded-xl">
+                  No statement recorded. (Lenders prefer video intentions to evaluate applications).
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-samridhi-border/40"></div>
+
+            {/* Section 4: Score Info */}
             <div className="space-y-2.5">
               <h5 className="text-[10px] font-black text-samridhi-success uppercase tracking-widest">Score Info</h5>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-2 text-xs">
@@ -880,7 +1266,7 @@ window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab, voiceNavig
             <button
               type="button"
               onClick={handlePrevStep}
-              className="px-5 py-2.5 bg-samridhi-surface border border-samridhi-border hover:bg-samridhi-card text-samridhi-textMuted hover:text-samridhi-textPrimary font-bold rounded-xl text-xs transition-colors flex items-center space-x-1 shrink-0"
+              className="px-5 py-2.5 bg-samridhi-surface border border-samridhi-border hover:bg-samridhi-card text-samridhi-textMuted hover:text-samridhi-textPrimary font-bold rounded-xl text-xs transition-colors flex items-center space-x-1 shrink-0 cursor-pointer"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -890,7 +1276,7 @@ window.LoanWizard = ({ calculatedScore, dispatch, user, setActiveTab, voiceNavig
             <button
               type="button"
               onClick={handleSubmit}
-              className="w-full py-2.5 bg-samridhi-primary hover:bg-samridhi-primary/95 text-white font-extrabold rounded-xl text-xs shadow-lg transition-colors flex items-center justify-center space-x-1.5"
+              className="w-full py-2.5 bg-samridhi-primary hover:bg-samridhi-primary/95 text-white font-extrabold rounded-xl text-xs shadow-lg transition-colors flex items-center justify-center space-x-1.5 cursor-pointer"
             >
               <span>Submit Application</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">

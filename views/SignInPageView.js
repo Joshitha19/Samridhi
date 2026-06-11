@@ -98,7 +98,7 @@ window.SignInPageView = ({ setPage, onSignIn, onSendOtp, onVerifyOtp }) => {
           <>
             <div className="flex flex-col items-center text-center mb-8">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center shadow-lg shadow-samridhi-primary/20 mb-4">
-                <span className="text-samridhi-bg font-extrabold text-xl">S</span>
+                <span className="text-samridhi-bg font-extrabold text-xl">₹</span>
               </div>
               <h2 className="text-2xl font-extrabold tracking-tight">Sign In to Samridhi</h2>
               <p className="text-xs text-samridhi-textMuted mt-1">Unlock non-traditional loan rates powered by AI</p>

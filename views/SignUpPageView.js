@@ -38,7 +38,7 @@ window.SignUpPageView = ({ setPage, onSignUp }) => {
 
         <div className="flex flex-col items-center text-center mb-6">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center shadow-lg shadow-samridhi-primary/20 mb-4">
-            <span className="text-samridhi-bg font-extrabold text-xl">S</span>
+            <span className="text-samridhi-bg font-extrabold text-xl">₹</span>
           </div>
           <h2 className="text-2xl font-extrabold tracking-tight">Create Your Account</h2>
           <p className="text-xs text-samridhi-textMuted mt-1">Join the 190M credit-invisible Indians building trust</p>

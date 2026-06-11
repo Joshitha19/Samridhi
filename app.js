@@ -218,7 +218,7 @@ function SplashScreen({ onComplete }) {
 
       <div className="relative flex flex-col items-center space-y-6 animate-fade-in text-center max-w-sm px-6">
         <div className="w-16 h-16 rounded-xl bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center shadow-[0_0_25px_rgba(0,230,118,0.4)] border border-samridhi-primary/40 animate-pulse">
-          <span className="text-samridhi-bg font-extrabold text-3xl">S</span>
+          <span className="text-samridhi-bg font-extrabold text-3xl">₹</span>
         </div>
 
         <div className="space-y-1">
@@ -1656,7 +1656,7 @@ function App() {
               onClick={() => setPage('landing')}
             >
               <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center shadow-lg shadow-samridhi-primary/20">
-                <span className="text-samridhi-bg font-extrabold text-lg">S</span>
+                <span className="text-samridhi-bg font-extrabold text-lg">₹</span>
               </div>
               <span className="text-2xl font-extrabold bg-gradient-to-r from-samridhi-primary to-samridhi-secondary bg-clip-text text-transparent tracking-wide">
                 Samridhi
@@ -1785,7 +1785,7 @@ function App() {
             <div>
               <div className="flex items-center space-x-2">
                 <div className="w-6 h-6 rounded bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center">
-                  <span className="text-samridhi-bg font-extrabold text-sm">S</span>
+                  <span className="text-samridhi-bg font-extrabold text-sm">₹</span>
                 </div>
                 <span className="font-extrabold text-lg text-samridhi-textPrimary">Samridhi</span>
               </div>

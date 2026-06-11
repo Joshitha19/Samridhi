@@ -5,11 +5,22 @@ window.DashboardRecommendationsTab = ({
   user,
   calculatedScore,
   dispatch,
-  setActiveTab
+  setActiveTab,
+  aadhaarVerified,
+  panVerified,
+  upiLinked,
+  upiVerified,
+  dashboardState,
+  kycCameraVerified,
+  bankStatementUploaded
 }) => {
   const { useState, useMemo } = React;
   
   const [compareOpen, setCompareOpen] = useState(false);
+  
+  // Modal states for eligibility and success overlays
+  const [eligibilityModal, setEligibilityModal] = useState({ isOpen: false, loanName: '', lender: '', criteria: [] });
+  const [successModal, setSuccessModal] = useState({ isOpen: false, productName: '', lenderName: '', amount: 0 });
   
   // EMI Calculator state
   const [calcAmount, setCalcAmount] = useState(250000); // default ₹2,50,000
@@ -49,7 +60,49 @@ window.DashboardRecommendationsTab = ({
   const principalStroke = (calculatorResults.principalPct / 100) * donutCircumference;
   const interestStroke = (calculatorResults.interestPct / 100) * donutCircumference;
 
+  // Helper to compile specific loan requirements criteria checks
+  const getEligibilityCriteria = (productName) => {
+    switch (productName) {
+      case 'Gold Premium Loan':
+        return [
+          { name: 'Min Credibility Score of 65', met: (calculatedScore || 0) >= 65, details: `Your score: ${calculatedScore || 0}` },
+          { name: 'Aadhaar KYC Verified', met: !!aadhaarVerified, details: aadhaarVerified ? 'Verified' : 'Pending' },
+          { name: 'PAN KYC Verified', met: !!panVerified, details: panVerified ? 'Verified' : 'Pending' },
+          { name: 'UPI Linked & Verified', met: !!(upiLinked && upiVerified), details: (upiLinked && upiVerified) ? 'Verified' : 'Pending' }
+        ];
+      case 'Platinum Education Loan':
+        return [
+          { name: 'Min Credibility Score of 60', met: (calculatedScore || 0) >= 60, details: `Your score: ${calculatedScore || 0}` },
+          { name: 'Student Profile Type', met: user.type === 'Student', details: `Your profile: ${user.type}` },
+          { name: 'Aadhaar KYC Verified', met: !!aadhaarVerified, details: aadhaarVerified ? 'Verified' : 'Pending' },
+          { name: 'At least 1 Verified Skill Certificate', met: (dashboardState?.skills || []).some(s => s.verified), details: `${(dashboardState?.skills || []).filter(s => s.verified).length} verified` }
+        ];
+      case 'Titanium Micro Loan':
+        return [
+          { name: 'Min Credibility Score of 70', met: (calculatedScore || 0) >= 70, details: `Your score: ${calculatedScore || 0}` },
+          { name: 'Entrepreneur or Freelancer Profile', met: user.type === 'Entrepreneur' || user.type === 'Freelancer' || user.type === 'Business Founder', details: `Your profile: ${user.type}` },
+          { name: 'Aadhaar & PAN KYC Verified', met: !!(aadhaarVerified && panVerified), details: (aadhaarVerified && panVerified) ? 'Verified' : 'Pending' },
+          { name: 'At least 2 Business Assets / Inventory Items', met: (dashboardState?.inventory || []).length >= 2, details: `${(dashboardState?.inventory || []).length} items` }
+        ];
+      default:
+        return [];
+    }
+  };
+
   const handleApply = (productName, lenderName, amount, rate, emi) => {
+    const criteria = getEligibilityCriteria(productName);
+    const allMet = criteria.every(c => c.met);
+    
+    if (!allMet) {
+      setEligibilityModal({
+        isOpen: true,
+        loanName: productName,
+        lender: lenderName,
+        criteria: criteria
+      });
+      return;
+    }
+
     dispatch({
       type: 'APPLY_LOAN',
       payload: {
@@ -58,7 +111,7 @@ window.DashboardRecommendationsTab = ({
         amount: amount,
         rate: `${rate}%`,
         emi: `₹${emi.toLocaleString()}`,
-        status: "Active",
+        status: "Pending", // Starts as Pending Banker Review
         date: new Date().toISOString().split('T')[0]
       }
     });
@@ -67,13 +120,18 @@ window.DashboardRecommendationsTab = ({
       type: 'ADD_NOTIFICATION',
       payload: {
         id: `n-${Date.now()}`,
-        text: `Applied successfully for ${productName} with ${lenderName}. Dynamic contract registered.`,
+        text: `Applied successfully for ${productName} with ${lenderName}. Application status is now PENDING Banker Review.`,
         read: false,
         date: "Just now"
       }
     });
 
-    if (setActiveTab) setActiveTab('overview');
+    setSuccessModal({
+      isOpen: true,
+      productName,
+      lenderName,
+      amount
+    });
   };
 
   return (
@@ -172,7 +230,7 @@ window.DashboardRecommendationsTab = ({
             </div>
             
             <button
-              onClick={() => handleApply("Personal Loan", "Samridhi Capital Fund", 250000, 11.5, 5847)}
+              onClick={() => handleApply("Gold Premium Loan", "Samridhi Capital Fund", 250000, 11.5, 5847)}
               className="w-full sm:w-auto px-5 py-2.5 bg-[#ffd700] hover:bg-[#ffd700]/90 text-black font-black uppercase tracking-wider rounded-xl shadow-lg shadow-[#ffd700]/10 transition-colors flex items-center justify-center space-x-1 shrink-0"
             >
               <span>Apply Now</span>
@@ -242,7 +300,7 @@ window.DashboardRecommendationsTab = ({
             </div>
             
             <button
-              onClick={() => handleApply("Education Loan", "Vidyarthi Capital", 500000, 9.8, 10623)}
+              onClick={() => handleApply("Platinum Education Loan", "Vidyarthi Capital", 500000, 9.8, 10623)}
               className="w-full sm:w-auto px-5 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] hover:border-[#e5e4e2]/30 text-white font-black uppercase tracking-wider rounded-xl transition-all flex items-center justify-center space-x-1 shrink-0"
             >
               <span>Apply Now</span>
@@ -308,7 +366,7 @@ window.DashboardRecommendationsTab = ({
             </div>
             
             <button
-              onClick={() => handleApply("Business Micro Loan", "Udyog MicroFund", 100000, 13.2, 2424)}
+              onClick={() => handleApply("Titanium Micro Loan", "Udyog MicroFund", 100000, 13.2, 2424)}
               className="w-full sm:w-auto px-5 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] hover:border-[#8a9597]/30 text-white font-black uppercase tracking-wider rounded-xl transition-all flex items-center justify-center space-x-1 shrink-0"
             >
               <span>Apply Now</span>
@@ -579,6 +637,140 @@ window.DashboardRecommendationsTab = ({
           </div>
         )}
       </div>
+      
+      {/* ELIGIBILITY MODAL OVERLAY */}
+      {eligibilityModal.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md transition-opacity duration-300">
+          <div className="bg-[#090b10]/95 backdrop-blur-3xl border border-white/[0.08] p-6 rounded-3xl w-full max-w-md shadow-[0_24px_80px_rgba(0,0,0,0.85)] relative overflow-hidden animate-slide-up border-glow-primary">
+            {/* Gradient accent */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-samridhi-danger/10 to-transparent pointer-events-none filter blur-xl"></div>
+            
+            <div className="flex items-center justify-between border-b border-white/[0.04] pb-3.5 mb-5">
+              <div className="flex items-center space-x-2">
+                <Icons.Lock className="w-5 h-5 text-samridhi-danger" />
+                <div>
+                  <h4 className="font-extrabold text-sm text-samridhi-textPrimary uppercase tracking-wider">Underwriting Eligibility Review</h4>
+                  <p className="text-[9px] text-samridhi-textMuted font-medium uppercase tracking-widest mt-0.5">{eligibilityModal.loanName} &bull; {eligibilityModal.lender}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setEligibilityModal({ ...eligibilityModal, isOpen: false })}
+                className="text-samridhi-textMuted hover:text-white transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-[11px] text-samridhi-textMuted leading-relaxed">
+                Your alternative credit profile was scanned. You must satisfy all criteria below to activate this credit tier:
+              </p>
+
+              <div className="space-y-2.5 bg-white/[0.01] border border-white/[0.05] p-4 rounded-2xl text-[11px]">
+                {eligibilityModal.criteria.map((crit, idx) => (
+                  <div key={idx} className="flex items-start justify-between">
+                    <div className="flex items-start space-x-2">
+                      <span className={crit.met ? "text-samridhi-success" : "text-samridhi-danger"}>
+                        {crit.met ? "✔" : "✘"}
+                      </span>
+                      <span className={crit.met ? "text-white font-medium" : "text-samridhi-textMuted font-medium"}>
+                        {crit.name}
+                      </span>
+                    </div>
+                    <span className={`font-mono text-[10px] font-bold ${crit.met ? "text-samridhi-success" : "text-samridhi-danger"}`}>
+                      {crit.details}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-[10px] text-samridhi-danger leading-relaxed font-semibold">
+                ⚠️ Some underwriting criteria are not met. Access to this credit facility is restricted.
+              </p>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setEligibilityModal({ ...eligibilityModal, isOpen: false })}
+                  className="flex-1 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] text-white font-bold rounded-xl text-[11px] uppercase tracking-wider transition-colors active:scale-95"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    setEligibilityModal({ ...eligibilityModal, isOpen: false });
+                    const missingInventory = eligibilityModal.criteria.some(c => !c.met && c.name.includes("Assets"));
+                    if (missingInventory) {
+                      setActiveTab('inventory');
+                    } else {
+                      setActiveTab('score');
+                    }
+                  }}
+                  className="flex-1 py-2.5 bg-samridhi-primary hover:bg-samridhi-primary/95 text-white font-black rounded-xl text-[11px] uppercase tracking-wider transition-all shadow-lg active:scale-95"
+                >
+                  Resolve Issues
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* APPLICATION SUCCESS MODAL OVERLAY */}
+      {successModal.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md transition-opacity duration-300">
+          <div className="bg-[#090b10]/95 backdrop-blur-3xl border border-white/[0.08] p-6 rounded-3xl w-full max-w-md shadow-[0_24px_80px_rgba(0,0,0,0.85)] relative overflow-hidden animate-slide-up border-glow-success text-center space-y-5">
+            {/* Success glows */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-samridhi-success/15 to-transparent pointer-events-none filter blur-xl"></div>
+            
+            <div className="flex flex-col items-center space-y-3 pt-4">
+              <div className="w-14 h-14 rounded-full bg-samridhi-success/10 border border-samridhi-success/30 flex items-center justify-center shadow-lg shadow-samridhi-success/10 animate-pulse">
+                <svg className="w-7 h-7 text-samridhi-success text-glow-success" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-base font-black text-white uppercase tracking-wider text-glow-success">Application Received</h3>
+              <p className="text-[11px] text-samridhi-textMuted leading-relaxed max-w-xs mx-auto">
+                Your underwriting telemetry package has been verified and registered on the blockchain network ledger.
+              </p>
+            </div>
+
+            <div className="bg-white/[0.01] border border-white/[0.05] p-4 rounded-2xl text-[11px] space-y-2 text-left font-semibold">
+              <div className="flex justify-between items-center">
+                <span className="text-samridhi-textMuted">Product Name:</span>
+                <span className="text-white font-bold">{successModal.productName}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-samridhi-textMuted">Lender:</span>
+                <span className="text-white font-bold">{successModal.lenderName}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-samridhi-textMuted">Principal Amount:</span>
+                <span className="text-samridhi-secondary font-black font-mono">₹{successModal.amount.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between items-center border-t border-white/[0.04] pt-2">
+                <span className="text-samridhi-textMuted font-bold">Verification Status:</span>
+                <span className="text-samridhi-warning font-black uppercase font-mono animate-pulse">PENDING BANKER REVIEW</span>
+              </div>
+            </div>
+
+            <p className="text-[10px] text-samridhi-textMuted leading-relaxed font-medium">
+              💡 Please check your active portfolio in the overview tab. A banker will approve, reject, or request further information shortly.
+            </p>
+
+            <button
+              onClick={() => {
+                setSuccessModal({ ...successModal, isOpen: false });
+                if (setActiveTab) setActiveTab('overview');
+              }}
+              className="w-full py-3 bg-samridhi-success hover:bg-samridhi-success/90 text-samridhi-bg font-extrabold uppercase tracking-wider rounded-xl shadow-lg transition-colors active:scale-95 cursor-pointer text-xs"
+            >
+              Go to Active Portfolio
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

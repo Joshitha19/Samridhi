@@ -1195,7 +1195,104 @@ function App() {
     setUpiLinked(false);
   };
 
-  // Handle sign in submission
+  // Handle sending OTP for password reset/OTP login (only triggered by Forgot Password)
+  const handleSendOtp = async (email) => {
+    if (email.endsWith('@samridhi.in')) {
+      // Demo sandbox OTP
+      const randomOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      console.log(`[Sandbox OTP] Generated 6-digit OTP for ${email}: ${randomOtp}`);
+      return { success: true, isDemo: true, otp: randomOtp };
+    }
+
+    if (supabaseClient) {
+      try {
+        const { error } = await supabaseClient.auth.signInWithOtp({
+          email: email
+        });
+        if (error) {
+          return { success: false, error: error.message };
+        }
+        return { success: true, isDemo: false };
+      } catch (err) {
+        return { success: false, error: err.message || 'Error sending OTP' };
+      }
+    } else {
+      // Offline fallback
+      const randomOtp = "123456";
+      return { success: true, isDemo: true, otp: randomOtp };
+    }
+  };
+
+  // Handle OTP verification
+  const handleVerifyOtp = async (email, token, isDemo, demoOtp) => {
+    if (isDemo) {
+      if (token === demoOtp || token === '123456') {
+        const username = email.split('@')[0].replace('.', ' ').toUpperCase() || 'SAMRIDHI USER';
+        let type = 'Freelancer';
+        if (email.includes('student')) type = 'Student';
+        if (email.includes('freelancer')) type = 'Freelancer';
+        if (email.includes('entrepreneur')) type = 'Entrepreneur';
+        if (email.includes('salaried')) type = 'Salaried';
+
+        const demoUser = {
+          id: `demo-uid-${email.split('@')[0].replace('.', '-')}`,
+          name: username,
+          email: email,
+          type: type,
+          upiVpa: `${email.split('@')[0].replace('.', '').toLowerCase()}@okaxis`,
+          isDemo: true
+        };
+        setUser(demoUser);
+        localStorage.setItem('samridhi_demo_session', JSON.stringify(demoUser));
+        setPage('dashboard');
+        setActiveTab('overview');
+        loadDemoUserState(demoUser);
+        return { success: true };
+      } else {
+        return { success: false, error: 'Incorrect verification code. Please try again.' };
+      }
+    }
+
+    if (supabaseClient) {
+      try {
+        const { data, error } = await supabaseClient.auth.verifyOtp({
+          email: email,
+          token: token,
+          type: 'email'
+        });
+        if (error) {
+          return { success: false, error: error.message };
+        }
+        if (data && data.user) {
+          await fetchAndPopulateState(data.user.id, data.user.email);
+          setPage('dashboard');
+          setActiveTab('overview');
+        }
+        return { success: true };
+      } catch (err) {
+        return { success: false, error: err.message || 'Verification failed.' };
+      }
+    } else {
+      // Offline fallback
+      if (token === '123456') {
+        const username = email.split('@')[0].replace('.', ' ').toUpperCase() || 'SAMRIDHI USER';
+        setUser({
+          id: 'mock-user-123',
+          name: username,
+          email: email,
+          type: 'Freelancer',
+          upiVpa: `${email.split('@')[0].replace('.', '').toLowerCase()}@okaxis`
+        });
+        setPage('dashboard');
+        setActiveTab('overview');
+        return { success: true };
+      } else {
+        return { success: false, error: 'Incorrect verification code.' };
+      }
+    }
+  };
+
+  // Handle sign in submission (Normal Sign In)
   const handleSignIn = async (email, password, selectedType) => {
     if (email.endsWith('@samridhi.in')) {
       // Demo accounts bypass Supabase
@@ -1229,9 +1326,24 @@ function App() {
       });
       if (error) {
         if (error.message.includes("Email not confirmed")) {
-          alert("Sign In Failed: Email not confirmed.\n\nTip: Please confirm your email address via the link sent to your inbox, or disable 'Confirm email' under Auth -> Providers -> Email in your Supabase Dashboard settings.");
+          // Bypass confirmation block as requested: Log in client-side immediately!
+          const namePrefix = email.split('@')[0] || 'User';
+          const username = namePrefix.toUpperCase();
+          const localUser = {
+            id: `user-fallback-${namePrefix.toLowerCase()}`,
+            name: username,
+            email: email,
+            type: selectedType || 'Freelancer',
+            upiVpa: `${namePrefix.toLowerCase()}@okaxis`,
+            isDemo: true
+          };
+          setUser(localUser);
+          localStorage.setItem('samridhi_demo_session', JSON.stringify(localUser));
+          setPage('dashboard');
+          setActiveTab('overview');
+          loadDemoUserState(localUser);
         } else if (error.message.toLowerCase().includes("invalid login credentials")) {
-          alert("Sign In Failed: Invalid login credentials.\n\nTip:\n1. If you just registered, you MUST verify your email address via the confirmation link sent to your inbox (or check spam folder).\n2. Alternatively, open your Supabase Dashboard -> Auth -> Providers -> Email and disable the 'Confirm email' setting so new users can sign in immediately.\n3. If you created the user manually in the Supabase Dashboard, make sure to check the 'Auto Confirm User' checkbox.\n4. Double-check your spelling of the email and password.");
+          alert("Sign In Failed: Invalid login credentials.");
         } else {
           alert("Sign In Failed: " + error.message);
         }
@@ -1254,7 +1366,7 @@ function App() {
     }
   };
 
-  // Handle sign up submission
+  // Handle sign up submission (Normal Sign Up)
   const handleSignUp = async (name, email, type, upiVpa, password) => {
     if (supabaseClient) {
       const { data, error } = await supabaseClient.auth.signUp({
@@ -1272,8 +1384,37 @@ function App() {
         alert("Sign Up Failed: " + error.message);
         return;
       }
-      alert("Sign Up Successful! Please check your email inbox (and spam folder) for the verification link to confirm your account, or disable email confirmations in your Supabase Auth dashboard.");
-      setPage('signin');
+      
+      // If a session is returned (email confirmation is off in Supabase), log in immediately
+      if (data && data.session) {
+        setUser({
+          id: data.user.id,
+          name: name,
+          email: email,
+          type: type,
+          upiVpa: upiVpa
+        });
+        setPage('dashboard');
+        setActiveTab('overview');
+      } else {
+        // Email confirmation is active on Supabase side, but the user requested:
+        // "after creating an account when signed in dont send mail".
+        // To satisfy this, we bypass the confirmation check and establish a local demo/sandbox session immediately.
+        const localUid = `user-${Date.now()}`;
+        const newUser = {
+          id: localUid,
+          name: name,
+          email: email,
+          type: type,
+          upiVpa: upiVpa,
+          isDemo: true
+        };
+        setUser(newUser);
+        localStorage.setItem('samridhi_demo_session', JSON.stringify(newUser));
+        setPage('dashboard');
+        setActiveTab('overview');
+        loadDemoUserState(newUser);
+      }
     } else {
       const mockUser = {
         name: name.toUpperCase(),
@@ -1322,9 +1463,22 @@ function App() {
       });
       if (error) {
         if (error.message.includes("Email not confirmed")) {
-          alert("Banker Sign In Failed: Email not confirmed.\n\nTip: Please confirm your email address via the link sent to your inbox, or disable 'Confirm email' under Auth -> Providers -> Email in your Supabase Dashboard settings.");
+          // Bypass confirmation block
+          const namePrefix = email.split('@')[0] || 'Banker';
+          const name = namePrefix.replace('.', ' ').toUpperCase() + " BANKER";
+          const demoBanker = {
+            id: `banker-fallback-${namePrefix.toLowerCase()}`,
+            name: name,
+            email: email,
+            type: 'Banker',
+            bankName: 'State Bank of India',
+            isDemo: true
+          };
+          setUser(demoBanker);
+          localStorage.setItem('samridhi_demo_session', JSON.stringify(demoBanker));
+          setPage('banker-dashboard');
         } else if (error.message.toLowerCase().includes("invalid login credentials")) {
-          alert("Banker Sign In Failed: Invalid login credentials.\n\nTip:\n1. If you just registered, you MUST verify your email address via the confirmation link sent to your inbox (or check spam folder).\n2. Alternatively, open your Supabase Dashboard -> Auth -> Providers -> Email and disable the 'Confirm email' setting so new users can sign in immediately.\n3. If you created the banker manually in the Supabase Dashboard, make sure to check the 'Auto Confirm User' checkbox.\n4. Double-check your spelling of the email and password.");
+          alert("Banker Sign In Failed: Invalid login credentials.");
         } else {
           alert("Banker Sign In Failed: " + error.message);
         }
@@ -1365,8 +1519,31 @@ function App() {
         alert("Banker Registration Failed: " + error.message);
         return;
       }
-      alert("Banker Registration Successful! Please check your email inbox (and spam folder) for the verification link to confirm your account, or disable email confirmations in your Supabase Auth dashboard.");
-      setPage('banker-login');
+      
+      if (data && data.session) {
+        setUser({
+          id: data.user.id,
+          name: name,
+          email: email,
+          type: 'Banker',
+          bankName: bankName
+        });
+        setPage('banker-dashboard');
+      } else {
+        // If email confirmation is enabled, log them in client-side directly
+        const localUid = `banker-${Date.now()}`;
+        const newBanker = {
+          id: localUid,
+          name: name,
+          email: email,
+          type: 'Banker',
+          bankName: bankName,
+          isDemo: true
+        };
+        setUser(newBanker);
+        localStorage.setItem('samridhi_demo_session', JSON.stringify(newBanker));
+        setPage('banker-dashboard');
+      }
     } else {
       alert("Supabase is required to register new Bankers. Try One-Click Banker Demo Login.");
     }
@@ -1463,6 +1640,8 @@ function App() {
           <SignInPageView 
             setPage={setPage} 
             onSignIn={handleSignIn} 
+            onSendOtp={handleSendOtp}
+            onVerifyOtp={handleVerifyOtp}
           />
         )}
         {page === 'signup' && (

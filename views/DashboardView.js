@@ -356,6 +356,13 @@ window.DashboardView = ({
               calculatedScore={calculatedScore}
               dispatch={dispatch}
               setActiveTab={setActiveTab}
+              aadhaarVerified={aadhaarVerified}
+              panVerified={panVerified}
+              upiLinked={upiLinked}
+              upiVerified={upiVerified}
+              dashboardState={dashboardState}
+              kycCameraVerified={kycCameraVerified}
+              bankStatementUploaded={bankStatementUploaded}
             />
           )}
 

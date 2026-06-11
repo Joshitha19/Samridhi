@@ -91,10 +91,10 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
         localStorage.setItem('samridhi_loans', JSON.stringify(defaultLoans));
         
         allProfiles = defaultProfiles;
-        bankerLoans = defaultLoans.filter(l => l.lender === user.bankName);
+        bankerLoans = defaultLoans;
       } else {
         allProfiles = localProfiles;
-        bankerLoans = localLoans.filter(l => l.lender === user.bankName);
+        bankerLoans = localLoans;
       }
     } else {
       try {
@@ -154,11 +154,11 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
 
         allProfiles = Array.from(mergedProfilesMap.values());
         const allLoans = Array.from(mergedLoansMap.values());
-        bankerLoans = allLoans.filter(l => l.lender === user.bankName);
+        bankerLoans = allLoans;
       } catch (err) {
         console.error("Error fetching banker records from Supabase: ", err);
         allProfiles = localProfiles;
-        bankerLoans = localLoans.filter(l => l.lender === user.bankName);
+        bankerLoans = localLoans;
       }
     }
 

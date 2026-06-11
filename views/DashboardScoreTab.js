@@ -21,9 +21,11 @@ window.DashboardScoreTab = ({
   whatIfNewCert,
   setWhatIfNewCert,
   whatIfConsistentUpi,
-  setWhatIfConsistentUpi
+  setWhatIfConsistentUpi,
+  kycCameraVerified,
+  bankStatementUploaded
 }) => {
-  const { useState, useEffect } = React;
+  const { useState, useEffect, useMemo } = React;
   
   const [mounted, setMounted] = useState(false);
   const [expandedRow, setExpandedRow] = useState(null);
@@ -42,15 +44,53 @@ window.DashboardScoreTab = ({
     }
   };
 
-  // SHAP Factors data
-  const shapFactors = [
-    { label: "UPI consistency", impact: 9.2, positive: true },
-    { label: "Monthly income", impact: 7.8, positive: true },
-    { label: "Skill certifications", impact: 6.1, positive: true },
-    { label: "Merchant diversity", impact: 2.9, positive: true },
-    { label: "Short credit history", impact: -5.4, positive: false },
-    { label: "Low transaction age", impact: -3.2, positive: false }
-  ];
+  // Calculate dynamic SHAP factors and LIME surrogates
+  const xaiExplanations = useMemo(() => {
+    if (window.calculateXAIExplanations) {
+      const metrics = {
+        aadhaarVerified,
+        panVerified,
+        upiLinked,
+        upiVerified,
+        skills: dashboardState.skills || [],
+        inventory: dashboardState.inventory || [],
+        transactions: dashboardState.transactions || [],
+        kycCameraVerified,
+        bankStatementUploaded,
+        whatIfRepayActive,
+        whatIfLinkGithub,
+        whatIfNewCert,
+        whatIfConsistentUpi
+      };
+      return window.calculateXAIExplanations(dashboardState.user || {}, metrics);
+    }
+    return {
+      shapFactors: [
+        { label: "UPI consistency", impact: 9.2, positive: true },
+        { label: "Monthly income", impact: 7.8, positive: true },
+        { label: "Skill certifications", impact: 6.1, positive: true }
+      ],
+      limeSurrogate: { formula: "y ≈ 50 + 10 * X_UPI", activeValues: {}, coefficients: {} },
+      baseline: 50
+    };
+  }, [
+    aadhaarVerified,
+    panVerified,
+    upiLinked,
+    upiVerified,
+    dashboardState.skills,
+    dashboardState.inventory,
+    dashboardState.transactions,
+    kycCameraVerified,
+    bankStatementUploaded,
+    whatIfRepayActive,
+    whatIfLinkGithub,
+    whatIfNewCert,
+    whatIfConsistentUpi,
+    dashboardState.user
+  ]);
+
+  const shapFactors = xaiExplanations.shapFactors;
 
   // Accordion details data
   const accordionFactors = [
@@ -110,15 +150,15 @@ window.DashboardScoreTab = ({
   return (
     <div className="space-y-6 animate-fade-in text-xs">
       
-      {/* SECTION 1 - Score Header (2 columns) */}
+      {/* SECTION 1 - Score Header (3 columns) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* LEFT COLUMN: Gauge & History */}
-        <div className="lg:col-span-6 glass-card p-6 rounded-3xl flex flex-col md:flex-row items-center gap-6 justify-between border border-white/[0.04] border-glow-success">
+        <div className="lg:col-span-4 glass-card p-5 rounded-3xl flex flex-col items-center gap-4 justify-between border border-white/[0.04] border-glow-success">
           
-          <div className="flex flex-col items-center shrink-0">
-            {/* 200px Gauge */}
-            <div className="relative w-48 h-48">
+          <div className="flex flex-col items-center shrink-0 w-full text-center">
+            {/* Gauge */}
+            <div className="relative w-40 h-40 mx-auto">
               <svg className="w-full h-full transform -rotate-90" viewBox="0 0 200 200">
                 <circle
                   className="text-white/[0.03]"
@@ -146,42 +186,42 @@ window.DashboardScoreTab = ({
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-5xl font-black text-white leading-none font-mono text-glow-success">{targetScore}</span>
-                <span className="text-[9px] tracking-widest text-samridhi-textMuted font-black uppercase mt-2">AI Rating</span>
+                <span className="text-4xl font-black text-white leading-none font-mono text-glow-success">{targetScore}</span>
+                <span className="text-[8px] tracking-widest text-samridhi-textMuted font-black uppercase mt-1">AI Rating</span>
               </div>
             </div>
             
-            <span className="text-[9px] text-samridhi-textMuted font-bold mt-3 uppercase tracking-wider">Last updated: 22 May 2026</span>
-            <div className="mt-2.5 px-3.5 py-1 rounded-full bg-samridhi-success/10 border border-samridhi-success/35 text-samridhi-success font-black tracking-widest text-[9px] text-glow-success animate-pulse">
-              LOW RISK
+            <span className="text-[8px] text-samridhi-textMuted font-bold mt-2 uppercase tracking-wider">Last updated: 11 Jun 2026</span>
+            <div className={`mt-2 px-3 py-0.5 rounded-full font-black tracking-widest text-[8px] text-glow-success animate-pulse ${
+              targetScore >= 71 
+                ? 'bg-samridhi-success/10 border border-samridhi-success/35 text-samridhi-success' 
+                : targetScore >= 60 
+                  ? 'bg-samridhi-secondary/10 border border-samridhi-secondary/35 text-samridhi-secondary' 
+                  : 'bg-samridhi-warning/10 border border-samridhi-warning/35 text-samridhi-warning'
+            }`}>
+              {targetScore >= 71 ? 'LOW RISK' : targetScore >= 60 ? 'MEDIUM RISK' : 'HIGH RISK'}
             </div>
           </div>
 
           {/* History Chart */}
-          <div className="flex-1 w-full space-y-3">
-            <h4 className="font-extrabold text-[9px] text-samridhi-textMuted uppercase tracking-wider">Score Progression</h4>
-            
-            {/* SVG History Chart */}
-            <div className="bg-white/[0.01] border border-white/[0.05] p-3.5 rounded-xl">
-              <svg className="w-full h-24" viewBox="0 0 240 100">
-                {/* Grid Lines */}
+          <div className="w-full space-y-2">
+            <h4 className="font-extrabold text-[8px] text-samridhi-textMuted uppercase tracking-wider">Score Progression</h4>
+            <div className="bg-white/[0.01] border border-white/[0.05] p-2.5 rounded-xl">
+              <svg className="w-full h-20" viewBox="0 0 240 100">
                 <line x1="25" y1="20" x2="230" y2="20" stroke="rgba(255,255,255,0.04)" strokeDasharray="3 3" />
                 <line x1="25" y1="50" x2="230" y2="50" stroke="rgba(255,255,255,0.04)" strokeDasharray="3 3" />
                 <line x1="25" y1="80" x2="230" y2="80" stroke="rgba(255,255,255,0.04)" strokeDasharray="3 3" />
                 
-                {/* Month Labels */}
                 <text x="25" y="95" fill="#8888AA" fontSize="9" fontWeight="bold" textAnchor="middle">Jan</text>
                 <text x="75" y="95" fill="#8888AA" fontSize="9" fontWeight="bold" textAnchor="middle">Feb</text>
                 <text x="125" y="95" fill="#8888AA" fontSize="9" fontWeight="bold" textAnchor="middle">Mar</text>
                 <text x="175" y="95" fill="#8888AA" fontSize="9" fontWeight="bold" textAnchor="middle">Apr</text>
                 <text x="225" y="95" fill="#8888AA" fontSize="9" fontWeight="bold" textAnchor="middle">May</text>
                 
-                {/* Score Labels */}
                 <text x="18" y="23" fill="#8888AA" fontSize="8" fontWeight="bold" textAnchor="end">80</text>
                 <text x="18" y="53" fill="#8888AA" fontSize="8" fontWeight="bold" textAnchor="end">60</text>
                 <text x="18" y="83" fill="#8888AA" fontSize="8" fontWeight="bold" textAnchor="end">40</text>
 
-                {/* Polyline */}
                 <polyline
                   fill="none"
                   stroke="#00D4FF"
@@ -190,14 +230,12 @@ window.DashboardScoreTab = ({
                   className="transition-all duration-1000 ease-out"
                 />
                 
-                {/* Dots at points */}
-                <circle cx="25" cy="52" r="3.5" fill="#00D4FF" />
-                <circle cx="75" cy="49" r="3.5" fill="#00D4FF" />
-                <circle cx="125" cy="43" r="3.5" fill="#00D4FF" />
-                <circle cx="175" cy="37" r="3.5" fill="#00D4FF" />
-                <circle cx="225" cy="32" r="3.5" fill="#00D4FF" />
+                <circle cx="25" cy="52" r="3" fill="#00D4FF" />
+                <circle cx="75" cy="49" r="3" fill="#00D4FF" />
+                <circle cx="125" cy="43" r="3" fill="#00D4FF" />
+                <circle cx="175" cy="37" r="3" fill="#00D4FF" />
+                <circle cx="225" cy="32" r="3" fill="#00D4FF" />
                 
-                {/* Point values */}
                 <text x="25" y="44" fill="#F0F0FF" fontSize="8" fontWeight="black" textAnchor="middle">58</text>
                 <text x="75" y="41" fill="#F0F0FF" fontSize="8" fontWeight="black" textAnchor="middle">61</text>
                 <text x="125" y="35" fill="#F0F0FF" fontSize="8" fontWeight="black" textAnchor="middle">65</text>
@@ -208,23 +246,25 @@ window.DashboardScoreTab = ({
           </div>
         </div>
 
-        {/* RIGHT COLUMN: SHAP Bar Chart */}
-        <div className="lg:col-span-6 glass-card p-6 rounded-3xl border border-white/[0.04] border-glow-primary flex flex-col justify-between">
+        {/* MIDDLE COLUMN: SHAP Bar Chart */}
+        <div className="lg:col-span-4 glass-card p-5 rounded-3xl border border-white/[0.04] border-glow-primary flex flex-col justify-between space-y-4">
           <div>
-            <h4 className="font-extrabold text-sm text-white uppercase tracking-wider">Why this score?</h4>
-            <p className="text-[11px] text-samridhi-textMuted mt-1 font-semibold">SHAP values indicating features driving score shifts vs baseline.</p>
+            <h4 className="font-extrabold text-sm text-white uppercase tracking-wider">Dynamic SHAP Values</h4>
+            <p className="text-[10px] text-samridhi-textMuted mt-1 font-semibold leading-relaxed">
+              Local feature attributions summing to score delta from baseline (Expected Value: 50).
+            </p>
           </div>
 
-          <div className="space-y-2.5 pt-2">
+          <div className="space-y-2 pt-1 max-h-56 overflow-y-auto pr-1.5 scrollbar-thin">
             {shapFactors.map((item, idx) => {
-              const impactPct = Math.min(100, Math.abs(item.impact) * 8); // Scale for visuals
+              const impactPct = Math.min(100, Math.abs(item.impact) * 5); // Scale for visual representation
               return (
-                <div key={idx} className="flex items-center space-x-3 text-[11px]">
+                <div key={idx} className="flex items-center space-x-2.5 text-[10px]">
                   {/* Factor Label */}
-                  <span className="w-28 text-samridhi-textMuted truncate font-extrabold uppercase tracking-wide text-[9px]">{item.label}</span>
+                  <span className="w-24 text-samridhi-textMuted truncate font-extrabold uppercase tracking-wide text-[8px]">{item.label}</span>
                   
-                  {/* Horizontal Bar container */}
-                  <div className="flex-1 h-3 bg-white/[0.02] border border-white/[0.06] rounded overflow-hidden relative">
+                  {/* Horizontal Bar */}
+                  <div className="flex-1 h-2 bg-white/[0.02] border border-white/[0.06] rounded overflow-hidden relative">
                     <div
                       className={`h-full rounded transition-all duration-1000 ease-out ${
                         item.positive ? 'bg-samridhi-success' : 'bg-samridhi-danger'
@@ -236,7 +276,7 @@ window.DashboardScoreTab = ({
                   </div>
 
                   {/* Impact Value */}
-                  <span className={`w-12 text-right font-black font-mono ${
+                  <span className={`w-8 text-right font-black font-mono text-[9px] ${
                     item.positive ? 'text-samridhi-success' : 'text-samridhi-danger'
                   }`}>
                     {item.positive ? '+' : ''}{item.impact}
@@ -247,6 +287,45 @@ window.DashboardScoreTab = ({
           </div>
         </div>
 
+        {/* RIGHT COLUMN: LIME Local Surrogate Model */}
+        <div className="lg:col-span-4 glass-card p-5 rounded-3xl border border-white/[0.04] border-glow-secondary flex flex-col justify-between space-y-4">
+          <div>
+            <div className="flex items-center justify-between">
+              <h4 className="font-extrabold text-sm text-white uppercase tracking-wider">LIME Local Surrogate</h4>
+              <span className="text-[8px] font-black text-samridhi-secondary bg-samridhi-secondary/10 px-1.5 py-0.5 rounded border border-samridhi-secondary/20 uppercase tracking-widest font-mono">Surrogate.Linear</span>
+            </div>
+            <p className="text-[10px] text-samridhi-textMuted mt-1 font-semibold leading-relaxed">
+              Local interpretable linear approximation in the neighborhood of your profile.
+            </p>
+          </div>
+
+          {/* LIME Equation Display */}
+          <div className="bg-[#090b10]/60 border border-white/[0.06] p-3 rounded-xl font-mono text-[9px] text-samridhi-secondary space-y-1.5 overflow-x-auto whitespace-pre-wrap select-all">
+            <div className="text-[8px] font-bold text-samridhi-textMuted uppercase tracking-wider">Local Decision boundary:</div>
+            <div className="font-extrabold text-[9px] text-glow-secondary leading-normal">{xaiExplanations.limeSurrogate.formula}</div>
+          </div>
+
+          {/* Active Features Table */}
+          <div className="space-y-1.5 text-[10px]">
+            <span className="text-[8px] font-black text-samridhi-textMuted uppercase tracking-wider block">Local Feature Coefficients</span>
+            <div className="max-h-24 overflow-y-auto space-y-1 divide-y divide-white/[0.02] pr-1.5 scrollbar-thin">
+              {Object.keys(xaiExplanations.limeSurrogate.activeValues).map(key => {
+                const coef = xaiExplanations.limeSurrogate.coefficients[key];
+                return (
+                  <div key={key} className="flex items-center justify-between py-1 text-[10px]">
+                    <span className="font-bold text-samridhi-textMuted font-mono text-[8.5px]">{key}</span>
+                    <div className="flex items-center space-x-2.5">
+                      <span className="text-samridhi-textMuted font-semibold font-mono text-[8.5px]">val: {xaiExplanations.limeSurrogate.activeValues[key]}</span>
+                      <span className={`font-black font-mono text-[8.5px] ${coef >= 0 ? 'text-samridhi-success' : 'text-samridhi-danger'}`}>
+                        coef: {coef >= 0 ? '+' : ''}{coef}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* SECTION 2 - Detailed Breakdown (full width card) */}

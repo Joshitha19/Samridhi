@@ -318,6 +318,8 @@ window.DashboardView = ({
               setWhatIfNewCert={setWhatIfNewCert}
               whatIfConsistentUpi={whatIfConsistentUpi}
               setWhatIfConsistentUpi={setWhatIfConsistentUpi}
+              kycCameraVerified={kycCameraVerified}
+              bankStatementUploaded={bankStatementUploaded}
             />
           )}
 

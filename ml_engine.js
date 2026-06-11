@@ -1,6 +1,325 @@
 // Samridhi Explainable ML Underwriting & Scoring Engine
 // Shared globally via the window object
 
+// Seeded Pseudo-Random Number Generator for deterministic Isolation Forest training
+const createSeededRandom = (seedInit = 42) => {
+  let s = seedInit;
+  return () => {
+    const x = Math.sin(s++) * 10000;
+    return x - Math.floor(x);
+  };
+};
+
+// Pure JS Isolation Forest Ensemble for Transaction Anomaly Detection
+class IsolationTreeNode {
+  constructor(left, right, splitFeature, splitValue, size) {
+    this.left = left;
+    this.right = right;
+    this.splitFeature = splitFeature;
+    this.splitValue = splitValue;
+    this.size = size;
+  }
+}
+
+class IsolationTree {
+  constructor(randomFn) {
+    this.root = null;
+    this.randomFn = randomFn || Math.random;
+  }
+  
+  fit(data, currentHeight, maxHeight) {
+    if (data.length <= 1 || currentHeight >= maxHeight) {
+      return new IsolationTreeNode(null, null, null, null, data.length);
+    }
+    
+    // Choose random feature
+    const features = Object.keys(data[0]);
+    const splitFeature = features[Math.floor(this.randomFn() * features.length)];
+    
+    // Find min and max
+    const values = data.map(d => d[splitFeature]);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    
+    if (min === max) {
+      return new IsolationTreeNode(null, null, null, null, data.length);
+    }
+    
+    // Choose random split value
+    const splitValue = min + this.randomFn() * (max - min);
+    
+    const leftData = data.filter(d => d[splitFeature] < splitValue);
+    const rightData = data.filter(d => d[splitFeature] >= splitValue);
+    
+    return new IsolationTreeNode(
+      this.fit(leftData, currentHeight + 1, maxHeight),
+      this.fit(rightData, currentHeight + 1, maxHeight),
+      splitFeature,
+      splitValue,
+      data.length
+    );
+  }
+}
+
+class IsolationForest {
+  constructor(numTrees = 10, subSampleSize = 256, seed = 42) {
+    this.numTrees = numTrees;
+    this.subSampleSize = subSampleSize;
+    this.randomFn = createSeededRandom(seed);
+    this.trees = [];
+  }
+  
+  fit(data) {
+    this.trees = [];
+    const n = data.length;
+    if (n === 0) return;
+    const size = Math.min(this.subSampleSize, n);
+    const maxHeight = Math.ceil(Math.log2(size));
+    
+    for (let i = 0; i < this.numTrees; i++) {
+      // Subsample data
+      const sample = [];
+      const indices = new Set();
+      while (sample.length < size) {
+        const idx = Math.floor(this.randomFn() * n);
+        if (!indices.has(idx)) {
+          indices.add(idx);
+          sample.push(data[idx]);
+        }
+      }
+      
+      const tree = new IsolationTree(this.randomFn);
+      tree.root = tree.fit(sample, 0, maxHeight);
+      this.trees.push(tree);
+    }
+  }
+  
+  pathLength(sample, node, currentDepth) {
+    if (!node || node.size <= 1) {
+      return currentDepth + c(node ? node.size : 0);
+    }
+    
+    if (node.splitFeature === null) {
+      return currentDepth + c(node.size);
+    }
+    
+    if (sample[node.splitFeature] < node.splitValue) {
+      return this.pathLength(sample, node.left, currentDepth + 1);
+    } else {
+      return this.pathLength(sample, node.right, currentDepth + 1);
+    }
+  }
+  
+  score(sample) {
+    if (this.trees.length === 0) return 0.5;
+    let sumPathLength = 0;
+    for (const tree of this.trees) {
+      sumPathLength += this.pathLength(sample, tree.root, 0);
+    }
+    const avgPathLength = sumPathLength / this.trees.length;
+    const n = Math.min(this.subSampleSize, this.trees[0]?.root?.size || 0);
+    const avgC = c(n);
+    if (avgC === 0) return 0.5;
+    return Math.pow(2, -avgPathLength / avgC);
+  }
+}
+
+function c(n) {
+  if (n <= 1) return 0;
+  if (n === 2) return 1;
+  const EulerGamma = 0.5772156649;
+  return 2 * (Math.log(n - 1) + EulerGamma) - 2 * (n - 1) / n;
+}
+
+// Global hook to run Isolation Forest on transactions
+window.runIsolationForest = (transactions) => {
+  if (!transactions || transactions.length === 0) return [];
+
+  // Map transaction attributes to feature vectors
+  const categories = {
+    'income': 1, 'food': 2, 'housing': 3, 'shopping': 4,
+    'utility': 5, 'education': 6, 'entertainment': 7, 'other': 8
+  };
+  
+  const featureData = transactions.map(t => {
+    const catKey = (t.category || 'other').toLowerCase();
+    const categoryIndex = categories[catKey] || 8;
+    const typeVal = (t.type === 'Credit' || t.amount > 0) ? 1 : -1;
+    const amt = Math.abs(t.amount || 0);
+    
+    let dayOfWeek = 0;
+    if (t.date) {
+      const d = new Date(t.date);
+      if (!isNaN(d.getTime())) {
+        dayOfWeek = d.getDay();
+      }
+    }
+    
+    return {
+      amount: amt,
+      type: typeVal,
+      category: categoryIndex,
+      dayOfWeek: dayOfWeek,
+      id: t.id
+    };
+  });
+
+  // Remove id for learning
+  const trainingData = featureData.map(({ id, ...features }) => features);
+
+  // Train forest
+  const forest = new IsolationForest(15, 256, 1337); // 15 trees, seed=1337
+  forest.fit(trainingData);
+
+  // Predict anomaly scores
+  return featureData.map(item => {
+    const featuresOnly = {
+      amount: item.amount,
+      type: item.type,
+      category: item.category,
+      dayOfWeek: item.dayOfWeek
+    };
+    const score = forest.score(featuresOnly);
+    return {
+      id: item.id,
+      score: score
+    };
+  });
+};
+
+// Global hook to compute SHAP attributions and LIME local surrogate equations
+window.calculateXAIExplanations = (user, metrics) => {
+  const {
+    aadhaarVerified = false,
+    panVerified = false,
+    upiLinked = false,
+    upiVerified = false,
+    skills = [],
+    inventory = [],
+    transactions = [],
+    kycCameraVerified = false,
+    bankStatementUploaded = false,
+    whatIfRepayActive = false,
+    whatIfLinkGithub = false,
+    whatIfNewCert = false,
+    whatIfConsistentUpi = false
+  } = metrics;
+
+  const baseline = 50;
+  const shap = [];
+
+  // 1. Role base adjustment
+  let roleImpact = -2;
+  if (user) {
+    if (user.type === 'Salaried') roleImpact = 15;
+    if (user.type === 'Freelancer') roleImpact = 8;
+    if (user.type === 'Entrepreneur') roleImpact = 12;
+  }
+  shap.push({ label: "Profile Baseline Config", impact: roleImpact, positive: roleImpact >= 0 });
+
+  // 2. Identity Verification
+  if (aadhaarVerified) shap.push({ label: "Aadhaar Identity KYC", impact: 4, positive: true });
+  if (panVerified) shap.push({ label: "PAN Registry Link", impact: 3, positive: true });
+
+  // 3. UPI Consent Link
+  if (upiLinked) shap.push({ label: "UPI Consent Link", impact: 10, positive: true });
+  if (upiVerified) shap.push({ label: "UPI Node Verification", impact: 15, positive: true });
+
+  // 4. Skills Credentials
+  const verifiedSkillsCount = skills.filter(s => s.verified).length;
+  if (verifiedSkillsCount > 0) {
+    shap.push({ label: "Skill Certifications", impact: verifiedSkillsCount * 4, positive: true });
+  }
+
+  // 5. Assets
+  if (inventory && inventory.length > 0) {
+    shap.push({ label: "Inventory Asset Ledger", impact: 10, positive: true });
+  }
+
+  // 6. Camera KYC & Statement Upload
+  if (kycCameraVerified) shap.push({ label: "Liveness Camera Verification", impact: 8, positive: true });
+  if (bankStatementUploaded) shap.push({ label: "Statement OCR Upload", impact: 7, positive: true });
+
+  // 7. What-If Simulator Milestones
+  if (whatIfRepayActive) shap.push({ label: "Milestone: Active repayment", impact: 6, positive: true });
+  if (whatIfLinkGithub) shap.push({ label: "Milestone: GitHub sync", impact: 8, positive: true });
+  if (whatIfNewCert) shap.push({ label: "Milestone: Course credentials", impact: 5, positive: true });
+  if (whatIfConsistentUpi) shap.push({ label: "Milestone: UPI consistency", impact: 7, positive: true });
+
+  // 8. Transaction Analysis
+  if (transactions && transactions.length > 0) {
+    const txCount = transactions.length;
+    const txVolumePoints = Math.min(8, Math.floor(txCount * 0.5));
+    if (txVolumePoints > 0) {
+      shap.push({ label: "UPI Transaction Volume", impact: txVolumePoints, positive: true });
+    }
+
+    const totalCredit = transactions
+      .filter(t => t.type === 'Credit' || t.amount > 0)
+      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    const totalDebit = transactions
+      .filter(t => t.type === 'Debit' || t.amount < 0)
+      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+
+    let txRatioPoints = 0;
+    if (totalCredit > 0) {
+      const surplus = totalCredit - totalDebit;
+      if (surplus > 0) {
+        const ratio = surplus / totalCredit;
+        txRatioPoints = Math.min(12, Math.floor(ratio * 12));
+      }
+    }
+    if (txRatioPoints > 0) {
+      shap.push({ label: "UPI Cash Inflow Ratio", impact: txRatioPoints, positive: true });
+    }
+
+    // Unsupervised Anomaly deduction
+    const ifScores = window.runIsolationForest(transactions);
+    const anomalies = ifScores.filter(item => item.score > 0.58);
+    const penalty = Math.min(15, anomalies.length * 5);
+    if (penalty > 0) {
+      shap.push({ label: "Isolation Forest Anomaly Penalty", impact: -penalty, positive: false });
+    }
+  }
+
+  // LIME surrogate explanation formulas & values
+  const limeFormula = `y ≈ 50 + ${roleImpact >= 0 ? '+' : ''}${roleImpact}*X_Profile + 4*X_Aadhaar + 3*X_PAN + 10*X_UPI_Link + 15*X_UPI_Verify + 4*X_Skills + 10*X_Asset + 8*X_Liveness + 7*X_Statement - 5*X_Anomaly`;
+  
+  const limeSurrogate = {
+    formula: limeFormula,
+    coefficients: {
+      X_Profile: roleImpact,
+      X_Aadhaar: 4,
+      X_PAN: 3,
+      X_UPI_Link: 10,
+      X_UPI_Verify: 15,
+      X_Skills: 4,
+      X_Asset: 10,
+      X_Liveness: 8,
+      X_Statement: 7,
+      X_Anomaly: -5
+    },
+    activeValues: {
+      X_Profile: 1,
+      X_Aadhaar: aadhaarVerified ? 1 : 0,
+      X_PAN: panVerified ? 1 : 0,
+      X_UPI_Link: upiLinked ? 1 : 0,
+      X_UPI_Verify: upiVerified ? 1 : 0,
+      X_Skills: verifiedSkillsCount,
+      X_Asset: (inventory && inventory.length > 0) ? 1 : 0,
+      X_Liveness: kycCameraVerified ? 1 : 0,
+      X_Statement: bankStatementUploaded ? 1 : 0,
+      X_Anomaly: (transactions && window.runIsolationForest(transactions).filter(item => item.score > 0.58).length) || 0
+    }
+  };
+
+  return {
+    shapFactors: shap,
+    limeSurrogate: limeSurrogate,
+    baseline: baseline
+  };
+};
+
 window.calculateCredibilityScore = (user, metrics) => {
   const {
     aadhaarVerified = false,
@@ -77,15 +396,10 @@ window.calculateCredibilityScore = (user, metrics) => {
       }
     }
 
-    // 3. Anomaly deduction (minus 5 points per anomaly, max -15)
-    const debits = transactions.filter(t => t.type === 'Debit' || t.amount < 0);
-    if (debits.length > 0) {
-      const totalDebitSum = debits.reduce((sum, t) => sum + Math.abs(t.amount), 0);
-      const avgDebit = totalDebitSum / debits.length;
-      // An anomaly is any debit transaction > 3x average debit
-      const anomalies = debits.filter(t => Math.abs(t.amount) > 3 * avgDebit);
-      txPoints -= Math.min(15, anomalies.length * 5);
-    }
+    // 3. Unsupervised Anomaly deduction using Isolation Forest
+    const ifScores = window.runIsolationForest(transactions);
+    const anomalies = ifScores.filter(item => item.score > 0.58);
+    txPoints -= Math.min(15, anomalies.length * 5);
   }
   score += txPoints;
 

@@ -851,12 +851,23 @@ function App() {
           return;
         }
 
+        const { data: { user: authUser } } = await supabaseClient.auth.getUser();
+        const meta = authUser?.user_metadata || {};
+
         setUser({
           id: userId,
           name: activeProfile.name,
           email: activeProfile.email,
           type: activeProfile.type,
-          upiVpa: activeProfile.upi_vpa || ''
+          upiVpa: activeProfile.upi_vpa || '',
+          githubLinked: meta.githubLinked || false,
+          githubUsername: meta.githubUsername || '',
+          githubRepos: meta.githubRepos || '',
+          githubCommits: meta.githubCommits || '',
+          aadhaarVerified: meta.aadhaarVerified || false,
+          aadhaarNumber: meta.aadhaarNumber || '',
+          aadhaarName: meta.aadhaarName || '',
+          projects: meta.projects || []
         });
         setAadhaarVerified(activeProfile.aadhaar_verified);
         setPanVerified(activeProfile.pan_verified);
@@ -1169,15 +1180,42 @@ function App() {
     if (updatedUser && updatedUser.id) {
       if (updatedUser.isDemo) {
         let localProfiles = JSON.parse(localStorage.getItem('samridhi_profiles') || '[]');
-        localProfiles = localProfiles.map(p => p.id === updatedUser.id ? { ...p, name: updatedUser.name, type: updatedUser.type, upi_vpa: updatedUser.upiVpa } : p);
+        localProfiles = localProfiles.map(p => p.id === updatedUser.id ? { 
+          ...p, 
+          name: updatedUser.name, 
+          type: updatedUser.type, 
+          upi_vpa: updatedUser.upiVpa,
+          github_linked: updatedUser.githubLinked,
+          github_username: updatedUser.githubUsername,
+          github_repos: updatedUser.githubRepos,
+          github_commits: updatedUser.githubCommits,
+          aadhaar_verified: updatedUser.aadhaarVerified,
+          aadhaar_number: updatedUser.aadhaarNumber,
+          aadhaar_name: updatedUser.aadhaarName,
+          projects: updatedUser.projects
+        } : p);
         localStorage.setItem('samridhi_profiles', JSON.stringify(localProfiles));
         localStorage.setItem('samridhi_demo_session', JSON.stringify(updatedUser));
       } else if (supabaseClient) {
         await supabaseClient.from('profiles').update({
           name: updatedUser.name,
           type: updatedUser.type,
-          upi_vpa: updatedUser.upiVpa
+          upi_vpa: updatedUser.upiVpa,
+          aadhaar_verified: updatedUser.aadhaarVerified
         }).eq('id', updatedUser.id);
+        
+        await supabaseClient.auth.updateUser({
+          data: {
+            githubLinked: updatedUser.githubLinked,
+            githubUsername: updatedUser.githubUsername,
+            githubRepos: updatedUser.githubRepos,
+            githubCommits: updatedUser.githubCommits,
+            aadhaarVerified: updatedUser.aadhaarVerified,
+            aadhaarNumber: updatedUser.aadhaarNumber,
+            aadhaarName: updatedUser.aadhaarName,
+            projects: updatedUser.projects
+          }
+        });
       }
     }
   };

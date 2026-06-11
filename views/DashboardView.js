@@ -394,6 +394,8 @@ window.DashboardView = ({
             <DashboardScoreTab
               calculatedScore={calculatedScore}
               dashboardState={dashboardState}
+              user={user}
+              setUser={setUser}
               aadhaarVerified={aadhaarVerified}
               panVerified={panVerified}
               upiLinked={upiLinked}

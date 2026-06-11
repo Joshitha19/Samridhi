@@ -240,6 +240,12 @@ window.calculateXAIExplanations = (user, metrics) => {
   if (kycCameraVerified) shap.push({ label: "Liveness Camera Verification", impact: 8, positive: true });
   if (bankStatementUploaded) shap.push({ label: "Statement OCR Upload", impact: 7, positive: true });
 
+  // 6b. Projects verification
+  const projectsCount = (user && user.projects) ? (Array.isArray(user.projects) ? user.projects.length : JSON.parse(user.projects || '[]').length) : 0;
+  if (projectsCount > 0) {
+    shap.push({ label: "Verified Portfolio Projects", impact: Math.min(15, projectsCount * 5), positive: true });
+  }
+
   // 7. What-If Simulator Milestones
   if (whatIfRepayActive) shap.push({ label: "Milestone: Active repayment", impact: 6, positive: true });
   if (whatIfLinkGithub) shap.push({ label: "Milestone: GitHub sync", impact: 8, positive: true });
@@ -366,6 +372,12 @@ window.calculateCredibilityScore = (user, metrics) => {
   // KYC Camera Verification & Bank Statement Upload Points
   if (kycCameraVerified) score += 8;
   if (bankStatementUploaded) score += 7;
+
+  // Projects verification (proxy for technical/vocational capabilities)
+  const projectsCount = (user && user.projects) ? (Array.isArray(user.projects) ? user.projects.length : JSON.parse(user.projects || '[]').length) : 0;
+  if (projectsCount > 0) {
+    score += Math.min(15, projectsCount * 5);
+  }
 
   // Live simulation What-If points (behavioral predictions)
   if (whatIfRepayActive) score += 6;

@@ -401,7 +401,7 @@ window.LandingPageView = ({ setPage, scrollToSection }) => {
         }} />
 
         {/* ── HERO TEXT ── */}
-        <div style={{ position:'relative', zIndex:3, display:'flex', alignItems:'flex-end', justifyContent:'space-between', flexWrap:'wrap', gap:'32px', paddingBottom:'16px' }}>
+        <div style={{ position:'relative', zIndex:3, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:'32px', paddingBottom:'16px' }}>
 
           {/* Left — big title */}
           <div style={{ flex:'1 1 520px', opacity: heroLoaded ? 1 : 0, transform: heroLoaded ? 'translateY(0)' : 'translateY(32px)', transition:'opacity 1.1s 0.15s ease, transform 1.1s 0.15s cubic-bezier(0.22,1,0.36,1)' }}>

@@ -264,6 +264,7 @@ window.DashboardView = ({
           {activeTab === 'overview' && (
             <DashboardOverviewTab 
               user={user}
+              setUser={setUser}
               calculatedScore={calculatedScore}
               dashboardState={dashboardState}
               dispatch={dispatch}

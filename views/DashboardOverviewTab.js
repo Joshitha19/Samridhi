@@ -3,6 +3,7 @@
 
 window.DashboardOverviewTab = ({
   user,
+  setUser,
   calculatedScore,
   dashboardState,
   dispatch,
@@ -23,6 +24,11 @@ window.DashboardOverviewTab = ({
   const [otpError, setOtpError] = useState('');
   const [syncProgress, setSyncProgress] = useState(0);
   const [syncStageText, setSyncStageText] = useState('Initializing handshake...');
+
+  // QR verification states
+  const [verificationMethod, setVerificationMethod] = useState('form'); // 'form' | 'qr'
+  const [qrScanStatus, setQrScanStatus] = useState('idle'); // 'idle' | 'scanning' | 'success'
+  const [scannedUpiDetails, setScannedUpiDetails] = useState(null);
 
   useEffect(() => {
     if (user && user.upiVpa) {
@@ -564,64 +570,176 @@ window.DashboardOverviewTab = ({
             {/* Step 2: Enter Phone / VPA */}
             {aaStep === 'enter-phone-vpa' && (
               <div className="space-y-4">
+                {/* Custom scanning laser CSS rules */}
+                <style dangerouslySetInnerHTML={{__html: `
+                  @keyframes scanLaser {
+                    0% { top: 10%; }
+                    50% { top: 90%; }
+                    100% { top: 10%; }
+                  }
+                  .animate-scan-laser {
+                    animation: scanLaser 2s infinite linear;
+                  }
+                `}} />
+
                 <div className="flex items-center space-x-2 text-xs text-samridhi-textMuted">
                   <span className="cursor-pointer hover:underline text-samridhi-secondary" onClick={() => setAaStep('select-bank')}>Bank Selection</span>
                   <span>&rarr;</span>
-                  <span className="text-samridhi-textPrimary font-bold">Identity Connection</span>
+                  <span className="text-samridhi-textPrimary font-bold font-sans">Identity Connection</span>
                 </div>
-                <div className="bg-samridhi-surface/40 border border-samridhi-border p-3.5 rounded-xl flex items-center justify-between">
+                
+                <div className="bg-samridhi-surface/40 border border-samridhi-border p-3 rounded-xl flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <span className="text-lg">🏦</span>
                     <span className="text-xs font-bold text-samridhi-textPrimary">{selectedBank}</span>
                   </div>
                   <button 
-                    onClick={() => setAaStep('select-bank')}
+                    onClick={() => {
+                      setAaStep('select-bank');
+                      setVerificationMethod('form');
+                      setQrScanStatus('idle');
+                      setScannedUpiDetails(null);
+                    }}
                     className="text-[10px] text-samridhi-primary font-bold hover:underline"
                   >
                     Change Bank
                   </button>
                 </div>
-                
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1.5">Registered Mobile Number</label>
-                    <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-samridhi-textMuted font-bold font-mono">+91</span>
-                      <input 
-                        type="tel"
-                        placeholder="9876543210"
-                        maxLength="10"
-                        value={phoneInput}
-                        onChange={(e) => setPhoneInput(e.target.value.replace(/\D/g, ''))}
-                        className="w-full bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary rounded-lg py-2.5 pl-12 pr-4 text-xs focus:border-samridhi-secondary focus:outline-none font-mono"
-                      />
-                    </div>
-                  </div>
 
-                  <div>
-                    <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1.5">UPI VPA ID (Optional)</label>
-                    <input 
-                      type="text"
-                      placeholder={selectedBank === 'Union Bank of India' ? 'name@unionbank' : 'name@okaxis'}
-                      value={vpaInput}
-                      onChange={(e) => setVpaInput(e.target.value)}
-                      className="w-full bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary rounded-lg p-2.5 text-xs focus:border-samridhi-secondary focus:outline-none font-mono"
-                    />
-                  </div>
+                {/* Verification Method Tabs */}
+                <div className="flex border-b border-white/[0.04] mb-4">
+                  <button
+                    onClick={() => setVerificationMethod('form')}
+                    className={`flex-1 pb-2 text-xs font-black uppercase tracking-wider transition-all border-b-2 ${verificationMethod === 'form' ? 'text-samridhi-secondary border-samridhi-secondary text-glow-secondary' : 'text-samridhi-textMuted border-transparent hover:text-white'}`}
+                  >
+                    VPA/Mobile Sync
+                  </button>
+                  <button
+                    onClick={() => setVerificationMethod('qr')}
+                    className={`flex-1 pb-2 text-xs font-black uppercase tracking-wider transition-all border-b-2 ${verificationMethod === 'qr' ? 'text-samridhi-secondary border-samridhi-secondary text-glow-secondary' : 'text-samridhi-textMuted border-transparent hover:text-white'}`}
+                  >
+                    UPI QR Code Scanner
+                  </button>
                 </div>
 
-                <button
-                  onClick={() => {
-                    if (phoneInput.length !== 10) {
-                      alert("Please enter a valid 10-digit mobile number registered with your bank.");
-                      return;
-                    }
-                    setAaStep('consent-request');
-                  }}
-                  className="w-full bg-samridhi-primary hover:bg-samridhi-primary/90 text-white font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center space-x-1.5"
-                >
-                  <span>Proceed to Consent Checklist</span>
-                </button>
+                {/* Tab content */}
+                {verificationMethod === 'form' ? (
+                  <div className="space-y-4">
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1.5">Registered Mobile Number</label>
+                        <div className="relative">
+                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-samridhi-textMuted font-bold font-mono">+91</span>
+                          <input 
+                            type="tel"
+                            placeholder="9876543210"
+                            maxLength="10"
+                            value={phoneInput}
+                            onChange={(e) => setPhoneInput(e.target.value.replace(/\D/g, ''))}
+                            className="w-full bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary rounded-lg py-2.5 pl-12 pr-4 text-xs focus:border-samridhi-secondary focus:outline-none font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold text-samridhi-textMuted uppercase mb-1.5">UPI VPA ID (Optional)</label>
+                        <input 
+                          type="text"
+                          placeholder={selectedBank === 'Union Bank of India' ? 'name@unionbank' : 'name@okaxis'}
+                          value={vpaInput}
+                          onChange={(e) => setVpaInput(e.target.value)}
+                          className="w-full bg-samridhi-bg border border-samridhi-border text-samridhi-textPrimary rounded-lg p-2.5 text-xs focus:border-samridhi-secondary focus:outline-none font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        if (phoneInput.length !== 10) {
+                          alert("Please enter a valid 10-digit mobile number registered with your bank.");
+                          return;
+                        }
+                        setAaStep('consent-request');
+                      }}
+                      className="w-full bg-samridhi-primary hover:bg-samridhi-primary/90 text-white font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center space-x-1.5 transform active:scale-95"
+                    >
+                      <span>Proceed to Consent Checklist</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {qrScanStatus === 'idle' && (
+                      <div 
+                        onClick={() => {
+                          setQrScanStatus('scanning');
+                          setTimeout(() => {
+                            setQrScanStatus('success');
+                            setScannedUpiDetails({
+                              name: "YALAGA JOSHITHA",
+                              vpa: "yalagajoshitha@ybl",
+                              bank: "PhonePe UPI (Federal Bank)"
+                            });
+                            setVpaInput("yalagajoshitha@ybl");
+                            setPhoneInput("9988776655");
+                          }, 2500);
+                        }}
+                        className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-white/[0.08] hover:border-samridhi-secondary/40 rounded-xl bg-white/[0.01] hover:bg-white/[0.02] cursor-pointer space-y-3 transition-all"
+                      >
+                        <span className="text-3xl">📷</span>
+                        <p className="text-xs font-bold text-white text-center">Click to Scan / Upload PhonePe QR Code</p>
+                        <p className="text-[10px] text-samridhi-textMuted text-center font-medium">Scans the PhonePe QR uploaded by Yalaga Joshitha to map VPA credentials.</p>
+                      </div>
+                    )}
+
+                    {qrScanStatus === 'scanning' && (
+                      <div className="relative flex flex-col items-center justify-center p-4 border border-white/[0.08] rounded-xl bg-[#090b10] overflow-hidden h-64 shadow-inner">
+                        {/* Scanning QR code image frame */}
+                        <img 
+                          src="phonepe_qr.png" 
+                          className="h-full object-contain opacity-70 filter blur-[0.3px]" 
+                          alt="Scanning PhonePe QR Code"
+                        />
+                        {/* Glowing scan laser */}
+                        <div className="absolute left-0 right-0 h-0.5 bg-samridhi-success shadow-[0_0_15px_rgba(0,230,118,1)] animate-scan-laser top-[20%]"></div>
+                        
+                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center space-y-2">
+                          <div className="w-8 h-8 rounded-full border-2 border-samridhi-secondary border-t-transparent animate-spin"></div>
+                          <span className="text-[9px] font-black text-white uppercase tracking-widest font-mono bg-black/60 px-2.5 py-1 rounded">Decoding QR matrix...</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {qrScanStatus === 'success' && scannedUpiDetails && (
+                      <div className="space-y-4">
+                        <div className="bg-samridhi-success/5 border border-samridhi-success/20 p-4 rounded-xl space-y-2.5 text-xs">
+                          <div className="flex items-center justify-between border-b border-samridhi-success/20 pb-2">
+                            <span className="font-black text-[9px] text-samridhi-success uppercase tracking-widest font-mono">QR Decrypted successfully</span>
+                            <span className="text-samridhi-success text-xs">✔</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-samridhi-textMuted font-semibold">Beneficiary Name:</span>
+                            <span className="font-bold text-white uppercase tracking-wide">{scannedUpiDetails.name}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-samridhi-textMuted font-semibold">UPI VPA Address:</span>
+                            <span className="font-bold text-samridhi-secondary font-mono">{scannedUpiDetails.vpa}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-samridhi-textMuted font-semibold">Payment Provider:</span>
+                            <span className="font-bold text-white">{scannedUpiDetails.bank}</span>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => setAaStep('consent-request')}
+                          className="w-full bg-samridhi-primary hover:bg-samridhi-primary/90 text-white font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center space-x-1.5 transform active:scale-95"
+                        >
+                          <span>Proceed to Consent Checklist</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -795,28 +913,39 @@ window.DashboardOverviewTab = ({
                           // Set UPI verified
                           setUpiVerified(true);
                           
+                          const isQrMode = (verificationMethod === 'qr');
+                          const newName = isQrMode ? 'YALAGA JOSHITHA' : (user.name || 'DEMO');
+                          
                           // Dispatch notification
                           dispatch({
                             type: 'ADD_NOTIFICATION',
                             payload: {
                               id: `n-${Date.now()}`,
-                              text: `Union Bank of India UPI account (${userVpaValue}) verified via Account Aggregator. 12 transactions synced successfully.`,
+                              text: isQrMode
+                                ? `PhonePe UPI account (${userVpaValue}) verified via QR Code scanning. 12 transactions synced successfully.`
+                                : `Union Bank of India UPI account (${userVpaValue}) verified via Account Aggregator. 12 transactions synced successfully.`,
                               read: false,
                               date: "Just now"
                             }
                           });
 
-                          // Update user profile VPA in DB
+                          // Update user profile VPA and name in DB
                           if (user && user.isDemo) {
                             let localProfiles = JSON.parse(localStorage.getItem('samridhi_profiles') || '[]');
-                            localProfiles = localProfiles.map(p => p.id === user.id ? { ...p, upi_vpa: userVpaValue, upi_verified: true } : p);
+                            localProfiles = localProfiles.map(p => p.id === user.id ? { ...p, name: newName, upi_vpa: userVpaValue, upi_verified: true } : p);
                             localStorage.setItem('samridhi_profiles', JSON.stringify(localProfiles));
                           } else if (window.supabaseClient && user) {
-                            window.supabaseClient.from('profiles').update({ upi_vpa: userVpaValue, upi_verified: true }).eq('id', user.id).then();
+                            window.supabaseClient.from('profiles').update({ name: newName, upi_vpa: userVpaValue, upi_verified: true }).eq('id', user.id).then();
                           }
 
                           // Update state in app.js
                           user.upiVpa = userVpaValue;
+                          if (isQrMode) {
+                            user.name = newName;
+                          }
+                          if (typeof setUser === 'function') {
+                            setUser({ ...user, name: newName, upiVpa: userVpaValue, upiVerified: true });
+                          }
 
                           setAaStep('success');
                         }

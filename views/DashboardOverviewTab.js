@@ -16,7 +16,7 @@ window.DashboardOverviewTab = ({
 
   // AI Avatar Explainer States
   const [showExplainerModal, setShowExplainerModal] = useState(false);
-  const [explainerLang, setExplainerLang] = useState('hi'); // 'hi' | 'gu'
+  const [explainerLang, setExplainerLang] = useState('en'); // 'en' | 'hi' | 'gu' | 'te'
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeWordIdx, setActiveWordIdx] = useState(-1);
 
@@ -25,6 +25,11 @@ window.DashboardOverviewTab = ({
   const timerRef = React.useRef(null);
 
   const EXPLAINER_DATA = React.useMemo(() => ({
+    en: {
+      langCode: 'en-US',
+      label: 'English (English)',
+      text: `Hello ${user.name || 'guest'}, I am Priya, your AI underwriter. Your Samridhi credit score is ${calculatedScore || 300}. This indicates a very stable and secure profile. To improve it further, pay your bills on time, maintain a minimum balance in your bank accounts, and keep using active digital transactions. Samridhi wishes you a bright financial future.`
+    },
     hi: {
       langCode: 'hi-IN',
       label: 'Hindi (हिंदी)',
@@ -34,6 +39,11 @@ window.DashboardOverviewTab = ({
       langCode: 'gu-IN',
       label: 'Gujarati (ગુજરાતી)',
       text: `નમસ્તે ${user.name || 'ગ્રાહક'}, હું તમારી એઆઈ અંડરરાઇટર પ્રિયા છું. તમારો સમૃદ્ધિ ક્રેડિટ સ્કોર ${calculatedScore || 300} છે. આ એક ખૂબ જ સ્થિર અને સુરક્ષિત પ્રોફાઇલ દર્શાવે છે. આને વધુ સુધારવા માટે, સમયસર તમારા બીલોની ચુકવણી કરો, તમારા બેંક ખાતામાં ન્યૂનતમ બેલેન્સ જાળવો અને ડિજિટલ વ્યવહારો સક્રિય રાખો. સમૃદ્ધિ તમારા ઉજ્જવળ આર્થિક ભવિષ્યની કામના કરે છે.`
+    },
+    te: {
+      langCode: 'te-IN',
+      label: 'Telugu (తెలుగు)',
+      text: `నమస్తే ${user.name || 'కస్టమర్'}, నేను మీ ఏఐ అండర్ రైటర్ ప్రియను. మీ సమృద్ధి క్రెడిట్ స్కోరు ${calculatedScore || 300}. ఇది చాలా స్థిరమైన మరియు సురక్షితమైన ప్రొఫైల్‌ను సూచిస్తుంది. దీనిని మరింత మెరుగుపరచడానికి, మీ బిల్లులను సమయానికి చెల్లించండి, మీ బ్యాంక్ ఖాతాలలో కనీస నిల్వను నిర్వహించండి మరియు క్రియాశీల డిజిటల్ లావాదేవీలను ఉపయోగించండి. సమృద్ధి మీకు ఉజ్వలమైన ఆర్థిక భవిష్యత్తును కాంక్షిస్తుంది.`
     }
   }), [user.name, calculatedScore]);
 
@@ -1605,7 +1615,7 @@ window.DashboardOverviewTab = ({
             <div className="w-full flex items-center justify-between border-t border-white/[0.04] pt-4 select-none">
               {/* Language Selection Buttons */}
               <div className="flex space-x-1 bg-white/[0.02] border border-white/[0.06] p-1 rounded-xl">
-                {['hi', 'gu'].map((lang) => (
+                {['en', 'hi', 'gu', 'te'].map((lang) => (
                   <button
                     key={lang}
                     onClick={() => selectLanguage(lang)}

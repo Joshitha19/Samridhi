@@ -1,372 +1,600 @@
 // Landing Page View Component for Samridhi
 // Exposes LandingPageView globally
+// Redesigned: Bitcoin Trader Dark Wix template inspired layout
 
 window.LandingPageView = ({ setPage, scrollToSection, calculatedScore }) => {
-  const { useState } = React;
+  const { useState, useEffect, useRef } = React;
   const [demoScore, setDemoScore] = useState(72);
+  const [tickerPaused, setTickerPaused] = useState(false);
+
+  // Marquee ticker items
+  const tickerItems = [
+    { label: 'Credit-Invisible Indians', value: '190M+' },
+    { label: 'AI Features Scanned', value: '25+' },
+    { label: 'Credibility Score Range', value: '0 – 100' },
+    { label: 'Risk Categories', value: '3 Tiers' },
+    { label: 'Loan Match Accuracy', value: '94.7%' },
+    { label: 'Avg Score Boost', value: '+18 pts' },
+    { label: 'Processing Time', value: '< 3 Min' },
+    { label: 'Partner Lenders', value: '12+' },
+  ];
+
+  const scoreColor = demoScore >= 71 ? '#00E676' : demoScore >= 41 ? '#FFD600' : '#FF1744';
+  const scoreLabel = demoScore >= 71 ? 'LOW RISK' : demoScore >= 41 ? 'MODERATE' : 'HIGH RISK';
+  const scoreBg = demoScore >= 71 ? 'rgba(0,230,118,0.08)' : demoScore >= 41 ? 'rgba(255,214,0,0.08)' : 'rgba(255,23,68,0.08)';
 
   return (
-    <div className="flex-1 flex flex-col animate-fade-in" id="home">
-      
-      {/* HERO SECTION */}
-      <section className="relative py-28 px-6 overflow-hidden flex flex-col items-center justify-center min-h-[90vh] bg-black">
-        {/* Grid Glow background */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-samridhi-primary/5 via-transparent to-transparent pointer-events-none"></div>
-        <div className="absolute top-[20%] left-[30%] w-[450px] h-[450px] rounded-full bg-samridhi-primary/5 blur-[70px] glow-pulse-primary pointer-events-none"></div>
+    <div className="flex-1 flex flex-col animate-fade-in" id="home" style={{ fontFamily: "'Inter', sans-serif" }}>
 
-        {/* FLOATING 3D PERSPECTIVE COINS */}
-        
-        {/* Coin 1: Silver/Purple (Top-Left) */}
-        <div className="absolute top-[12%] left-[8%] w-20 md:w-28 h-20 md:h-28 animate-coin-1 z-0 select-none pointer-events-none">
-          <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_12px_24px_rgba(213,0,249,0.3)]">
-            <defs>
-              <radialGradient id="silverGrad" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#FFFFFF"/>
-                <stop offset="75%" stopColor="#C0C0C8"/>
-                <stop offset="100%" stopColor="#7B7B88"/>
-              </radialGradient>
-              <linearGradient id="purpleRing" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#FFFFFF"/>
-                <stop offset="50%" stopColor="#D500F9"/>
-                <stop offset="100%" stopColor="#4A148C"/>
-              </linearGradient>
-            </defs>
-            {/* Thickness rim */}
-            <ellipse cx="50" cy="54" rx="44" ry="20" fill="url(#purpleRing)" />
-            {/* Main face */}
-            <ellipse cx="50" cy="50" rx="44" ry="20" fill="url(#silverGrad)" />
-            {/* Inner face ring */}
-            <ellipse cx="50" cy="50" rx="34" ry="15" fill="none" stroke="#FFFFFF" strokeWidth="1" strokeOpacity="0.4" />
-            {/* Center glow symbol */}
-            <text x="50" y="55" fill="#D500F9" fontSize="15" fontWeight="bold" textAnchor="middle" style={{ filter: "drop-shadow(0 0 2px #D500F9)" }}>AI</text>
-          </svg>
-        </div>
+      {/* ═══════════════════════════════════════════
+          HERO — SPLIT LAYOUT (Left copy | Right widget)
+      ═══════════════════════════════════════════ */}
+      <section className="relative min-h-screen flex items-center overflow-hidden bg-[#050507]">
 
-        {/* Coin 2: Gold with $ (Bottom-Left) */}
-        <div className="absolute bottom-[22%] left-[10%] w-24 md:w-32 h-24 md:h-32 animate-coin-2 z-0 select-none pointer-events-none">
-          <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_12px_24px_rgba(255,214,0,0.25)]">
-            <defs>
-              <radialGradient id="goldGrad" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#FFF59D"/>
-                <stop offset="60%" stopColor="#FBC02D"/>
-                <stop offset="100%" stopColor="#F57F17"/>
-              </radialGradient>
-              <linearGradient id="goldRing" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#FFF9C4"/>
-                <stop offset="50%" stopColor="#F57F17"/>
-                <stop offset="100%" stopColor="#E65100"/>
-              </linearGradient>
-            </defs>
-            <ellipse cx="50" cy="54" rx="44" ry="20" fill="url(#goldRing)" />
-            <ellipse cx="50" cy="50" rx="44" ry="20" fill="url(#goldGrad)" />
-            <ellipse cx="50" cy="50" rx="34" ry="15" fill="none" stroke="#FFF9C4" strokeWidth="1.2" strokeOpacity="0.5" />
-            <text x="50" y="56" fill="#E65100" fontSize="18" fontWeight="bold" textAnchor="middle">$</text>
-          </svg>
-        </div>
+        {/* Background grid lines */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          backgroundImage: `linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px)`,
+          backgroundSize: '80px 80px'
+        }} />
 
-        {/* Coin 3: Red with Bitcoin symbol (Bottom-Center) */}
-        <div className="absolute bottom-[8%] left-[34%] w-20 md:w-26 h-20 md:h-26 animate-coin-3 z-0 select-none pointer-events-none">
-          <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_12px_24px_rgba(255,23,68,0.3)]">
-            <defs>
-              <radialGradient id="redGrad" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#FF8A80"/>
-                <stop offset="65%" stopColor="#D50000"/>
-                <stop offset="100%" stopColor="#9C0000"/>
-              </radialGradient>
-              <linearGradient id="redRing" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#FFCDD2"/>
-                <stop offset="50%" stopColor="#9C0000"/>
-                <stop offset="100%" stopColor="#5D0000"/>
-              </linearGradient>
-            </defs>
-            <ellipse cx="50" cy="54" rx="44" ry="20" fill="url(#redRing)" />
-            <ellipse cx="50" cy="50" rx="44" ry="20" fill="url(#redGrad)" />
-            <ellipse cx="50" cy="50" rx="34" ry="15" fill="none" stroke="#FFCDD2" strokeWidth="1.2" strokeOpacity="0.5" />
-            <text x="50" y="56" fill="#FFFFFF" fontSize="18" fontWeight="bold" textAnchor="middle">B</text>
-          </svg>
-        </div>
+        {/* Ambient glows */}
+        <div className="absolute top-0 left-0 w-[600px] h-[600px] rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(108,99,255,0.08) 0%, transparent 70%)', transform: 'translate(-30%, -20%)' }} />
+        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(0,229,255,0.06) 0%, transparent 70%)', transform: 'translate(20%, 20%)' }} />
 
-        {/* Coin 4: Pink with Star (Bottom-Right) */}
-        <div className="absolute bottom-[12%] right-[12%] w-24 md:w-32 h-24 md:h-32 animate-coin-4 z-0 select-none pointer-events-none">
-          <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_12px_24px_rgba(255,23,128,0.3)]">
-            <defs>
-              <radialGradient id="pinkGrad" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#FF80AB"/>
-                <stop offset="70%" stopColor="#C51162"/>
-                <stop offset="100%" stopColor="#880E4F"/>
-              </radialGradient>
-              <linearGradient id="pinkRing" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#F8BBD0"/>
-                <stop offset="50%" stopColor="#880E4F"/>
-                <stop offset="100%" stopColor="#4A148C"/>
-              </linearGradient>
-            </defs>
-            <ellipse cx="50" cy="54" rx="44" ry="20" fill="url(#pinkRing)" />
-            <ellipse cx="50" cy="50" rx="44" ry="20" fill="url(#pinkGrad)" />
-            <ellipse cx="50" cy="50" rx="34" ry="15" fill="none" stroke="#F8BBD0" strokeWidth="1.2" strokeOpacity="0.5" />
-            <path d="M50 38 L53 47 L62 47 L55 52 L58 61 L50 55 L42 61 L45 52 L38 47 L47 47 Z" fill="#FFFFFF" />
-          </svg>
-        </div>
+        <div className="max-w-7xl mx-auto w-full px-6 lg:px-12 py-24 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
 
-        {/* Coin 5: Purple with Rupee symbol (Mid-Right) */}
-        <div className="absolute top-[22%] right-[8%] w-26 md:w-34 h-26 md:h-34 animate-coin-5 z-0 select-none pointer-events-none">
-          <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_15px_30px_rgba(213,0,249,0.35)]">
-            <defs>
-              <radialGradient id="magentaGrad" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#EA80FC"/>
-                <stop offset="65%" stopColor="#AA00FF"/>
-                <stop offset="100%" stopColor="#4A148C"/>
-              </radialGradient>
-              <linearGradient id="magentaRing" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#E1BEE7"/>
-                <stop offset="50%" stopColor="#4A148C"/>
-                <stop offset="100%" stopColor="#311B92"/>
-              </linearGradient>
-            </defs>
-            <ellipse cx="50" cy="54" rx="44" ry="20" fill="url(#magentaRing)" />
-            <ellipse cx="50" cy="50" rx="44" ry="20" fill="url(#magentaGrad)" />
-            <ellipse cx="50" cy="50" rx="34" ry="15" fill="none" stroke="#E1BEE7" strokeWidth="1.2" strokeOpacity="0.5" />
-            <text x="50" y="56" fill="#FFFFFF" fontSize="18" fontWeight="bold" textAnchor="middle">₹</text>
-          </svg>
-        </div>
+          {/* LEFT — Copy */}
+          <div className="flex flex-col space-y-8">
+            {/* Eyebrow tag */}
+            <div className="inline-flex items-center space-x-2 w-fit">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-pulse" />
+              <span style={{
+                background: 'linear-gradient(90deg, rgba(0,229,255,0.12) 0%, rgba(108,99,255,0.12) 100%)',
+                border: '1px solid rgba(0,229,255,0.2)',
+                borderRadius: '999px',
+                padding: '4px 14px',
+                fontSize: '10px',
+                fontWeight: '800',
+                letterSpacing: '0.12em',
+                color: '#00E5FF',
+                textTransform: 'uppercase'
+              }}>
+                India's First Alternative Credit OS
+              </span>
+            </div>
 
-        {/* Winding Ribbon across the bottom */}
-        <svg className="absolute bottom-0 left-0 w-full h-44 pointer-events-none z-10" viewBox="0 0 1440 200" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="ribbonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#00E5FF" stopOpacity="0.03" />
-              <stop offset="50%" stopColor="#D500F9" stopOpacity="0.18" />
-              <stop offset="100%" stopColor="#00E676" stopOpacity="0.03" />
-            </linearGradient>
-          </defs>
-          {/* Filled ribbon */}
-          <path 
-            d="M-50,160 Q280,30 720,130 T1490,90 L1490,250 L-50,250 Z" 
-            fill="url(#ribbonGrad)" 
-          />
-          {/* Dotted border line */}
-          <path 
-            d="M-50,160 Q280,30 720,130 T1490,90" 
-            fill="none" 
-            stroke="#D500F9" 
-            strokeWidth="2.5" 
-            strokeOpacity="0.4"
-            strokeDasharray="8 8"
-          />
-          {/* Solid accent line */}
-          <path 
-            d="M-50,155 Q280,25 720,125 T1490,85" 
-            fill="none" 
-            stroke="#00E5FF" 
-            strokeWidth="1.5" 
-            strokeOpacity="0.3"
-          />
-        </svg>
+            {/* Main headline */}
+            <h1 style={{
+              fontSize: 'clamp(2.4rem, 5vw, 4.5rem)',
+              fontWeight: '900',
+              lineHeight: '1.06',
+              letterSpacing: '-0.02em',
+              color: '#ffffff'
+            }}>
+              Your skills are<br />
+              your <span style={{
+                background: 'linear-gradient(135deg, #00E5FF 0%, #6C63FF 50%, #00E676 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>credit score.</span>
+            </h1>
 
-        {/* CENTERED HERO CONTENT */}
-        <div className="max-w-3xl mx-auto text-center relative z-10 flex flex-col items-center space-y-7 animate-slide-up pt-10">
-          
-          <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.1] select-none">
-            A new era of <br />
-            <span className="bg-gradient-to-r from-samridhi-primary via-samridhi-secondary to-samridhi-success bg-clip-text text-transparent">
-              personal finance
-            </span>
-          </h1>
-          
-          <p className="text-xs md:text-sm text-samridhi-textMuted max-w-lg leading-relaxed mx-auto font-semibold">
-            India's first decentralized alternative credibility index mapping UPI cashflows, skill verifications, and statement diagnostics to unlock access to capital.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center items-center">
-            <button 
-              onClick={() => setPage('signup')}
-              className="px-8 py-3.5 bg-white hover:bg-white/95 text-black font-extrabold rounded-full shadow-lg shadow-samridhi-primary/15 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center space-x-2 w-48"
-            >
-              <span>Join waitlist</span>
-              <Icons.ArrowRight className="w-4 h-4 text-black" />
-            </button>
-            <button 
-              onClick={() => setPage('banker-login')}
-              className="px-8 py-3.5 bg-samridhi-surface hover:bg-samridhi-card text-samridhi-textPrimary border border-samridhi-border hover:border-samridhi-primary/50 font-bold rounded-full transition-all duration-300 transform hover:-translate-y-0.5 w-48"
-            >
-              Bank Portal Access
-            </button>
+            {/* Subheading */}
+            <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.5)', lineHeight: '1.75', maxWidth: '460px', fontWeight: '400' }}>
+              Samridhi maps UPI cashflows, skill verifications, and statement diagnostics into an AI-powered credibility index — unlocking capital for India's 190 million credit-invisible citizens.
+            </p>
+
+            {/* CTA Row */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <button
+                onClick={() => setPage('signup')}
+                style={{
+                  background: 'linear-gradient(135deg, #00E5FF 0%, #6C63FF 100%)',
+                  color: '#050507',
+                  fontWeight: '800',
+                  fontSize: '13px',
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  padding: '14px 32px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 0 32px rgba(0,229,255,0.25)'
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+              >
+                Get Your Score Free
+                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setPage('banker-login')}
+                style={{
+                  background: 'transparent',
+                  color: 'rgba(255,255,255,0.7)',
+                  fontWeight: '700',
+                  fontSize: '13px',
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  padding: '14px 32px',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = '#fff'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
+              >
+                Bank Portal Access
+              </button>
+            </div>
+
+            {/* Trust indicators */}
+            <div className="flex items-center space-x-6 pt-2">
+              {[
+                { icon: '🔒', text: 'Aadhaar-grade KYC' },
+                { icon: '⚡', text: 'Real-time Score' },
+                { icon: '🏦', text: '12+ Lender Network' }
+              ].map((item, i) => (
+                <div key={i} className="flex items-center space-x-1.5">
+                  <span style={{ fontSize: '13px' }}>{item.icon}</span>
+                  <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{item.text}</span>
+                </div>
+              ))}
+            </div>
           </div>
+
+          {/* RIGHT — Live Score Widget */}
+          <div className="flex flex-col items-center justify-center lg:items-end">
+            <div style={{
+              background: 'rgba(255,255,255,0.025)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '24px',
+              padding: '32px',
+              width: '100%',
+              maxWidth: '380px',
+              backdropFilter: 'blur(20px)',
+              boxShadow: '0 0 60px rgba(108,99,255,0.08), inset 0 1px 0 rgba(255,255,255,0.05)'
+            }}>
+              {/* Widget header */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+                <div>
+                  <p style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                    Live Score Preview
+                  </p>
+                  <p style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>Drag to test</p>
+                </div>
+                <span style={{
+                  padding: '4px 10px',
+                  background: scoreBg,
+                  border: `1px solid ${scoreColor}30`,
+                  borderRadius: '6px',
+                  fontSize: '9px',
+                  fontWeight: '900',
+                  color: scoreColor,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  transition: 'all 0.3s'
+                }}>{scoreLabel}</span>
+              </div>
+
+              {/* Gauge */}
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+                <CircularGauge score={demoScore} size={160} />
+              </div>
+
+              {/* Slider */}
+              <div style={{ marginBottom: '20px' }}>
+                <input
+                  type="range"
+                  min="10"
+                  max="99"
+                  value={demoScore}
+                  onChange={e => setDemoScore(parseInt(e.target.value))}
+                  style={{ width: '100%', accentColor: scoreColor, cursor: 'pointer' }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px' }}>
+                  <span style={{ fontSize: '9px', color: '#FF1744', fontWeight: '800' }}>HIGH RISK</span>
+                  <span style={{ fontSize: '9px', color: '#FFD600', fontWeight: '800' }}>MODERATE</span>
+                  <span style={{ fontSize: '9px', color: '#00E676', fontWeight: '800' }}>LOW RISK</span>
+                </div>
+              </div>
+
+              {/* Mini metric rows */}
+              {[
+                { label: 'UPI Consistency', val: Math.round(demoScore * 0.9), color: '#00E5FF' },
+                { label: 'Skill Verification', val: Math.round(demoScore * 0.75), color: '#6C63FF' },
+                { label: 'Statement Score', val: Math.round(demoScore * 0.85), color: '#00E676' },
+              ].map((m, i) => (
+                <div key={i} style={{ marginBottom: i < 2 ? '10px' : '0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', fontWeight: '600' }}>{m.label}</span>
+                    <span style={{ fontSize: '10px', color: m.color, fontWeight: '800', fontFamily: 'monospace' }}>{m.val}/100</span>
+                  </div>
+                  <div style={{ height: '3px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%',
+                      width: `${m.val}%`,
+                      background: m.color,
+                      borderRadius: '2px',
+                      transition: 'width 0.4s ease',
+                      boxShadow: `0 0 8px ${m.color}60`
+                    }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
 
+        {/* Bottom gradient fade into ticker */}
+        <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none"
+          style={{ background: 'linear-gradient(to bottom, transparent, #050507)' }} />
       </section>
 
-      {/* STATS BAR */}
-      <section className="bg-samridhi-surface border-y border-samridhi-border py-12 px-6 bg-grid-glow">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
-          {[
-            { val: "190M+", label: "Credit-Invisible Indians" },
-            { val: "25+", label: "Alternative Features Scanned" },
-            { val: "0 - 100", label: "Algorithmic Trust Rating" },
-            { val: "3", label: "Targeted Risk Categories" }
-          ].map((st, i) => (
-            <div key={i} className="text-center flex flex-col space-y-2 border-r border-samridhi-border/40 last:border-none">
-              <span className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-samridhi-primary to-samridhi-secondary bg-clip-text text-transparent font-mono">
-                {st.val}
-              </span>
-              <span className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">
-                {st.label}
-              </span>
+      {/* ═══════════════════════════════════════════
+          TICKER BAR — Animated marquee stats
+      ═══════════════════════════════════════════ */}
+      <div style={{
+        background: '#0a0a12',
+        borderTop: '1px solid rgba(255,255,255,0.05)',
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        padding: '14px 0',
+        overflow: 'hidden',
+        position: 'relative'
+      }}>
+        {/* Fade edges */}
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '80px', background: 'linear-gradient(to right, #0a0a12, transparent)', zIndex: 2 }} />
+        <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '80px', background: 'linear-gradient(to left, #0a0a12, transparent)', zIndex: 2 }} />
+
+        <div style={{
+          display: 'flex',
+          gap: '0',
+          animation: 'marquee 30s linear infinite',
+          width: 'max-content'
+        }}>
+          {[...tickerItems, ...tickerItems, ...tickerItems].map((item, i) => (
+            <div key={i} style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '32px',
+              padding: '0 40px',
+              borderRight: '1px solid rgba(255,255,255,0.06)',
+              whiteSpace: 'nowrap'
+            }}>
+              <span style={{ fontSize: '13px', fontWeight: '900', color: '#00E5FF', fontFamily: 'monospace' }}>{item.value}</span>
+              <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{item.label}</span>
             </div>
           ))}
         </div>
-      </section>
 
-      {/* INTERACTIVE PREVIEW SECTION */}
-      <section className="py-20 px-6 bg-black flex flex-col items-center justify-center border-b border-samridhi-border">
-        <div className="max-w-3xl w-full mx-auto flex flex-col md:flex-row items-center justify-between gap-12 p-8 rounded-3xl bg-samridhi-card border border-samridhi-border shadow-2xl relative overflow-hidden hover-glow-green">
-          {/* Subtle background glow */}
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-samridhi-secondary/5 to-transparent rounded-tr-3xl pointer-events-none"></div>
-          
-          <div className="space-y-4 text-left max-w-sm">
-            <span className="text-[10px] font-extrabold text-samridhi-secondary uppercase tracking-widest block">Interactive Underwriting</span>
-            <h3 className="text-2xl font-extrabold tracking-tight text-white leading-normal">Test the scoring algorithm live</h3>
-            <p className="text-xs text-samridhi-textMuted leading-relaxed">
-              Drag the preview slider to adjust the credibility index score. See how alternative categories and risk segments transition in real-time.
-            </p>
+        <style>{`
+          @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-33.33%); }
+          }
+        `}</style>
+      </div>
+
+      {/* ═══════════════════════════════════════════
+          WHY SAMRIDHI — Large number callouts
+      ═══════════════════════════════════════════ */}
+      <section style={{ background: '#050507', padding: '100px 24px', position: 'relative' }}>
+        <div style={{
+          position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+          width: '1px', height: '80px',
+          background: 'linear-gradient(to bottom, transparent, rgba(108,99,255,0.4), transparent)'
+        }} />
+
+        <div className="max-w-7xl mx-auto">
+          <div style={{ marginBottom: '64px' }}>
+            <span style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '0.16em', color: '#6C63FF', textTransform: 'uppercase' }}>The Problem We Solve</span>
+            <h2 style={{ fontSize: 'clamp(2rem, 4vw, 3.2rem)', fontWeight: '900', color: '#fff', marginTop: '12px', letterSpacing: '-0.02em', lineHeight: '1.15' }}>
+              Traditional credit is broken<br />
+              <span style={{ color: 'rgba(255,255,255,0.3)' }}>for most Indians.</span>
+            </h2>
           </div>
 
-          <div className="flex flex-col items-center justify-center shrink-0 w-full sm:w-64">
-            <CircularGauge score={demoScore} size={160} />
-            <div className="w-full mt-6 space-y-2">
-              <input 
-                type="range" 
-                min="10" 
-                max="99" 
-                value={demoScore} 
-                onChange={(e) => setDemoScore(parseInt(e.target.value))}
-                className="w-full h-1 bg-samridhi-border rounded-lg appearance-none cursor-pointer accent-samridhi-primary focus:outline-none"
-              />
-              <div className="grid grid-cols-3 gap-2 text-[8px] text-center font-black uppercase text-samridhi-textMuted mt-1">
-                <span className="text-samridhi-danger bg-samridhi-danger/5 py-1 rounded">0-40 Red</span>
-                <span className="text-samridhi-warning bg-samridhi-warning/5 py-1 rounded">41-70 Yellow</span>
-                <span className="text-samridhi-success bg-samridhi-success/5 py-1 rounded">71-100 Green</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FEATURES GRID */}
-      <section className="py-24 px-6 relative bg-black" id="features">
-        <div className="max-w-7xl mx-auto flex flex-col space-y-12">
-          <div className="text-center flex flex-col space-y-4 max-w-2xl mx-auto">
-            <span className="text-xs font-extrabold text-samridhi-primary uppercase tracking-widest">Our Features</span>
-            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white">Alternative Underwriting Tools</h2>
-            <p className="text-xs text-samridhi-textMuted leading-relaxed">
-              We look beyond bureaucratic parameters. Our modular algorithm maps economic capacity through modern digital indicators.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px" style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '16px', overflow: 'hidden' }}>
             {[
-              {
-                title: "Skill Credibility Index",
-                description: "Bypasses standard credit reports by verifying code repositories, freelancing credentials, and professional certificates.",
-                icon: (
-                  <svg className="w-6 h-6 text-samridhi-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                )
-              },
-              {
-                title: "UPI Analysis",
-                description: "Scans transactional recency, inflow-outflow consistency, and utility patterns to map digital solvency.",
-                icon: (
-                  <svg className="w-6 h-6 text-samridhi-secondary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                  </svg>
-                )
-              },
-              {
-                title: "Credibility Score 0-100",
-                description: "Consolidates multidimensional behavior metrics into a single real-time trust rating.",
-                icon: (
-                  <svg className="w-6 h-6 text-samridhi-success" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                )
-              },
-              {
-                title: "Risk Classification",
-                description: "Tiers loan applicants instantly using advanced AI clusters to identify credit-invisible opportunities.",
-                icon: (
-                  <svg className="w-6 h-6 text-samridhi-warning" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                )
-              },
-              {
-                title: "Smart Loan Recommender",
-                description: "AI-matching engine pairs your credibility metrics with ideal micro-loans, starting from low interest rates.",
-                icon: (
-                  <svg className="w-6 h-6 text-samridhi-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                  </svg>
-                )
-              },
-              {
-                title: "Explainable AI (XAI)",
-                description: "Glass-box transparency detailing the exact parameters determining credit scores, ensuring fair evaluations.",
-                icon: (
-                  <svg className="w-6 h-6 text-samridhi-secondary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                )
-              }
-            ].map((feat, i) => (
-              <div 
-                key={i} 
-                className="bg-samridhi-card border border-samridhi-border p-6 rounded-2xl hover-glow-green group"
-              >
-                <div className="w-11 h-11 rounded-xl bg-samridhi-surface flex items-center justify-center border border-samridhi-border group-hover:border-samridhi-primary/30 transition-colors mb-5 shadow-inner">
-                  {feat.icon}
-                </div>
-                <h3 className="text-base font-extrabold mb-2 text-white group-hover:text-samridhi-primary transition-colors">{feat.title}</h3>
-                <p className="text-[11px] text-samridhi-textMuted leading-relaxed">{feat.description}</p>
+              { num: '190M+', desc: 'Indians have no traditional credit history — they are invisible to banks.', color: '#FF1744', label: 'Credit-Invisible' },
+              { num: '67%', desc: 'Of micro-loan applicants are rejected despite strong earning capacity and repayment intent.', color: '#FFD600', label: 'Rejection Rate' },
+              { num: '₹42L Cr', desc: 'Annual credit gap in the MSME and informal economy sector — unfunded potential.', color: '#00E676', label: 'Funding Gap' },
+            ].map((stat, i) => (
+              <div key={i} style={{
+                background: '#080810',
+                padding: '48px 40px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px'
+              }}>
+                <span style={{ fontSize: '10px', fontWeight: '800', color: stat.color, letterSpacing: '0.14em', textTransform: 'uppercase', opacity: 0.8 }}>{stat.label}</span>
+                <span style={{
+                  fontSize: 'clamp(3rem, 5vw, 4.5rem)',
+                  fontWeight: '900',
+                  color: stat.color,
+                  fontFamily: 'monospace',
+                  lineHeight: '1',
+                  textShadow: `0 0 40px ${stat.color}40`
+                }}>{stat.num}</span>
+                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', lineHeight: '1.7', maxWidth: '280px' }}>{stat.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* HOW IT WORKS SECTION */}
-      <section className="py-24 px-6 bg-samridhi-surface/30 border-y border-samridhi-border bg-grid-glow" id="how-it-works">
-        <div className="max-w-7xl mx-auto flex flex-col space-y-16">
-          <div className="text-center flex flex-col space-y-4 max-w-2xl mx-auto">
-            <span className="text-xs font-extrabold text-samridhi-secondary uppercase tracking-widest">AI Pipeline</span>
-            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white">How It Works</h2>
-            <p className="text-xs text-samridhi-textMuted leading-relaxed">
-              The architecture behind Samridhi transforms alternate data points into real-time credit accessibility.
-            </p>
+      {/* ═══════════════════════════════════════════
+          BENTO FEATURES GRID
+      ═══════════════════════════════════════════ */}
+      <section style={{ background: '#080810', padding: '100px 24px', borderTop: '1px solid rgba(255,255,255,0.04)' }} id="features">
+        <div className="max-w-7xl mx-auto">
+          {/* Section heading */}
+          <div style={{ marginBottom: '56px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '24px' }}>
+            <div>
+              <span style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '0.16em', color: '#00E5FF', textTransform: 'uppercase' }}>Platform Capabilities</span>
+              <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: '900', color: '#fff', marginTop: '12px', letterSpacing: '-0.02em', lineHeight: '1.15' }}>
+                Built for the<br />new credit economy.
+              </h2>
+            </div>
+            <button
+              onClick={() => setPage('signup')}
+              style={{
+                background: 'transparent',
+                color: 'rgba(255,255,255,0.5)',
+                fontWeight: '700',
+                fontSize: '12px',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                border: '1px solid rgba(255,255,255,0.1)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.3)'; e.currentTarget.style.color = '#fff'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; }}
+            >
+              View All Features
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" /></svg>
+            </button>
           </div>
 
-          {/* Stepper Grid */}
-          <div className="relative">
-            {/* Horizontal progress bar for desktop */}
-            <div className="hidden lg:block absolute top-7 left-[8%] right-[8%] h-[1.5px] bg-gradient-to-r from-samridhi-primary/45 to-samridhi-secondary/45 z-0"></div>
+          {/* Bento grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 relative z-10">
+            {/* Card 1 — Large hero card (spans 2 cols on lg) */}
+            <div className="lg:col-span-2" style={{
+              background: 'linear-gradient(135deg, rgba(0,229,255,0.06) 0%, rgba(108,99,255,0.06) 100%)',
+              border: '1px solid rgba(0,229,255,0.15)',
+              borderRadius: '20px',
+              padding: '40px',
+              position: 'relative',
+              overflow: 'hidden',
+              transition: 'all 0.3s'
+            }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(0,229,255,0.35)'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0,229,255,0.15)'}
+            >
+              <div style={{
+                position: 'absolute', top: 0, right: 0,
+                width: '200px', height: '200px',
+                background: 'radial-gradient(circle, rgba(0,229,255,0.08) 0%, transparent 70%)',
+                pointerEvents: 'none'
+              }} />
+              <div style={{
+                width: '48px', height: '48px', borderRadius: '14px',
+                background: 'rgba(0,229,255,0.1)',
+                border: '1px solid rgba(0,229,255,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginBottom: '24px'
+              }}>
+                <svg width="22" height="22" fill="none" stroke="#00E5FF" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              </div>
+              <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#fff', marginBottom: '12px', letterSpacing: '-0.01em' }}>UPI Transaction Analysis</h3>
+              <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', lineHeight: '1.75', maxWidth: '440px' }}>
+                Scans transactional recency, inflow-outflow consistency, merchant diversity, and utility patterns across 6 months of UPI history to build your digital solvency fingerprint.
+              </p>
+              <div style={{ marginTop: '28px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {['Inflow Mapping', 'Outflow Patterns', 'Merchant Diversity', 'Consistency Score'].map((tag, i) => (
+                  <span key={i} style={{
+                    padding: '4px 12px',
+                    background: 'rgba(0,229,255,0.08)',
+                    border: '1px solid rgba(0,229,255,0.15)',
+                    borderRadius: '999px',
+                    fontSize: '10px',
+                    fontWeight: '700',
+                    color: '#00E5FF',
+                    letterSpacing: '0.06em'
+                  }}>{tag}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Card 2 */}
+            <div style={{
+              background: 'rgba(255,255,255,0.02)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              borderRadius: '20px',
+              padding: '32px',
+              transition: 'all 0.3s',
+              cursor: 'default'
+            }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(108,99,255,0.35)'; e.currentTarget.style.background = 'rgba(108,99,255,0.04)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
+            >
+              <div style={{
+                width: '44px', height: '44px', borderRadius: '12px',
+                background: 'rgba(108,99,255,0.12)',
+                border: '1px solid rgba(108,99,255,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginBottom: '20px'
+              }}>
+                <svg width="20" height="20" fill="none" stroke="#6C63FF" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#fff', marginBottom: '10px' }}>Skill Credibility Index</h3>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', lineHeight: '1.7' }}>
+                Verifies GitHub repos, freelancing credentials, and professional certificates to quantify earning capacity beyond payslips.
+              </p>
+            </div>
+
+            {/* Card 3 */}
+            <div style={{
+              background: 'rgba(255,255,255,0.02)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              borderRadius: '20px',
+              padding: '32px',
+              transition: 'all 0.3s'
+            }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,230,118,0.35)'; e.currentTarget.style.background = 'rgba(0,230,118,0.03)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
+            >
+              <div style={{
+                width: '44px', height: '44px', borderRadius: '12px',
+                background: 'rgba(0,230,118,0.1)',
+                border: '1px solid rgba(0,230,118,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginBottom: '20px'
+              }}>
+                <svg width="20" height="20" fill="none" stroke="#00E676" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#fff', marginBottom: '10px' }}>Real-Time 0–100 Score</h3>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', lineHeight: '1.7' }}>
+                Consolidates 25+ multidimensional behavior metrics into a single living credibility score updated as your profile changes.
+              </p>
+            </div>
+
+            {/* Card 4 */}
+            <div style={{
+              background: 'rgba(255,255,255,0.02)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              borderRadius: '20px',
+              padding: '32px',
+              transition: 'all 0.3s'
+            }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,214,0,0.35)'; e.currentTarget.style.background = 'rgba(255,214,0,0.03)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
+            >
+              <div style={{
+                width: '44px', height: '44px', borderRadius: '12px',
+                background: 'rgba(255,214,0,0.1)',
+                border: '1px solid rgba(255,214,0,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginBottom: '20px'
+              }}>
+                <svg width="20" height="20" fill="none" stroke="#FFD600" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#fff', marginBottom: '10px' }}>AI Risk Classification</h3>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', lineHeight: '1.7' }}>
+                Tiers loan applicants instantly using advanced ML clusters — Low / Moderate / High — matching them to appropriate credit products.
+              </p>
+            </div>
+
+            {/* Card 5 — Explainable AI — full width bottom */}
+            <div className="md:col-span-2 lg:col-span-1" style={{
+              background: 'linear-gradient(135deg, rgba(213,0,249,0.06) 0%, rgba(108,99,255,0.06) 100%)',
+              border: '1px solid rgba(213,0,249,0.15)',
+              borderRadius: '20px',
+              padding: '32px',
+              transition: 'all 0.3s'
+            }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(213,0,249,0.35)'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(213,0,249,0.15)'}
+            >
+              <div style={{
+                width: '44px', height: '44px', borderRadius: '12px',
+                background: 'rgba(213,0,249,0.1)',
+                border: '1px solid rgba(213,0,249,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginBottom: '20px'
+              }}>
+                <svg width="20" height="20" fill="none" stroke="#D500F9" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </div>
+              <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#fff', marginBottom: '10px' }}>Explainable AI (XAI)</h3>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', lineHeight: '1.7' }}>
+                Glass-box transparency explaining exactly which parameters affect your score, with multilingual AI avatar guidance in Hindi, Telugu, and English.
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          HOW IT WORKS — Numbered pipeline steps
+      ═══════════════════════════════════════════ */}
+      <section style={{ background: '#050507', padding: '100px 24px', borderTop: '1px solid rgba(255,255,255,0.04)' }} id="how-it-works">
+        <div className="max-w-7xl mx-auto">
+          <div style={{ marginBottom: '64px' }}>
+            <span style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '0.16em', color: '#6C63FF', textTransform: 'uppercase' }}>AI Pipeline</span>
+            <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: '900', color: '#fff', marginTop: '12px', letterSpacing: '-0.02em', lineHeight: '1.15' }}>
+              From data to capital<br />
+              <span style={{ color: 'rgba(255,255,255,0.3)' }}>in under 3 minutes.</span>
+            </h2>
+          </div>
+
+          {/* Steps — horizontal with connecting line */}
+          <div className="relative">
+            {/* Connector line for desktop */}
+            <div className="hidden lg:block absolute" style={{
+              top: '28px', left: '9%', right: '9%', height: '1px',
+              background: 'linear-gradient(90deg, transparent, rgba(108,99,255,0.4) 20%, rgba(0,229,255,0.4) 80%, transparent)'
+            }} />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 relative">
               {[
-                { step: "01", title: "Data Collection", desc: "Integrate UPI transaction logs, GitHub/LinkedIn repos, and certification platforms securely." },
-                { step: "02", title: "Preprocessing", desc: "Cleans data anomalies, structures timelines, and categorizes income patterns." },
-                { step: "03", title: "Feature Engineering", desc: "Builds 25+ features covering cash stability, gig-ratings, and skill metrics." },
-                { step: "04", title: "ML Scored Underwriting", desc: "Predicts credit trustworthiness through alternate machine learning scoring models." },
-                { step: "05", title: "Credit Approval Decision", desc: "Pairs applicants with low-interest institutional capital partners instantly." }
+                { step: '01', title: 'Data Collection', desc: 'Securely connect UPI logs, GitHub repos, and certification platforms via Account Aggregator.' },
+                { step: '02', title: 'Preprocessing', desc: 'Cleans anomalies, structures timelines, and categorizes income patterns with data hygiene AI.' },
+                { step: '03', title: 'Feature Engineering', desc: 'Builds 25+ features covering cash stability, gig ratings, skill metrics, and inventory.' },
+                { step: '04', title: 'ML Underwriting', desc: 'Predicts credit trustworthiness using ensemble scoring models trained on alternate data.' },
+                { step: '05', title: 'Credit Decision', desc: 'Pairs applicants with matched micro-loan partners at competitive rates instantly.' },
               ].map((st, i) => (
-                <div key={i} className="flex flex-col items-center text-center space-y-4 group">
-                  <div className="w-14 h-14 rounded-full bg-samridhi-card border border-samridhi-border group-hover:border-samridhi-primary flex items-center justify-center font-black text-sm text-samridhi-textMuted group-hover:text-samridhi-secondary transition-all duration-300 shadow-xl font-mono">
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '16px' }}
+                  className="group">
+                  {/* Step circle */}
+                  <div style={{
+                    width: '56px', height: '56px', borderRadius: '50%',
+                    background: '#0a0a14',
+                    border: '1px solid rgba(108,99,255,0.25)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: 'monospace', fontWeight: '900', fontSize: '14px',
+                    color: '#6C63FF',
+                    transition: 'all 0.3s',
+                    position: 'relative', zIndex: 1,
+                    flexShrink: 0
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#6C63FF'; e.currentTarget.style.boxShadow = '0 0 20px rgba(108,99,255,0.3)'; e.currentTarget.style.color = '#00E5FF'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(108,99,255,0.25)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.color = '#6C63FF'; }}
+                  >
                     {st.step}
                   </div>
-                  <div className="flex flex-col space-y-2">
-                    <h4 className="font-extrabold text-sm text-samridhi-textPrimary">{st.title}</h4>
-                    <p className="text-[10px] text-samridhi-textMuted max-w-[200px] leading-relaxed mx-auto">{st.desc}</p>
+                  <div>
+                    <h4 style={{ fontSize: '13px', fontWeight: '800', color: '#fff', marginBottom: '8px' }}>{st.title}</h4>
+                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', lineHeight: '1.65', maxWidth: '160px', margin: '0 auto' }}>{st.desc}</p>
                   </div>
                 </div>
               ))}
@@ -375,23 +603,190 @@ window.LandingPageView = ({ setPage, scrollToSection, calculatedScore }) => {
         </div>
       </section>
 
-      {/* FINAL CTA SECTION */}
-      <section className="py-28 px-6 text-center relative overflow-hidden bg-black">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-samridhi-primary/5 to-transparent pointer-events-none"></div>
-        <div className="max-w-3xl mx-auto relative z-10 flex flex-col items-center space-y-8">
-          <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white leading-normal">
-            Unlock Capital Instantly <br />
-            Without a Traditional Credit File
+      {/* ═══════════════════════════════════════════
+          VIDEO KYC / TRUST SECTION
+      ═══════════════════════════════════════════ */}
+      <section style={{ background: '#080810', padding: '100px 24px', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+
+            {/* Left */}
+            <div>
+              <span style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '0.16em', color: '#00E676', textTransform: 'uppercase' }}>Trust Infrastructure</span>
+              <h2 style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)', fontWeight: '900', color: '#fff', marginTop: '12px', marginBottom: '24px', letterSpacing: '-0.02em', lineHeight: '1.2' }}>
+                Bank-grade security.<br />
+                <span style={{ color: 'rgba(255,255,255,0.35)' }}>Fintech-speed verification.</span>
+              </h2>
+              <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.45)', lineHeight: '1.8', marginBottom: '36px', maxWidth: '440px' }}>
+                Samridhi uses Video KYC liveness detection, Aadhaar-grade identity checks, and encrypted Account Aggregator pipelines — the same infrastructure trusted by Zerodha, DigiLocker, and RBI-regulated NBFCs.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {[
+                  { icon: '🎥', title: 'Video KYC Liveness Check', desc: '5-second face scan with anti-spoofing protection prevents deepfake fraud.' },
+                  { icon: '🏦', title: 'Account Aggregator (AA)', desc: 'RBI-certified AA framework for bank statement fetch with your consent.' },
+                  { icon: '🔐', title: 'End-to-End Encryption', desc: 'AES-256 encrypted data vaults. Your data, your control.' },
+                ].map((item, i) => (
+                  <div key={i} style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                    <span style={{ fontSize: '20px', flexShrink: 0 }}>{item.icon}</span>
+                    <div>
+                      <p style={{ fontSize: '13px', fontWeight: '800', color: '#fff', marginBottom: '4px' }}>{item.title}</p>
+                      <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', lineHeight: '1.6' }}>{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right — visual trust card */}
+            <div style={{
+              background: 'rgba(255,255,255,0.02)',
+              border: '1px solid rgba(0,230,118,0.15)',
+              borderRadius: '24px',
+              padding: '40px',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                position: 'absolute', top: 0, right: 0,
+                width: '200px', height: '200px',
+                background: 'radial-gradient(circle, rgba(0,230,118,0.06) 0%, transparent 70%)',
+                pointerEvents: 'none'
+              }} />
+
+              {/* Checklist */}
+              {[
+                { label: 'Aadhaar Verified', done: true },
+                { label: 'PAN Card Linked', done: true },
+                { label: 'UPI Connected', done: true },
+                { label: 'Video KYC Passed', done: true },
+                { label: 'Bank Statement Uploaded', done: true },
+                { label: 'Credibility Score Generated', done: true },
+              ].map((item, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'center', gap: '12px',
+                  padding: '12px 0',
+                  borderBottom: i < 5 ? '1px solid rgba(255,255,255,0.04)' : 'none'
+                }}>
+                  <div style={{
+                    width: '20px', height: '20px', borderRadius: '50%',
+                    background: 'rgba(0,230,118,0.15)',
+                    border: '1px solid rgba(0,230,118,0.3)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    <svg width="10" height="10" fill="none" stroke="#00E676" strokeWidth="3" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', fontWeight: '600' }}>{item.label}</span>
+                  <span style={{
+                    marginLeft: 'auto', fontSize: '9px', fontWeight: '800',
+                    color: '#00E676', letterSpacing: '0.1em'
+                  }}>DONE</span>
+                </div>
+              ))}
+
+              {/* Score readout */}
+              <div style={{
+                marginTop: '24px',
+                padding: '16px',
+                background: 'rgba(0,230,118,0.06)',
+                border: '1px solid rgba(0,230,118,0.15)',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', fontWeight: '700' }}>Credibility Score</span>
+                <span style={{ fontSize: '28px', fontWeight: '900', color: '#00E676', fontFamily: 'monospace', textShadow: '0 0 20px rgba(0,230,118,0.5)' }}>82/100</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          FINAL CTA — Full-width gradient banner
+      ═══════════════════════════════════════════ */}
+      <section style={{
+        background: '#050507',
+        padding: '120px 24px',
+        borderTop: '1px solid rgba(255,255,255,0.04)',
+        position: 'relative',
+        overflow: 'hidden',
+        textAlign: 'center'
+      }}>
+        {/* Glow */}
+        <div style={{
+          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+          width: '600px', height: '300px',
+          background: 'radial-gradient(ellipse, rgba(108,99,255,0.12) 0%, transparent 70%)',
+          pointerEvents: 'none'
+        }} />
+
+        <div className="max-w-3xl mx-auto relative" style={{ zIndex: 1 }}>
+          <span style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '0.16em', color: '#6C63FF', textTransform: 'uppercase', display: 'block', marginBottom: '24px' }}>
+            Start Today
+          </span>
+          <h2 style={{
+            fontSize: 'clamp(2.2rem, 5vw, 4rem)',
+            fontWeight: '900',
+            color: '#fff',
+            letterSpacing: '-0.02em',
+            lineHeight: '1.1',
+            marginBottom: '24px'
+          }}>
+            Unlock capital without<br />
+            a traditional credit file.
           </h2>
-          <p className="text-xs md:text-sm text-samridhi-textMuted max-w-lg leading-relaxed mx-auto">
-            Connect your accounts, score your skills, and check eligibility for micro-loans in under five minutes.
+          <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.4)', lineHeight: '1.75', marginBottom: '40px', maxWidth: '480px', margin: '0 auto 40px' }}>
+            Connect your accounts, score your skills, and check eligibility for micro-loans in under five minutes. No CIBIL score needed.
           </p>
-          <button 
-            onClick={() => setPage('signup')}
-            className="px-8 py-3.5 bg-white hover:bg-white/95 text-black font-extrabold rounded-full shadow-lg shadow-samridhi-primary/10 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-95"
-          >
-            Create Account Now
-          </button>
+
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setPage('signup')}
+              style={{
+                background: 'linear-gradient(135deg, #00E5FF 0%, #6C63FF 100%)',
+                color: '#050507',
+                fontWeight: '800',
+                fontSize: '13px',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                padding: '16px 40px',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: '0 0 40px rgba(0,229,255,0.3)'
+              }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+            >
+              Create Free Account
+            </button>
+            <button
+              onClick={() => setPage('signin')}
+              style={{
+                background: 'transparent',
+                color: 'rgba(255,255,255,0.6)',
+                fontWeight: '700',
+                fontSize: '13px',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                padding: '16px 40px',
+                borderRadius: '8px',
+                border: '1px solid rgba(255,255,255,0.12)',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; e.currentTarget.style.color = '#fff'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
+            >
+              Sign In
+            </button>
+          </div>
         </div>
       </section>
 

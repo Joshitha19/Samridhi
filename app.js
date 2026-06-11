@@ -1693,72 +1693,106 @@ function App() {
     <div className="min-h-screen flex flex-col selection:bg-samridhi-primary/30 selection:text-samridhi-textPrimary bg-grid-glow">
       {/* STICKY NAVBAR */}
       {page !== 'dashboard' && page !== 'banker-dashboard' && (
-        <header className="sticky top-0 z-50 w-full bg-samridhi-bg/85 border-b border-samridhi-border blur-nav">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <header style={{
+          position: 'sticky', top: 0, zIndex: 50, width: '100%',
+          background: 'rgba(5,5,7,0.88)',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)'
+        }}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6" style={{ height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             {/* Logo */}
-            <div 
-              className="flex items-center space-x-2 cursor-pointer"
+            <div
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
               onClick={() => { setPage('landing'); setLandingMobileMenuOpen(false); }}
             >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center shadow-lg shadow-samridhi-primary/20">
-                <span className="text-samridhi-bg font-extrabold text-lg">₹</span>
+              <div style={{
+                width: '32px', height: '32px', borderRadius: '8px',
+                background: 'linear-gradient(135deg, #00E5FF 0%, #6C63FF 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 0 16px rgba(0,229,255,0.3)'
+              }}>
+                <span style={{ color: '#050507', fontWeight: '900', fontSize: '16px', lineHeight: '1' }}>₹</span>
               </div>
-              <span className="text-2xl font-extrabold bg-gradient-to-r from-samridhi-primary to-samridhi-secondary bg-clip-text text-transparent tracking-wide">
+              <span style={{
+                fontSize: '20px', fontWeight: '900', letterSpacing: '-0.02em',
+                background: 'linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.7) 100%)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text'
+              }}>
                 Samridhi
               </span>
             </div>
 
-            {/* Nav Links */}
-            <nav className="hidden md:flex items-center space-x-8 text-sm font-semibold tracking-wide">
-              <button 
-                onClick={() => scrollToSection('home')} 
-                className="text-samridhi-textPrimary hover:text-samridhi-secondary transition-colors bg-transparent border-none cursor-pointer"
-              >
-                Home
-              </button>
-              <button 
-                onClick={() => scrollToSection('features')} 
-                className="text-samridhi-textMuted hover:text-samridhi-textPrimary transition-colors bg-transparent border-none cursor-pointer"
-              >
-                Features
-              </button>
-              <button 
-                onClick={() => scrollToSection('how-it-works')} 
-                className="text-samridhi-textMuted hover:text-samridhi-textPrimary transition-colors bg-transparent border-none cursor-pointer"
-              >
-                How It Works
-              </button>
+            {/* Nav Links — Desktop */}
+            <nav className="hidden md:flex items-center" style={{ gap: '32px' }}>
+              {[
+                { label: 'Home', target: 'home' },
+                { label: 'Features', target: 'features' },
+                { label: 'How It Works', target: 'how-it-works' },
+              ].map(link => (
+                <button
+                  key={link.target}
+                  onClick={() => scrollToSection(link.target)}
+                  style={{
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    fontSize: '13px', fontWeight: '600', letterSpacing: '0.04em',
+                    color: 'rgba(255,255,255,0.5)', transition: 'color 0.2s', padding: '0'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.color = '#fff'}
+                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
+                >
+                  {link.label}
+                </button>
+              ))}
             </nav>
 
-            {/* CTA Buttons */}
-            <div className="hidden md:flex items-center space-x-4">
-              <button 
+            {/* CTA Buttons — Desktop */}
+            <div className="hidden md:flex items-center" style={{ gap: '12px' }}>
+              <button
                 onClick={() => setPage('signin')}
-                className="text-sm font-bold text-samridhi-textPrimary hover:text-samridhi-primary transition-colors px-4 py-2 bg-transparent border-none cursor-pointer"
+                style={{
+                  background: 'transparent', border: 'none', cursor: 'pointer',
+                  fontSize: '13px', fontWeight: '700', color: 'rgba(255,255,255,0.55)',
+                  padding: '8px 16px', transition: 'color 0.2s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = '#fff'}
+                onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.55)'}
               >
                 Sign In
               </button>
-              <button 
+              <button
                 onClick={() => setPage('signup')}
-                className="text-sm font-bold bg-samridhi-primary hover:bg-samridhi-primary/90 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-samridhi-primary/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 active:scale-95 cursor-pointer"
+                style={{
+                  background: 'linear-gradient(135deg, #00E5FF 0%, #6C63FF 100%)',
+                  color: '#050507', fontWeight: '800', fontSize: '12px',
+                  letterSpacing: '0.06em', textTransform: 'uppercase',
+                  padding: '9px 22px', borderRadius: '7px', border: 'none',
+                  cursor: 'pointer', transition: 'all 0.2s',
+                  boxShadow: '0 0 20px rgba(0,229,255,0.2)'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 0 28px rgba(0,229,255,0.35)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(0,229,255,0.2)'; }}
               >
                 Get Started
               </button>
             </div>
 
-            {/* Hamburger Button (Mobile) */}
+            {/* Hamburger — Mobile */}
             <div className="flex md:hidden">
               <button
                 onClick={() => setLandingMobileMenuOpen(!landingMobileMenuOpen)}
-                className="p-2 text-samridhi-textMuted hover:text-white focus:outline-none bg-transparent border-none cursor-pointer"
+                style={{
+                  background: 'transparent', border: 'none', cursor: 'pointer',
+                  color: 'rgba(255,255,255,0.6)', padding: '8px'
+                }}
                 aria-label="Toggle menu"
               >
                 {landingMobileMenuOpen ? (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 ) : (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
                 )}
@@ -1768,45 +1802,57 @@ function App() {
 
           {/* Mobile Menu Dropdown */}
           {landingMobileMenuOpen && (
-            <div className="md:hidden border-t border-samridhi-border bg-samridhi-bg/95 backdrop-blur-xl animate-fade-in">
-              <div className="px-4 pt-2 pb-6 space-y-3 flex flex-col">
-                <button 
-                  onClick={() => { scrollToSection('home'); setLandingMobileMenuOpen(false); }} 
-                  className="text-left py-2 text-sm font-semibold text-samridhi-textPrimary hover:text-samridhi-secondary bg-transparent border-none cursor-pointer"
-                >
-                  Home
-                </button>
-                <button 
-                  onClick={() => { scrollToSection('features'); setLandingMobileMenuOpen(false); }} 
-                  className="text-left py-2 text-sm font-semibold text-samridhi-textMuted hover:text-samridhi-textPrimary bg-transparent border-none cursor-pointer"
-                >
-                  Features
-                </button>
-                <button 
-                  onClick={() => { scrollToSection('how-it-works'); setLandingMobileMenuOpen(false); }} 
-                  className="text-left py-2 text-sm font-semibold text-samridhi-textMuted hover:text-samridhi-textPrimary bg-transparent border-none cursor-pointer"
-                >
-                  How It Works
-                </button>
-                
-                <div className="h-px bg-samridhi-border my-2"></div>
+            <div className="md:hidden animate-fade-in" style={{
+              background: 'rgba(5,5,7,0.98)',
+              borderTop: '1px solid rgba(255,255,255,0.06)',
+              backdropFilter: 'blur(20px)'
+            }}>
+              <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {[
+                  { label: 'Home', action: () => { scrollToSection('home'); setLandingMobileMenuOpen(false); } },
+                  { label: 'Features', action: () => { scrollToSection('features'); setLandingMobileMenuOpen(false); } },
+                  { label: 'How It Works', action: () => { scrollToSection('how-it-works'); setLandingMobileMenuOpen(false); } },
+                ].map((item, i) => (
+                  <button key={i} onClick={item.action} style={{
+                    textAlign: 'left', padding: '12px 8px', background: 'transparent',
+                    border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: '600',
+                    color: 'rgba(255,255,255,0.65)', transition: 'color 0.2s',
+                    borderBottom: '1px solid rgba(255,255,255,0.04)'
+                  }}>
+                    {item.label}
+                  </button>
+                ))}
 
-                <button 
-                  onClick={() => { setPage('signin'); setLandingMobileMenuOpen(false); }}
-                  className="w-full text-center py-2.5 text-sm font-bold text-samridhi-textPrimary hover:text-samridhi-primary bg-white/[0.03] border border-white/[0.08] rounded-xl cursor-pointer"
-                >
-                  Sign In
-                </button>
-                <button 
-                  onClick={() => { setPage('signup'); setLandingMobileMenuOpen(false); }}
-                  className="w-full text-center py-2.5 text-sm font-bold bg-samridhi-primary hover:bg-samridhi-primary/90 text-white rounded-xl shadow-lg shadow-samridhi-primary/30 cursor-pointer"
-                >
-                  Get Started
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+                  <button
+                    onClick={() => { setPage('signin'); setLandingMobileMenuOpen(false); }}
+                    style={{
+                      padding: '12px', background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '8px', color: 'rgba(255,255,255,0.7)',
+                      fontWeight: '700', fontSize: '13px', cursor: 'pointer'
+                    }}
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => { setPage('signup'); setLandingMobileMenuOpen(false); }}
+                    style={{
+                      padding: '12px',
+                      background: 'linear-gradient(135deg, #00E5FF 0%, #6C63FF 100%)',
+                      border: 'none', borderRadius: '8px',
+                      color: '#050507', fontWeight: '800', fontSize: '13px',
+                      letterSpacing: '0.05em', cursor: 'pointer'
+                    }}
+                  >
+                    Get Started Free
+                  </button>
+                </div>
               </div>
             </div>
           )}
         </header>
+
       )}
 
       {/* PAGE CONTENT ROUTER */}

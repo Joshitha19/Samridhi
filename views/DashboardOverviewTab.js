@@ -30,6 +30,96 @@ window.DashboardOverviewTab = ({
   const [qrScanStatus, setQrScanStatus] = useState('idle'); // 'idle' | 'scanning' | 'success'
   const [scannedUpiDetails, setScannedUpiDetails] = useState(null);
 
+  // UPI Sandbox Simulator States
+  const [simType, setSimType] = useState('Credit');
+  const [simMerchant, setSimMerchant] = useState('Client Escrow / Upwork');
+  const [simVpa, setSimVpa] = useState('upwork@hdfc');
+  const [simCategory, setSimCategory] = useState('Freelance Income');
+  const [simAmount, setSimAmount] = useState('12000');
+
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successDetails, setSuccessDetails] = useState(null);
+
+  // Web Audio success chime
+  const playUpiBeep = () => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+      
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(880, ctx.currentTime);
+      gain1.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain1.gain.exponentialRampToValueAtTime(0.005, ctx.currentTime + 0.1);
+      osc1.start();
+      osc1.stop(ctx.currentTime + 0.12);
+      
+      setTimeout(() => {
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(1046.5, ctx.currentTime);
+        gain2.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain2.gain.exponentialRampToValueAtTime(0.005, ctx.currentTime + 0.25);
+        osc2.start();
+        osc2.stop(ctx.currentTime + 0.28);
+      }, 100);
+    } catch (e) {
+      console.warn("AudioContext not allowed or supported:", e);
+    }
+  };
+
+  const handleExecuteSimulatorTransfer = () => {
+    const amt = parseFloat(simAmount);
+    if (!simMerchant.trim()) {
+      alert("Please enter a merchant or sender name.");
+      return;
+    }
+    if (!simVpa.trim() || !simVpa.includes('@')) {
+      alert("Please enter a valid VPA ID (e.g. name@upi).");
+      return;
+    }
+    if (isNaN(amt) || amt <= 0) {
+      alert("Please enter a valid transfer amount greater than 0.");
+      return;
+    }
+
+    const refId = "REF" + Math.floor(1000000000 + Math.random() * 9000000000);
+    const dateStr = new Date().toISOString().split('T')[0];
+    
+    const newTx = {
+      id: `t-sim-${Date.now()}`,
+      date: dateStr,
+      merchant: simMerchant,
+      amount: simType === 'Credit' ? amt : -amt,
+      category: simCategory,
+      type: simType
+    };
+
+    dispatch({ type: 'ADD_TRANSACTION', payload: newTx });
+
+    setSuccessDetails({
+      merchant: simMerchant,
+      vpa: simVpa,
+      amount: amt,
+      type: simType,
+      category: simCategory,
+      refId,
+      timestamp: new Date().toLocaleString()
+    });
+
+    playUpiBeep();
+    setIsSuccessModalOpen(true);
+  };
+
   useEffect(() => {
     if (user && user.upiVpa) {
       setVpaInput(user.upiVpa);
@@ -149,7 +239,106 @@ window.DashboardOverviewTab = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Recent Transactions list (Col-8) */}
-        <div className="lg:col-span-8 glass-card p-6 rounded-3xl space-y-4 border border-white/[0.04] border-glow-primary">
+        <div className="lg:col-span-8 glass-card p-6 rounded-3xl space-y-6 border border-white/[0.04] border-glow-primary">
+          
+          {/* UPI Sandbox simulator widget */}
+          <div className="bg-white/[0.02] border border-white/[0.06] p-5 rounded-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/[0.04] pb-2.5">
+              <div className="flex items-center space-x-2">
+                <span className="text-glow-secondary text-samridhi-secondary font-black animate-pulse">●</span>
+                <span className="font-extrabold text-[11px] text-white uppercase tracking-wider">UPI Transaction Sandbox Simulator</span>
+              </div>
+              <span className="text-[8px] font-black bg-samridhi-primary/10 border border-samridhi-primary/20 text-samridhi-primary px-2 py-0.5 rounded uppercase tracking-widest font-mono">Real-time Injector</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-end">
+              {/* Type */}
+              <div className="space-y-1">
+                <label className="block text-[8px] uppercase font-black text-samridhi-textMuted tracking-wider">Tx Type</label>
+                <select 
+                  value={simType} 
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSimType(val);
+                    if (val === 'Credit') {
+                      setSimMerchant('Client Escrow / Upwork');
+                      setSimVpa('upwork@hdfc');
+                      setSimCategory('Freelance Income');
+                    } else {
+                      setSimMerchant('Swiggy Delivery');
+                      setSimVpa('swiggy@paytm');
+                      setSimCategory('Food & Beverage');
+                    }
+                  }}
+                  className="w-full bg-[#0A0E17] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-samridhi-secondary font-sans font-bold"
+                >
+                  <option value="Credit">Credit (Receive)</option>
+                  <option value="Debit">Debit (Pay)</option>
+                </select>
+              </div>
+
+              {/* Name */}
+              <div className="space-y-1">
+                <label className="block text-[8px] uppercase font-black text-samridhi-textMuted tracking-wider">Sender / Recipient</label>
+                <input 
+                  type="text" 
+                  value={simMerchant} 
+                  onChange={(e) => setSimMerchant(e.target.value)} 
+                  placeholder="e.g. Upwork"
+                  className="w-full bg-[#0A0E17] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-samridhi-secondary font-sans font-bold"
+                />
+              </div>
+
+              {/* UPI ID */}
+              <div className="space-y-1">
+                <label className="block text-[8px] uppercase font-black text-samridhi-textMuted tracking-wider">VPA Address</label>
+                <input 
+                  type="text" 
+                  value={simVpa} 
+                  onChange={(e) => setSimVpa(e.target.value)} 
+                  placeholder="name@upi"
+                  className="w-full bg-[#0A0E17] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-samridhi-secondary font-mono font-bold"
+                />
+              </div>
+
+              {/* Category */}
+              <div className="space-y-1">
+                <label className="block text-[8px] uppercase font-black text-samridhi-textMuted tracking-wider">Category</label>
+                <select 
+                  value={simCategory} 
+                  onChange={(e) => setSimCategory(e.target.value)}
+                  className="w-full bg-[#0A0E17] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-samridhi-secondary font-sans font-bold"
+                >
+                  <option value="Freelance Income">Freelance Income</option>
+                  <option value="Food & Beverage">Food & Beverage</option>
+                  <option value="Utility Bills">Utility Bills</option>
+                  <option value="Shopping">Shopping</option>
+                  <option value="Business Expense">Business Expense</option>
+                  <option value="Travel Outflow">Travel Outflow</option>
+                </select>
+              </div>
+
+              {/* Amount */}
+              <div className="space-y-1">
+                <label className="block text-[8px] uppercase font-black text-samridhi-textMuted tracking-wider">Amount (₹)</label>
+                <input 
+                  type="number" 
+                  value={simAmount} 
+                  onChange={(e) => setSimAmount(e.target.value)} 
+                  placeholder="e.g. 12000"
+                  className="w-full bg-[#0A0E17] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-samridhi-secondary font-mono font-bold"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={handleExecuteSimulatorTransfer}
+              className="w-full py-2.5 bg-gradient-to-r from-samridhi-secondary to-samridhi-primary hover:brightness-110 text-samridhi-bg font-extrabold rounded-xl text-[10px] uppercase tracking-widest transition-all flex items-center justify-center space-x-2 shadow-lg active:scale-95 cursor-pointer"
+            >
+              <span>Execute Sandbox Transfer</span>
+            </button>
+          </div>
+
           <div className="flex items-center justify-between border-b border-white/[0.04] pb-3">
             <h3 className="font-extrabold text-sm text-white uppercase tracking-wider text-glow-primary">Recent UPI Transaction Stream</h3>
             <span className="text-[9px] font-black text-samridhi-textMuted uppercase tracking-widest font-mono">UPI.Sync.Active</span>
@@ -1025,6 +1214,77 @@ window.DashboardOverviewTab = ({
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* UPI Sandbox Success Modal */}
+      {isSuccessModalOpen && successDetails && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/90 backdrop-blur-md transition-opacity duration-300 animate-fade-in">
+          <div className="bg-[#090b10]/95 backdrop-blur-3xl border border-white/[0.08] p-6 rounded-3xl w-full max-w-sm shadow-[0_24px_80px_rgba(0,0,0,0.85)] relative overflow-hidden animate-slide-up border-glow-success text-center">
+            
+            {/* Decorative glows */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-samridhi-success/15 to-transparent pointer-events-none filter blur-xl"></div>
+            
+            {/* Green Checkmark Circle with pulsing layers */}
+            <div className="flex flex-col items-center justify-center my-6 space-y-4">
+              <div className="relative w-16 h-16 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full bg-samridhi-success/10 border border-samridhi-success/20 animate-ping"></div>
+                <div className="absolute inset-2 rounded-full bg-samridhi-success/20 border border-samridhi-success/30 animate-pulse"></div>
+                <div className="relative w-12 h-12 rounded-full bg-samridhi-success border border-samridhi-success/40 flex items-center justify-center text-samridhi-bg text-xl font-bold shadow-[0_0_15px_rgba(0,230,118,0.5)]">
+                  ✓
+                </div>
+              </div>
+              
+              <div className="space-y-1">
+                <span className="text-[10px] font-black text-samridhi-success uppercase tracking-widest font-mono text-glow-success">UPI Transfer Successful</span>
+                <h4 className="text-2xl font-black text-white font-mono mt-1">₹{successDetails.amount.toLocaleString()}</h4>
+              </div>
+            </div>
+
+            {/* Receipt details */}
+            <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-4 text-left space-y-2.5 text-xs">
+              <div className="flex justify-between items-center">
+                <span className="text-samridhi-textMuted font-bold uppercase text-[9px] tracking-wide">Type:</span>
+                <span className={`font-black uppercase text-[9px] px-2 py-0.5 rounded border ${
+                  successDetails.type === 'Credit' 
+                    ? 'bg-samridhi-success/10 border-samridhi-success/20 text-samridhi-success'
+                    : 'bg-samridhi-primary/10 border-samridhi-primary/20 text-samridhi-primary'
+                }`}>
+                  {successDetails.type === 'Credit' ? 'Inflow (Receive)' : 'Outflow (Pay)'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-samridhi-textMuted font-semibold">Party Name:</span>
+                <span className="font-bold text-white uppercase tracking-wide truncate max-w-[170px]">{successDetails.merchant}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-samridhi-textMuted font-semibold">VPA ID:</span>
+                <span className="font-mono text-samridhi-secondary">{successDetails.vpa}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-samridhi-textMuted font-semibold">Category:</span>
+                <span className="font-bold text-white">{successDetails.category}</span>
+              </div>
+              <div className="flex justify-between items-center border-t border-white/[0.04] pt-2">
+                <span className="text-samridhi-textMuted font-semibold">UPI Ref No:</span>
+                <span className="font-mono text-samridhi-textMuted text-[10px]">{successDetails.refId}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-samridhi-textMuted font-semibold">Timestamp:</span>
+                <span className="font-mono text-samridhi-textMuted text-[9px]">{successDetails.timestamp}</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                setIsSuccessModalOpen(false);
+                setSuccessDetails(null);
+              }}
+              className="mt-6 w-full py-3 bg-samridhi-success hover:bg-samridhi-success/90 text-samridhi-bg font-extrabold rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-samridhi-success/20"
+            >
+              Done
+            </button>
           </div>
         </div>
       )}

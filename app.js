@@ -272,6 +272,7 @@ function App() {
       upiVerified,
       skills: dashboardState.skills,
       inventory: dashboardState.inventory,
+      transactions: dashboardState.transactions,
       kycCameraVerified,
       bankStatementUploaded,
       whatIfRepayActive,
@@ -279,7 +280,7 @@ function App() {
       whatIfNewCert,
       whatIfConsistentUpi
     });
-  }, [user, aadhaarVerified, panVerified, upiLinked, upiVerified, dashboardState.skills, dashboardState.inventory, kycCameraVerified, bankStatementUploaded, whatIfRepayActive, whatIfLinkGithub, whatIfNewCert, whatIfConsistentUpi]);
+  }, [user, aadhaarVerified, panVerified, upiLinked, upiVerified, dashboardState.skills, dashboardState.inventory, dashboardState.transactions, kycCameraVerified, bankStatementUploaded, whatIfRepayActive, whatIfLinkGithub, whatIfNewCert, whatIfConsistentUpi]);
 
   // Voice Navigation Continuous Speech recognition listener
   useEffect(() => {
@@ -356,6 +357,23 @@ function App() {
           }
           const localLoans = JSON.parse(localStorage.getItem('samridhi_loans') || '[]');
           const userLoans = localLoans.filter(l => l.user_id === user.id);
+
+          // Check for status transitions to notify the user in real-time
+          userLoans.forEach(l => {
+            const prevLoan = dashboardState.loans.find(pl => pl.id === l.id);
+            if (prevLoan && prevLoan.status !== l.status) {
+              dispatch({
+                type: 'ADD_NOTIFICATION',
+                payload: {
+                  id: `n-loan-${l.id}-${Date.now()}`,
+                  text: `Loan Request Update: Your application for ₹${parseFloat(l.amount).toLocaleString()} with ${l.lender} is now marked as ${l.status.toUpperCase()}.`,
+                  read: false,
+                  date: "Just now"
+                }
+              });
+            }
+          });
+
           dispatch({
             type: 'SET_LOANS',
             payload: userLoans.map(l => ({ id: l.id, lender: l.lender, amount: parseFloat(l.amount), rate: l.rate, emi: l.emi, status: l.status, date: l.date }))
@@ -369,6 +387,22 @@ function App() {
           }
           const { data: loans } = await supabaseClient.from('loans').select('*').eq('user_id', user.id).order('date', { ascending: false });
           if (loans) {
+            // Check for status transitions to notify the user in real-time
+            loans.forEach(l => {
+              const prevLoan = dashboardState.loans.find(pl => pl.id === l.id);
+              if (prevLoan && prevLoan.status !== l.status) {
+                dispatch({
+                  type: 'ADD_NOTIFICATION',
+                  payload: {
+                    id: `n-loan-${l.id}-${Date.now()}`,
+                    text: `Loan Request Update: Your application for ₹${parseFloat(l.amount).toLocaleString()} with ${l.lender} is now marked as ${l.status.toUpperCase()}.`,
+                    read: false,
+                    date: "Just now"
+                  }
+                });
+              }
+            });
+
             dispatch({
               type: 'SET_LOANS',
               payload: loans.map(l => ({ id: l.id, lender: l.lender, amount: parseFloat(l.amount), rate: l.rate, emi: l.emi, status: l.status, date: l.date }))
@@ -381,7 +415,7 @@ function App() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, dashboardState.loans]);
 
   // Custom dbDispatch interceptor to sync state transitions with Supabase / localStorage
   const dbDispatch = (action) => {

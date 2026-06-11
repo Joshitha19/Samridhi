@@ -9,6 +9,7 @@ window.calculateCredibilityScore = (user, metrics) => {
     upiVerified = false,
     skills = [],
     inventory = [],
+    transactions = [],
     kycCameraVerified = false,
     bankStatementUploaded = false,
     whatIfRepayActive = false,
@@ -52,6 +53,41 @@ window.calculateCredibilityScore = (user, metrics) => {
   if (whatIfLinkGithub) score += 8;
   if (whatIfNewCert) score += 5;
   if (whatIfConsistentUpi) score += 7;
+
+  // Dynamic transaction velocity scoring
+  let txPoints = 0;
+  if (transactions && transactions.length > 0) {
+    // 1. Transaction volume (up to 8 points)
+    const txCount = transactions.length;
+    txPoints += Math.min(8, Math.floor(txCount * 0.5));
+
+    // 2. Net inflow ratio (up to 12 points)
+    const totalCredit = transactions
+      .filter(t => t.type === 'Credit' || t.amount > 0)
+      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    const totalDebit = transactions
+      .filter(t => t.type === 'Debit' || t.amount < 0)
+      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+
+    if (totalCredit > 0) {
+      const surplus = totalCredit - totalDebit;
+      if (surplus > 0) {
+        const ratio = surplus / totalCredit;
+        txPoints += Math.min(12, Math.floor(ratio * 12));
+      }
+    }
+
+    // 3. Anomaly deduction (minus 5 points per anomaly, max -15)
+    const debits = transactions.filter(t => t.type === 'Debit' || t.amount < 0);
+    if (debits.length > 0) {
+      const totalDebitSum = debits.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      const avgDebit = totalDebitSum / debits.length;
+      // An anomaly is any debit transaction > 3x average debit
+      const anomalies = debits.filter(t => Math.abs(t.amount) > 3 * avgDebit);
+      txPoints -= Math.min(15, anomalies.length * 5);
+    }
+  }
+  score += txPoints;
 
   // Clamp credibility score inside credit rating standard scale (0 - 100)
   return Math.min(100, Math.max(0, score));

@@ -3,7 +3,25 @@
 
 window.DashboardScoreTab = ({
   calculatedScore,
-  dashboardState
+  dashboardState,
+  aadhaarVerified,
+  panVerified,
+  upiLinked,
+  upiVerified,
+  setUpiVerified,
+  dispatch,
+  setAadhaarVerified,
+  setPanVerified,
+  setUpiLinked,
+  setActiveTab,
+  whatIfRepayActive,
+  setWhatIfRepayActive,
+  whatIfLinkGithub,
+  setWhatIfLinkGithub,
+  whatIfNewCert,
+  setWhatIfNewCert,
+  whatIfConsistentUpi,
+  setWhatIfConsistentUpi
 }) => {
   const { useState, useEffect } = React;
   
@@ -315,83 +333,232 @@ window.DashboardScoreTab = ({
         </div>
       </div>
 
-      {/* SECTION 3 - Improvement Roadmap */}
-      <div className="glass-card p-6 rounded-3xl space-y-4 border border-white/[0.04]">
-        <h3 className="font-extrabold text-sm text-white uppercase tracking-wider border-b border-white/[0.04] pb-3">
-          How to reach 85+ score
-        </h3>
+      {/* SECTION 3 - Interactive Credit Builder Checklist */}
+      <div className="glass-card p-6 rounded-3xl space-y-6 border border-white/[0.04] border-glow-secondary">
+        <div>
+          <div className="flex items-center justify-between border-b border-white/[0.04] pb-3">
+            <h3 className="font-extrabold text-sm text-white uppercase tracking-wider text-glow-secondary">
+              Interactive Credit Builder Roadmap
+            </h3>
+            <span className="text-[9px] font-black text-samridhi-textMuted uppercase tracking-widest font-mono">Sim.Gamified.Path</span>
+          </div>
+          <p className="text-[10px] text-samridhi-textMuted mt-1 font-semibold">
+            Complete the following credit milestones to build alternative digital trust rating points.
+          </p>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          
-          {/* Action 1 */}
-          <div className="bg-white/[0.02] border border-white/[0.06] p-5 rounded-2xl flex flex-col justify-between space-y-4 hover:border-white/[0.12] transition-colors">
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                {/* Book icon */}
-                <div className="w-8 h-8 rounded-lg bg-samridhi-primary/10 flex items-center justify-center text-samridhi-primary">
-                  <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                  </svg>
-                </div>
-                <h4 className="font-extrabold text-xs text-white uppercase tracking-wide">Add 2 certifications</h4>
+        <div className="space-y-3.5">
+          {/* Item 1: Link Bank via Sahamati AA */}
+          <div className="bg-white/[0.01] border border-white/[0.05] hover:border-samridhi-secondary/30 p-4.5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all">
+            <div className="flex items-start space-x-3.5">
+              <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border ${
+                upiVerified 
+                  ? 'bg-samridhi-success/10 border-samridhi-success/20 text-samridhi-success'
+                  : 'bg-white/[0.02] border-white/[0.08] text-samridhi-textMuted'
+              }`}>
+                {upiVerified ? '✓' : '🏦'}
               </div>
-              <p className="text-[10px] text-samridhi-textMuted leading-normal font-semibold">
-                Verifying advanced skill credentials adds verified repayment earning parameters.
-              </p>
-              <div className="text-[10px] font-black text-samridhi-success font-mono">+6 points</div>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <h4 className="font-extrabold text-xs text-white uppercase tracking-wide">Link Bank Account via Account Aggregator</h4>
+                  <span className="text-[8px] font-black text-samridhi-success font-mono uppercase bg-samridhi-success/10 px-1.5 py-0.5 rounded border border-samridhi-success/15">+25 pts Impact</span>
+                </div>
+                <p className="text-[10px] text-samridhi-textMuted mt-1 font-semibold">Verify cashflow stability and inflow-outflow velocity using secure Sahamati consent framework.</p>
+              </div>
             </div>
             
-            <button className="w-full text-center border border-white/[0.08] hover:border-samridhi-primary/50 text-white font-bold py-2 rounded-lg text-[10px] uppercase tracking-wider transition-all">
-              Start Now
+            <button 
+              onClick={() => {
+                if (upiVerified) {
+                  alert("Your Union Bank node is already synced and verified!");
+                } else {
+                  if (setActiveTab) setActiveTab('overview');
+                  // Let the user know they can click the Link Bank button
+                  setTimeout(() => {
+                    alert("Please click the 'Link Bank via AA Consent' button on the right column to proceed!");
+                  }, 100);
+                }
+              }}
+              className={`px-4.5 py-2 rounded-xl text-[9.5px] font-black uppercase tracking-wider transition-all select-none shrink-0 cursor-pointer ${
+                upiVerified 
+                  ? 'bg-samridhi-success/10 border border-samridhi-success/20 text-samridhi-success hover:bg-samridhi-success/20'
+                  : 'bg-samridhi-secondary hover:brightness-110 text-samridhi-bg font-extrabold'
+              }`}
+            >
+              {upiVerified ? 'Synced ✔' : 'Link Bank Node'}
             </button>
           </div>
 
-          {/* Action 2 */}
-          <div className="bg-white/[0.02] border border-white/[0.06] p-5 rounded-2xl flex flex-col justify-between space-y-4 hover:border-white/[0.12] transition-colors">
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                {/* Credit card icon */}
-                <div className="w-8 h-8 rounded-lg bg-samridhi-secondary/10 flex items-center justify-center text-samridhi-secondary">
-                  <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                  </svg>
-                </div>
-                <h4 className="font-extrabold text-xs text-white uppercase tracking-wide">Pay utilities via UPI</h4>
+          {/* Item 2: Link GitHub Developer Portfolio */}
+          <div className="bg-white/[0.01] border border-white/[0.05] hover:border-samridhi-primary/30 p-4.5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all">
+            <div className="flex items-start space-x-3.5">
+              <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border ${
+                whatIfLinkGithub 
+                  ? 'bg-samridhi-primary/10 border-samridhi-primary/20 text-samridhi-primary'
+                  : 'bg-white/[0.02] border-white/[0.08] text-samridhi-textMuted'
+              }`}>
+                {whatIfLinkGithub ? '✓' : '💻'}
               </div>
-              <p className="text-[10px] text-samridhi-textMuted leading-normal font-semibold">
-                Establish household spending utility indices. Standard utility streams denote structural stability.
-              </p>
-              <div className="text-[10px] font-black text-samridhi-success font-mono">+4 points</div>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <h4 className="font-extrabold text-xs text-white uppercase tracking-wide">Link GitHub Portfolio</h4>
+                  <span className="text-[8px] font-black text-samridhi-success font-mono uppercase bg-samridhi-success/10 px-1.5 py-0.5 rounded border border-samridhi-success/15">+8 pts Impact</span>
+                </div>
+                <p className="text-[10px] text-samridhi-textMuted mt-1 font-semibold">Verify repository commits and open-source contributions to evaluate vocational consistency.</p>
+              </div>
             </div>
             
-            <button className="w-full text-center border border-white/[0.08] hover:border-samridhi-primary/50 text-white font-bold py-2 rounded-lg text-[10px] uppercase tracking-wider transition-all">
-              Start Now
+            <button 
+              onClick={() => {
+                if (setWhatIfLinkGithub) setWhatIfLinkGithub(!whatIfLinkGithub);
+              }}
+              className={`px-4.5 py-2 rounded-xl text-[9.5px] font-black uppercase tracking-wider transition-all select-none shrink-0 cursor-pointer border ${
+                whatIfLinkGithub 
+                  ? 'bg-samridhi-primary/10 border-samridhi-primary/25 text-samridhi-primary hover:bg-samridhi-primary/20'
+                  : 'bg-white/[0.02] border-white/[0.08] text-white hover:border-samridhi-primary/50'
+              }`}
+            >
+              {whatIfLinkGithub ? 'Linked ✔' : 'Link GitHub'}
             </button>
           </div>
 
-          {/* Action 3 */}
-          <div className="bg-white/[0.02] border border-white/[0.06] p-5 rounded-2xl flex flex-col justify-between space-y-4 hover:border-white/[0.12] transition-colors">
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                {/* Calendar icon */}
-                <div className="w-8 h-8 rounded-lg bg-samridhi-success/10 flex items-center justify-center text-samridhi-success">
-                  <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <h4 className="font-extrabold text-xs text-white uppercase tracking-wide">6 months history</h4>
+          {/* Item 3: Simulate Freelance Invoice Credit */}
+          <div className="bg-white/[0.01] border border-white/[0.05] hover:border-samridhi-success/30 p-4.5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all">
+            <div className="flex items-start space-x-3.5">
+              <div className="w-8 h-8 rounded-xl bg-white/[0.02] border border-white/[0.08] text-samridhi-textMuted flex items-center justify-center shrink-0">
+                💰
               </div>
-              <p className="text-[10px] text-samridhi-textMuted leading-normal font-semibold">
-                Accumulate transaction history length indicators to bolster score security weight.
-              </p>
-              <div className="text-[10px] font-black text-samridhi-success font-mono">+3 points</div>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <h4 className="font-extrabold text-xs text-white uppercase tracking-wide">Simulate Freelance Invoice Receipt</h4>
+                  <span className="text-[8px] font-black text-samridhi-success font-mono uppercase bg-samridhi-success/10 px-1.5 py-0.5 rounded border border-samridhi-success/15">Dynamic Impact</span>
+                </div>
+                <p className="text-[10px] text-samridhi-textMuted mt-1 font-semibold">Inject a mock UPI freelance escrow payout transaction of ₹35,000 to instantly trigger cashflow score metrics.</p>
+              </div>
             </div>
             
-            <button className="w-full text-center border border-white/[0.08] hover:border-samridhi-primary/50 text-white font-bold py-2 rounded-lg text-[10px] uppercase tracking-wider transition-all">
-              Start Now
+            <button 
+              onClick={() => {
+                // Play double beep sound
+                try {
+                  const AudioContext = window.AudioContext || window.webkitAudioContext;
+                  const ctx = new AudioContext();
+                  const osc = ctx.createOscillator();
+                  const gain = ctx.createGain();
+                  osc.connect(gain); gain.connect(ctx.destination);
+                  osc.frequency.setValueAtTime(950, ctx.currentTime);
+                  gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                  gain.gain.exponentialRampToValueAtTime(0.005, ctx.currentTime + 0.15);
+                  osc.start(); osc.stop(ctx.currentTime + 0.18);
+                } catch(e) {}
+
+                const dateStr = new Date().toISOString().split('T')[0];
+                const newCreditTx = {
+                  id: `t-builder-${Date.now()}`,
+                  date: dateStr,
+                  merchant: "Fiverr Escrow Payout",
+                  amount: 35000,
+                  category: "Freelance Income",
+                  type: "Credit"
+                };
+                
+                if (dispatch) {
+                  dispatch({ type: 'ADD_TRANSACTION', payload: newCreditTx });
+                  alert("Simulated transaction injected: Received ₹35,000 from Fiverr Escrow! Telemetry score recalculated.");
+                }
+              }}
+              className="bg-samridhi-success hover:brightness-110 text-samridhi-bg px-4.5 py-2 rounded-xl text-[9.5px] font-black uppercase tracking-wider transition-all select-none shrink-0 cursor-pointer"
+            >
+              Inject ₹35,000 Credit
             </button>
           </div>
 
+          {/* Item 4: Verify Skills On-Chain */}
+          <div className="bg-white/[0.01] border border-white/[0.05] hover:border-samridhi-warning/30 p-4.5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all">
+            <div className="flex items-start space-x-3.5">
+              {(() => {
+                const unverifiedSkillsCount = dashboardState.skills.filter(s => !s.verified).length;
+                const hasSkills = dashboardState.skills.length > 0;
+                const allSkillsVerified = hasSkills && unverifiedSkillsCount === 0;
+                return (
+                  <>
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border ${
+                      allSkillsVerified 
+                        ? 'bg-samridhi-warning/10 border-samridhi-warning/20 text-samridhi-warning'
+                        : 'bg-white/[0.02] border-white/[0.08] text-samridhi-textMuted'
+                    }`}>
+                      {allSkillsVerified ? '✓' : '🎓'}
+                    </div>
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <h4 className="font-extrabold text-xs text-white uppercase tracking-wide">On-Chain Skill Certification verification</h4>
+                        <span className="text-[8px] font-black text-samridhi-success font-mono uppercase bg-samridhi-success/10 px-1.5 py-0.5 rounded border border-samridhi-success/15">+4 pts per Skill</span>
+                      </div>
+                      <p className="text-[10px] text-samridhi-textMuted mt-1 font-semibold">
+                        Verify pending certificates. Verified certifications act as proxies for borrowing repayment capacity. ({dashboardState.skills.filter(s => s.verified).length}/{dashboardState.skills.length} verified)
+                      </p>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+            
+            {dashboardState.skills.filter(s => !s.verified).length > 0 ? (
+              <button 
+                onClick={() => {
+                  dashboardState.skills.forEach(s => {
+                    if (!s.verified && dispatch) {
+                      dispatch({ type: 'TOGGLE_SKILL_VERIFICATION', payload: s.id });
+                    }
+                  });
+                  alert("Pending certifications signed and verified on-chain successfully!");
+                }}
+                className="bg-samridhi-warning hover:brightness-110 text-samridhi-bg px-4.5 py-2 rounded-xl text-[9.5px] font-black uppercase tracking-wider transition-all select-none shrink-0 cursor-pointer"
+              >
+                Verify {dashboardState.skills.filter(s => !s.verified).length} Skills
+              </button>
+            ) : (
+              <span className="px-4.5 py-2 bg-samridhi-warning/10 border border-samridhi-warning/20 rounded-xl text-[9.5px] font-black uppercase text-samridhi-warning tracking-wider shrink-0 select-none">
+                All Verified ✔
+              </span>
+            )}
+          </div>
+
+          {/* Item 5: Toggle Aadhaar Identity KYC */}
+          <div className="bg-white/[0.01] border border-white/[0.05] hover:border-samridhi-secondary/30 p-4.5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all">
+            <div className="flex items-start space-x-3.5">
+              <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border ${
+                aadhaarVerified 
+                  ? 'bg-samridhi-success/10 border-samridhi-success/20 text-samridhi-success'
+                  : 'bg-white/[0.02] border-white/[0.08] text-samridhi-textMuted'
+              }`}>
+                {aadhaarVerified ? '✓' : '🆔'}
+              </div>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <h4 className="font-extrabold text-xs text-white uppercase tracking-wide">Aadhaar Identity KYC Verification</h4>
+                  <span className="text-[8px] font-black text-samridhi-success font-mono uppercase bg-samridhi-success/10 px-1.5 py-0.5 rounded border border-samridhi-success/15">+4 pts Impact</span>
+                </div>
+                <p className="text-[10px] text-samridhi-textMuted mt-1 font-semibold">Link official UIDAI identity registry matches. Required for fraud deterrence assessment.</p>
+              </div>
+            </div>
+            
+            <button 
+              onClick={() => {
+                if (setAadhaarVerified) {
+                  setAadhaarVerified(!aadhaarVerified);
+                  alert(aadhaarVerified ? "Aadhaar disconnected. Telemetry score updated." : "Aadhaar identity registry matched successfully!");
+                }
+              }}
+              className={`px-4.5 py-2 rounded-xl text-[9.5px] font-black uppercase tracking-wider transition-all select-none shrink-0 cursor-pointer border ${
+                aadhaarVerified 
+                  ? 'bg-samridhi-success/10 border-samridhi-success/25 text-samridhi-success hover:bg-samridhi-success/20'
+                  : 'bg-white/[0.02] border-white/[0.08] text-white hover:border-samridhi-success/50'
+              }`}
+            >
+              {aadhaarVerified ? 'KYC Done ✔' : 'Link Aadhaar'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

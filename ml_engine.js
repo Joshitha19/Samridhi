@@ -278,12 +278,12 @@ window.calculateXAIExplanations = (user, metrics) => {
     const anomalies = ifScores.filter(item => item.score > 0.58);
     const penalty = Math.min(15, anomalies.length * 5);
     if (penalty > 0) {
-      shap.push({ label: "Isolation Forest Anomaly Penalty", impact: -penalty, positive: false });
+      shap.push({ label: "Cashflow Divergence Outlier", impact: -penalty, positive: false });
     }
   }
 
   // LIME surrogate explanation formulas & values
-  const limeFormula = `y ≈ 50 + ${roleImpact >= 0 ? '+' : ''}${roleImpact}*X_Profile + 4*X_Aadhaar + 3*X_PAN + 10*X_UPI_Link + 15*X_UPI_Verify + 4*X_Skills + 10*X_Asset + 8*X_Liveness + 7*X_Statement - 5*X_Anomaly`;
+  const limeFormula = `y ≈ 50 + ${roleImpact >= 0 ? '+' : ''}${roleImpact}*X_Profile + 4*X_Aadhaar + 3*X_PAN + 10*X_UPI_Link + 15*X_UPI_Verify + 4*X_Skills + 10*X_Asset + 8*X_Liveness + 7*X_Statement - 5*X_Divergence`;
   
   const limeSurrogate = {
     formula: limeFormula,
@@ -297,7 +297,7 @@ window.calculateXAIExplanations = (user, metrics) => {
       X_Asset: 10,
       X_Liveness: 8,
       X_Statement: 7,
-      X_Anomaly: -5
+      X_Divergence: -5
     },
     activeValues: {
       X_Profile: 1,
@@ -309,7 +309,7 @@ window.calculateXAIExplanations = (user, metrics) => {
       X_Asset: (inventory && inventory.length > 0) ? 1 : 0,
       X_Liveness: kycCameraVerified ? 1 : 0,
       X_Statement: bankStatementUploaded ? 1 : 0,
-      X_Anomaly: (transactions && window.runIsolationForest(transactions).filter(item => item.score > 0.58).length) || 0
+      X_Divergence: (transactions && window.runIsolationForest(transactions).filter(item => item.score > 0.58).length) || 0
     }
   };
 

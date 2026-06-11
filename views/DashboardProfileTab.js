@@ -116,8 +116,8 @@ window.DashboardProfileTab = ({
   const startOcrTypewriter = () => {
     const data = {
       number: "XXXX XXXX 8742",
-      name: "Arjun Sharma",
-      dob: "15/08/1998",
+      name: user.name || "Arjun Sharma",
+      dob: user.type === 'Student' ? "12/10/2004" : "15/08/1995",
       address: "Hyderabad, Telangana"
     };
 
@@ -504,15 +504,15 @@ window.DashboardProfileTab = ({
               </div>
               <div>
                 <span className="text-samridhi-textMuted block text-[9px] uppercase font-sans tracking-wide">Cardholder</span>
-                <span className="font-bold text-white font-sans">Arjun Sharma</span>
+                <span className="font-bold text-white font-sans">{ocrText.name || user.name || "Arjun Sharma"}</span>
               </div>
               <div>
                 <span className="text-samridhi-textMuted block text-[9px] uppercase font-sans tracking-wide">DOB</span>
-                <span className="font-bold text-white">15/08/1998</span>
+                <span className="font-bold text-white">{ocrText.dob || (user.type === 'Student' ? "12/10/2004" : "15/08/1995")}</span>
               </div>
               <div>
                 <span className="text-samridhi-textMuted block text-[9px] uppercase font-sans tracking-wide">State</span>
-                <span className="font-bold text-white font-sans">Telangana</span>
+                <span className="font-bold text-white font-sans">{(ocrText.address && ocrText.address.split(',')[1] && ocrText.address.split(',')[1].trim()) || "Telangana"}</span>
               </div>
             </div>
 

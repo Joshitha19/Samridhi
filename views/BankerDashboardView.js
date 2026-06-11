@@ -1108,7 +1108,7 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
                           <span className="text-white/80 font-mono">-₹1,95,000</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-samridhi-textMuted">Anomaly Check:</span>
+                          <span className="text-samridhi-textMuted">Divergence Check:</span>
                           <span className="text-samridhi-success font-extrabold uppercase">100% Passed</span>
                         </div>
                       </div>

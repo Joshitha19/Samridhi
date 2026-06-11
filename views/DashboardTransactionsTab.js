@@ -44,8 +44,8 @@ window.DashboardTransactionsTab = ({
   ];
 
   const anomalyTransactions = [
-    { id: 'tx-a1', date: "2026-05-14", merchant: "Unusual Cash Spike", category: "Entertainment", amount: 25000, type: "Debit" },
-    { id: 'tx-a2', date: "2026-05-14", merchant: "Suspicious High Velocity Pay", category: "Shopping", amount: 15000, type: "Debit" }
+    { id: 'tx-a1', date: "2026-05-14", merchant: "High-Volume Outflow", category: "Entertainment", amount: 25000, type: "Debit" },
+    { id: 'tx-a2', date: "2026-05-14", merchant: "High-Frequency Transfer", category: "Shopping", amount: 15000, type: "Debit" }
   ];
 
   // If statement uploaded, use parsed list. Otherwise, use mock base list or live transactions from dashboardState.
@@ -113,8 +113,8 @@ window.DashboardTransactionsTab = ({
     // Fallback if no window.runIsolationForest
     return activeTransactionsList.map(tx => ({
       ...tx,
-      anomalyScore: tx.merchant.includes("Unusual") || tx.merchant.includes("Suspicious") ? 0.65 : 0.42,
-      anomaly: tx.merchant.includes("Unusual") || tx.merchant.includes("Suspicious")
+      anomalyScore: tx.merchant.includes("High-Volume") || tx.merchant.includes("High-Frequency") ? 0.65 : 0.42,
+      anomaly: tx.merchant.includes("High-Volume") || tx.merchant.includes("High-Frequency")
     }));
   }, [activeTransactionsList]);
 
@@ -182,9 +182,9 @@ window.DashboardTransactionsTab = ({
         "SCANNING ROW 7: 15-05-2026 UDEMY EDUCATION -899",
         "SCANNING ROW 8: 12-05-2026 JIO UTILITY BILL -749",
         "SCANNING ROW 9: 09-05-2026 NETFLIX ENTERTAINMENT -499",
-        "SCANNING ROW 10: 05-05-2026 UNUSUAL CASH SPIKE -25000",
+        "SCANNING ROW 10: 05-05-2026 LARGE OUTFLOW DRIFT -25000",
         "ANALYZING CASH FLOW VELOCITY PATTERNS...",
-        "COMPUTING ISOLATION FOREST ANOMALY FLAGS...",
+        "VERIFYING CASHFLOW VELOCITY CONSISTENCY...",
         "SUCCESS: 10 TRANSACTION NODES IDENTIFIED.",
         "UPGRADING CREDIBILITY FACTOR INDEX..."
       ]);
@@ -207,7 +207,7 @@ window.DashboardTransactionsTab = ({
               { id: 'pdf-tx-7', date: "2026-05-15", merchant: "Udemy Education", category: "Education", amount: 899, type: "Debit" },
               { id: 'pdf-tx-8', date: "2026-05-12", merchant: "Jio Utility Bill", category: "Utility", amount: 749, type: "Debit" },
               { id: 'pdf-tx-9', date: "2026-05-09", merchant: "Netflix Entertainment", category: "Entertainment", amount: 499, type: "Debit" },
-              { id: 'pdf-tx-10', date: "2026-05-05", merchant: "Unusual Cash Spike", category: "Other", amount: 25000, type: "Debit" }
+              { id: 'pdf-tx-10', date: "2026-05-05", merchant: "Large Outflow Drift", category: "Other", amount: 25000, type: "Debit" }
             ];
             setParsedTransactions(sampleList);
             setBankStatementUploaded(true);
@@ -219,7 +219,7 @@ window.DashboardTransactionsTab = ({
               outflow: 44017,
               anomaliesCount: 1, // Unusual Cash Spike (Rent is under 3x average of 5.5K)
               stabilityGrade: "Strong (A+)",
-              summary: "Detected steady salary credit of INR 48,000. Underwriting evaluation flags 1 cash outflow anomaly of INR 25,000 on May 5th, but overall liquidity buffer remains stable. Recommended to maintain a minimum UPI reserve balance of INR 8,000 to maximize future credit score improvements."
+              summary: "Detected steady salary credit of INR 48,000. Underwriting evaluation flags 1 cash outflow variance of INR 25,000 on May 5th, but overall liquidity buffer remains stable. Recommended to maintain a minimum UPI reserve balance of INR 8,000 to maximize future credit score improvements."
             });
           }, 800);
           return prev;
@@ -297,9 +297,9 @@ window.DashboardTransactionsTab = ({
             "SCANNING ROW 7: 15-05-2026 UDEMY EDUCATION -899",
             "SCANNING ROW 8: 12-05-2026 JIO UTILITY BILL -749",
             "SCANNING ROW 9: 09-05-2026 NETFLIX ENTERTAINMENT -499",
-            "SCANNING ROW 10: 05-05-2026 UNUSUAL CASH SPIKE -25000",
+            "SCANNING ROW 10: 05-05-2026 LARGE OUTFLOW DRIFT -25000",
             "ANALYZING CASH FLOW VELOCITY PATTERNS...",
-            "COMPUTING ISOLATION FOREST ANOMALY FLAGS...",
+            "VERIFYING CASHFLOW VELOCITY CONSISTENCY...",
             "SUCCESS: 10 TRANSACTION NODES IDENTIFIED."
           ]);
         }
@@ -780,8 +780,8 @@ window.DashboardTransactionsTab = ({
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
                 <div>
-                  <h4 className="font-extrabold text-xs uppercase tracking-wide">2 anomalies flagged — Unusual transaction spike on 14 May.</h4>
-                  <p className="text-[10px] text-samridhi-textMuted mt-0.5 font-semibold">Underwriting reviews required before scoring adjustments.</p>
+                  <h4 className="font-extrabold text-xs uppercase tracking-wide">2 variance flags — High transaction volume outlier on 14 May.</h4>
+                  <p className="text-[10px] text-samridhi-textMuted mt-0.5 font-semibold">Review logs for dynamic validation.</p>
                 </div>
               </div>
             ) : (
@@ -790,7 +790,7 @@ window.DashboardTransactionsTab = ({
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <div>
-                  <h4 className="font-extrabold text-xs uppercase tracking-wide">No anomalies detected — Isolation Forest: Clean.</h4>
+                  <h4 className="font-extrabold text-xs uppercase tracking-wide">No variance flags — Cashflow Consistency: Verified.</h4>
                   <p className="text-[10px] text-samridhi-textMuted mt-0.5 font-semibold">All {stats.count} transactions verified as legitimate footprint patterns.</p>
                 </div>
               </div>
@@ -799,7 +799,7 @@ window.DashboardTransactionsTab = ({
 
           {/* Toggle Simulation */}
           <div className="flex items-center space-x-2 shrink-0">
-            <span className="text-[10px] font-bold text-samridhi-textMuted uppercase tracking-wider">Simulate Fraud Detection</span>
+            <span className="text-[10px] font-bold text-samridhi-textMuted uppercase tracking-wider">Stress-Test Transaction Pattern</span>
             <button
               onClick={() => setSimulateFraud(!simulateFraud)}
               className={`w-10 h-5.5 rounded-full p-0.5 transition-colors relative focus:outline-none ${
@@ -899,16 +899,16 @@ window.DashboardTransactionsTab = ({
                           {isAnomaly ? (
                             <div className="flex flex-col space-y-0.5">
                               <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-samridhi-danger/20 text-samridhi-danger border border-samridhi-danger/30 w-max">
-                                Anomaly
+                                Divergent
                               </span>
-                              <span className="text-[8px] text-samridhi-danger font-bold font-mono">IF Score: {(tx.anomalyScore || 0).toFixed(3)}</span>
+                              <span className="text-[8px] text-samridhi-danger font-bold font-mono">Divergence Score: {(tx.anomalyScore || 0).toFixed(3)}</span>
                             </div>
                           ) : (
                             <div className="flex flex-col space-y-0.5">
                               <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-samridhi-success/10 text-samridhi-success border border-samridhi-success/20 w-max">
-                                Safe
+                                Consistent
                               </span>
-                              <span className="text-[8px] text-samridhi-textMuted font-bold font-mono">IF Score: {(tx.anomalyScore || 0).toFixed(3)}</span>
+                              <span className="text-[8px] text-samridhi-textMuted font-bold font-mono">Divergence Score: {(tx.anomalyScore || 0).toFixed(3)}</span>
                             </div>
                           )}
                         </td>
@@ -1022,7 +1022,7 @@ window.DashboardTransactionsTab = ({
           <div className="glass-card p-6 rounded-3xl border border-white/[0.04] border-glow-primary space-y-4 shadow-lg">
             <div className="flex items-center justify-between border-b border-white/[0.04] pb-3">
               <h3 className="font-extrabold text-xs text-white uppercase tracking-wider text-glow-primary">
-                Isolation Forest Diagnostics
+                Unsupervised Consistency Diagnostics
               </h3>
               <span className="text-[8px] font-black text-samridhi-primary bg-samridhi-primary/10 px-1.5 py-0.5 rounded border border-samridhi-primary/20 uppercase tracking-widest font-mono">Unsupervised.Ensemble</span>
             </div>
@@ -1047,16 +1047,16 @@ window.DashboardTransactionsTab = ({
                   <span className="text-xs font-black text-samridhi-secondary font-mono">~4.15 splits</span>
                 </div>
                 <div className="flex flex-col mt-2">
-                  <span className="text-[8px] font-bold text-samridhi-textMuted uppercase tracking-wider">Sensitivity Threshold</span>
-                  <span className="text-xs font-black text-samridhi-success font-mono">0.58 score</span>
+                  <span className="text-[8px] font-bold text-samridhi-textMuted uppercase tracking-wider">Variance Threshold</span>
+                  <span className="text-xs font-black text-samridhi-success font-mono">0.58 index</span>
                 </div>
               </div>
 
               {/* Threshold indicator bar */}
               <div className="space-y-1">
                 <div className="flex justify-between text-[8px] font-black text-samridhi-textMuted uppercase">
-                  <span>Normal Cashflow</span>
-                  <span className="text-samridhi-danger">Anomaly Zone</span>
+                  <span>Consistent Cashflow</span>
+                  <span className="text-samridhi-danger">Divergent Zone</span>
                 </div>
                 <div className="h-2.5 rounded bg-white/[0.02] border border-white/[0.08] overflow-hidden relative">
                   {/* Normal area (up to 0.58) */}
@@ -1069,7 +1069,7 @@ window.DashboardTransactionsTab = ({
               </div>
 
               <div className="text-[9px] text-samridhi-textMuted leading-relaxed font-semibold italic text-center">
-                *High anomaly scores (IF &gt; 0.58) represent transactions isolated early in the tree branching process.
+                *High scores represent transactions isolated early due to divergent characteristics (outliers).
               </div>
             </div>
           </div>

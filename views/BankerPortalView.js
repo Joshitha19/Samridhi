@@ -10,6 +10,10 @@ window.BankerPortalView = ({ setPage, onBankerSignIn, onBankerSignUp }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [bankName, setBankName] = useState('State Bank of India');
+  const [employeeId, setEmployeeId] = useState('');
+  const [ifscCode, setIfscCode] = useState('');
+  const [designation, setDesignation] = useState('Credit Risk Underwriter');
+  const [licenseId, setLicenseId] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
@@ -17,7 +21,7 @@ window.BankerPortalView = ({ setPage, onBankerSignIn, onBankerSignUp }) => {
     setError('');
 
     if (isRegistering) {
-      if (!name || !email || !password || !confirmPassword || !bankName) {
+      if (!name || !email || !password || !confirmPassword || !bankName || !employeeId || !ifscCode || !designation || !licenseId) {
         setError('Please fill in all fields.');
         return;
       }
@@ -29,7 +33,24 @@ window.BankerPortalView = ({ setPage, onBankerSignIn, onBankerSignUp }) => {
         setError('Password must be at least 6 characters.');
         return;
       }
-      onBankerSignUp(name, email, bankName, password);
+      if (!/^[A-Z0-9-]{4,15}$/i.test(employeeId)) {
+        setError('Employee ID must be alphanumeric and between 4 to 15 characters.');
+        return;
+      }
+      if (!/^[A-Z]{4}0[A-Z0-9]{6}$/i.test(ifscCode)) {
+        setError('IFSC code must be a valid 11-character Indian banking format (e.g. SBIN0000123).');
+        return;
+      }
+      if (!/^[A-Z0-9-]{5,20}$/i.test(licenseId)) {
+        setError('Regulatory License ID must be alphanumeric and between 5 to 20 characters.');
+        return;
+      }
+      onBankerSignUp(name, email, bankName, password, {
+        employeeId: employeeId.toUpperCase(),
+        ifscCode: ifscCode.toUpperCase(),
+        designation: designation,
+        licenseId: licenseId.toUpperCase()
+      });
     } else {
       if (!email || !password) {
         setError('Please fill in all fields.');
@@ -136,20 +157,91 @@ window.BankerPortalView = ({ setPage, onBankerSignIn, onBankerSignUp }) => {
           </div>
 
           {isRegistering && (
-            <div className="flex flex-col space-y-1.5">
-              <label className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">Associated Bank</label>
-              <select
-                value={bankName}
-                onChange={(e) => setBankName(e.target.value)}
-                className="w-full bg-white/[0.02] border border-white/[0.08] hover:border-samridhi-success/30 focus:border-samridhi-success text-sm rounded-xl py-3 px-4 text-white focus:outline-none transition-all"
-              >
-                <option value="State Bank of India" className="bg-samridhi-bg text-white">State Bank of India (SBI)</option>
-                <option value="HDFC Bank" className="bg-samridhi-bg text-white">HDFC Bank</option>
-                <option value="ICICI Bank" className="bg-samridhi-bg text-white">ICICI Bank</option>
-                <option value="Axis Bank" className="bg-samridhi-bg text-white">Axis Bank</option>
-                <option value="Punjab National Bank" className="bg-samridhi-bg text-white">Punjab National Bank (PNB)</option>
-              </select>
-            </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex flex-col space-y-1.5">
+                  <label className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">Employee ID / Staff Code</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-samridhi-textMuted">
+                      <Icons.Lock className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="text"
+                      value={employeeId}
+                      onChange={(e) => setEmployeeId(e.target.value)}
+                      placeholder="e.g. EMP-10492"
+                      className="w-full bg-white/[0.02] border border-white/[0.08] hover:border-samridhi-success/30 focus:border-samridhi-success text-sm rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-samridhi-textMuted/50 focus:outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col space-y-1.5">
+                  <label className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">Branch IFSC Code</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-samridhi-textMuted">
+                      <Icons.CreditCard className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="text"
+                      value={ifscCode}
+                      onChange={(e) => setIfscCode(e.target.value)}
+                      placeholder="e.g. SBIN0000123"
+                      maxLength={11}
+                      className="w-full bg-white/[0.02] border border-white/[0.08] hover:border-samridhi-success/30 focus:border-samridhi-success text-sm rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-samridhi-textMuted/50 focus:outline-none transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex flex-col space-y-1.5">
+                  <label className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">Designation / Role</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-samridhi-textMuted">
+                      <Icons.Briefcase className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="text"
+                      value={designation}
+                      onChange={(e) => setDesignation(e.target.value)}
+                      placeholder="e.g. Credit Risk Analyst"
+                      className="w-full bg-white/[0.02] border border-white/[0.08] hover:border-samridhi-success/30 focus:border-samridhi-success text-sm rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-samridhi-textMuted/50 focus:outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col space-y-1.5">
+                  <label className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">Regulatory License ID</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-samridhi-textMuted">
+                      <Icons.ShieldAlert className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="text"
+                      value={licenseId}
+                      onChange={(e) => setLicenseId(e.target.value)}
+                      placeholder="e.g. RBI-SBI-9847"
+                      className="w-full bg-white/[0.02] border border-white/[0.08] hover:border-samridhi-success/30 focus:border-samridhi-success text-sm rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-samridhi-textMuted/50 focus:outline-none transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col space-y-1.5">
+                <label className="text-xs font-bold text-samridhi-textMuted uppercase tracking-wider">Associated Bank</label>
+                <select
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                  className="w-full bg-white/[0.02] border border-white/[0.08] hover:border-samridhi-success/30 focus:border-samridhi-success text-sm rounded-xl py-3 px-4 text-white focus:outline-none transition-all"
+                >
+                  <option value="State Bank of India" className="bg-samridhi-bg text-white">State Bank of India (SBI)</option>
+                  <option value="HDFC Bank" className="bg-samridhi-bg text-white">HDFC Bank</option>
+                  <option value="ICICI Bank" className="bg-samridhi-bg text-white">ICICI Bank</option>
+                  <option value="Axis Bank" className="bg-samridhi-bg text-white">Axis Bank</option>
+                  <option value="Punjab National Bank" className="bg-samridhi-bg text-white">Punjab National Bank (PNB)</option>
+                </select>
+              </div>
+            </>
           )}
 
           <button

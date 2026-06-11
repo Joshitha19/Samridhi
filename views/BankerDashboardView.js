@@ -448,9 +448,13 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
       {/* BANKER NAVBAR */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-white/[0.04] pb-6 mb-8 gap-4 bg-white/[0.01] border border-white/[0.05] p-6 rounded-2xl backdrop-blur-xl relative z-10">
         <div>
-          <div className="flex items-center space-x-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
             <span className="px-2 py-0.5 bg-samridhi-success/15 border border-samridhi-success/20 rounded text-[9px] font-black uppercase text-samridhi-success tracking-widest">
               Secured Console
+            </span>
+            <span className="px-2 py-0.5 bg-samridhi-success/20 border border-samridhi-success/40 rounded text-[9px] font-black uppercase text-samridhi-success tracking-widest flex items-center gap-1 shadow-[0_0_10px_rgba(0,230,118,0.15)]">
+              <span className="w-1.5 h-1.5 rounded-full bg-samridhi-success animate-pulse"></span>
+              Verified Banker
             </span>
             <span className="text-[10px] text-samridhi-textMuted font-mono">
               Database Sync: Live (5s)
@@ -459,9 +463,21 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
           <h1 className="text-2xl font-black text-white tracking-tight mt-1 bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
             Bank Underwriting Terminal
           </h1>
-          <p className="text-xs text-samridhi-textMuted mt-0.5 font-medium">
-            🏦 Institutional Portal &bull; <strong className="text-samridhi-secondary">{user.bankName || 'Lead Underwriter'}</strong> ({user.email})
-          </p>
+          <div className="text-xs text-samridhi-textMuted mt-1.5 font-medium leading-relaxed">
+            <div className="flex items-center gap-1">
+              <span>🏦 Institutional Portal &bull;</span>
+              <strong className="text-samridhi-secondary">{user.bankName || 'Lead Underwriter'}</strong>
+              <span>({user.email})</span>
+            </div>
+            {(user.employeeId || user.ifscCode) && (
+              <div className="mt-2 text-[10px] font-mono text-samridhi-textMuted bg-white/[0.02] border border-white/[0.06] rounded-lg px-3 py-1.5 w-fit flex flex-wrap gap-x-4 gap-y-1">
+                <div><span className="text-samridhi-success font-semibold">ID:</span> {user.employeeId || 'N/A'}</div>
+                <div><span className="text-samridhi-success font-semibold">IFSC:</span> {user.ifscCode || 'N/A'}</div>
+                <div><span className="text-samridhi-success font-semibold">LICENSE:</span> {user.licenseId || 'N/A'}</div>
+                <div><span className="text-samridhi-success font-semibold">ROLE:</span> {user.designation || 'Credit Evaluator'}</div>
+              </div>
+            )}
+          </div>
         </div>
         <button
           onClick={handleLogout}

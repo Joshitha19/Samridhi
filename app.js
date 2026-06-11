@@ -841,6 +841,10 @@ function App() {
             email: activeProfile.email,
             type: 'Banker',
             bankName: meta.bankName || 'State Bank of India',
+            employeeId: meta.employeeId || 'EMP-SBI-999',
+            ifscCode: meta.ifscCode || 'SBIN0000123',
+            designation: meta.designation || 'Credit Risk Underwriter',
+            licenseId: meta.licenseId || 'RBI-SBI-2026',
             upiVpa: ''
           });
           setPage('banker-dashboard');
@@ -1448,6 +1452,10 @@ function App() {
         email: email,
         type: 'Banker',
         bankName: bankName,
+        employeeId: 'EMP-SBI-2026',
+        ifscCode: 'SBIN0000123',
+        designation: 'Senior Credit Underwriter',
+        licenseId: 'RBI-SBI-2026',
         isDemo: true
       };
       setUser(demoBanker);
@@ -1472,6 +1480,10 @@ function App() {
             email: email,
             type: 'Banker',
             bankName: 'State Bank of India',
+            employeeId: 'EMP-SBI-2026',
+            ifscCode: 'SBIN0000123',
+            designation: 'Senior Credit Underwriter',
+            licenseId: 'RBI-SBI-2026',
             isDemo: true
           };
           setUser(demoBanker);
@@ -1492,7 +1504,11 @@ function App() {
           name: 'SBI BANKER',
           email: email,
           type: 'Banker',
-          bankName: 'State Bank of India'
+          bankName: 'State Bank of India',
+          employeeId: 'EMP-SBI-2026',
+          ifscCode: 'SBIN0000123',
+          designation: 'Senior Credit Underwriter',
+          licenseId: 'RBI-SBI-2026'
         });
         setPage('banker-dashboard');
       } else {
@@ -1502,7 +1518,7 @@ function App() {
   };
 
   // Handle banker sign up
-  const handleBankerSignUp = async (name, email, bankName, password) => {
+  const handleBankerSignUp = async (name, email, bankName, password, metadata = {}) => {
     if (supabaseClient) {
       const { data, error } = await supabaseClient.auth.signUp({
         email,
@@ -1511,7 +1527,11 @@ function App() {
           data: {
             name: name,
             type: 'Banker',
-            bankName: bankName
+            bankName: bankName,
+            employeeId: metadata.employeeId,
+            ifscCode: metadata.ifscCode,
+            designation: metadata.designation,
+            licenseId: metadata.licenseId
           }
         }
       });
@@ -1526,7 +1546,11 @@ function App() {
           name: name,
           email: email,
           type: 'Banker',
-          bankName: bankName
+          bankName: bankName,
+          employeeId: metadata.employeeId,
+          ifscCode: metadata.ifscCode,
+          designation: metadata.designation,
+          licenseId: metadata.licenseId
         });
         setPage('banker-dashboard');
       } else {
@@ -1538,14 +1562,67 @@ function App() {
           email: email,
           type: 'Banker',
           bankName: bankName,
+          employeeId: metadata.employeeId,
+          ifscCode: metadata.ifscCode,
+          designation: metadata.designation,
+          licenseId: metadata.licenseId,
           isDemo: true
         };
         setUser(newBanker);
         localStorage.setItem('samridhi_demo_session', JSON.stringify(newBanker));
+        
+        // Add to local storage profiles list
+        let localProfiles = JSON.parse(localStorage.getItem('samridhi_profiles') || '[]');
+        localProfiles.push({
+          id: localUid,
+          name: name,
+          email: email,
+          type: 'Banker',
+          bankName: bankName,
+          employeeId: metadata.employeeId,
+          ifscCode: metadata.ifscCode,
+          designation: metadata.designation,
+          licenseId: metadata.licenseId,
+          upi_vpa: ''
+        });
+        localStorage.setItem('samridhi_profiles', JSON.stringify(localProfiles));
+
         setPage('banker-dashboard');
       }
     } else {
-      alert("Supabase is required to register new Bankers. Try One-Click Banker Demo Login.");
+      // Local sandbox registration fallback if Supabase is offline/not initialized
+      const localUid = `banker-${Date.now()}`;
+      const newBanker = {
+        id: localUid,
+        name: name,
+        email: email,
+        type: 'Banker',
+        bankName: bankName,
+        employeeId: metadata.employeeId,
+        ifscCode: metadata.ifscCode,
+        designation: metadata.designation,
+        licenseId: metadata.licenseId,
+        isDemo: true
+      };
+      setUser(newBanker);
+      localStorage.setItem('samridhi_demo_session', JSON.stringify(newBanker));
+      
+      let localProfiles = JSON.parse(localStorage.getItem('samridhi_profiles') || '[]');
+      localProfiles.push({
+        id: localUid,
+        name: name,
+        email: email,
+        type: 'Banker',
+        bankName: bankName,
+        employeeId: metadata.employeeId,
+        ifscCode: metadata.ifscCode,
+        designation: metadata.designation,
+        licenseId: metadata.licenseId,
+        upi_vpa: ''
+      });
+      localStorage.setItem('samridhi_profiles', JSON.stringify(localProfiles));
+
+      setPage('banker-dashboard');
     }
   };
 

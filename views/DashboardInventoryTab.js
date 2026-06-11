@@ -40,7 +40,7 @@ window.DashboardInventoryTab = ({
     const category = newItemCategory || defaultCategory;
 
     const newItem = {
-      id: `inv-added-${Date.now()}`,
+      id: window.generateUUID ? window.generateUUID() : `inv-added-${Date.now()}`,
       name: newItemName,
       category: category,
       quantity: qty,

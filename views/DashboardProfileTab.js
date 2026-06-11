@@ -182,7 +182,7 @@ window.DashboardProfileTab = ({
     dispatch({
       type: 'ADD_SKILL',
       payload: {
-        id: `s-added-${Date.now()}`,
+        id: window.generateUUID ? window.generateUUID() : `s-added-${Date.now()}`,
         name: certName,
         issuer: `${issuingBody} (${certYear})`,
         verified: true

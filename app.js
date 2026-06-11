@@ -47,6 +47,94 @@ window.personalizeTransactions = (baseTransactions, upiVpa, userName) => {
   });
 };
 
+// UUID Generator Helper for RFC 4122 v4 compliance (compatible with postgres UUID type)
+window.generateUUID = () => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    try {
+      return crypto.randomUUID();
+    } catch(e) {}
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
+// Sector-Specific Initial Data Seeder Helper
+window.getSectorInitialState = (userType, userId) => {
+  const daysAgo = (n) => {
+    const d = new Date();
+    d.setDate(d.getDate() - n);
+    return d.toISOString().split('T')[0];
+  };
+
+  const uuid = () => window.generateUUID();
+  const type = userType || 'Freelancer';
+  
+  if (type === 'Student') {
+    return {
+      loans: [
+        { id: uuid(), lender: "Vidyarthi Capital", amount: 15000, rate: "9.8%", emi: "₹1,320", status: "Active", date: daysAgo(20) }
+      ],
+      skills: [
+        { id: uuid(), name: "AWS Cloud Practitioner", issuer: "Amazon Web Services", verified: true },
+        { id: uuid(), name: "Python Programming Core", issuer: "Google (Coursera)", verified: true },
+        { id: uuid(), name: "Data Structures & Algorithms", issuer: "Stanford Online", verified: false }
+      ],
+      inventory: [
+        { id: uuid(), name: "Development Laptop", category: "Education Tools", quantity: 1, unit: "unit", price: 45000, lastUpdated: daysAgo(10) },
+        { id: uuid(), name: "Technical Textbooks", category: "Study Material", quantity: 8, unit: "books", price: 800, lastUpdated: daysAgo(5) }
+      ]
+    };
+  } else if (type === 'Entrepreneur' || type === 'Business Founder') {
+    return {
+      loans: [
+        { id: uuid(), lender: "Udyog MicroFund", amount: 200000, rate: "13.2%", emi: "₹5,224", status: "Active", date: daysAgo(45) }
+      ],
+      skills: [
+        { id: uuid(), name: "Micro-Business Management", issuer: "MSME India", verified: true },
+        { id: uuid(), name: "Digital Marketing Basics", issuer: "Google", verified: true },
+        { id: uuid(), name: "GST & Financial Compliance", issuer: "ICAI", verified: false }
+      ],
+      inventory: [
+        { id: uuid(), name: "Arabica Coffee Beans", category: "Raw Materials", quantity: 150, unit: "kg", price: 350, lastUpdated: daysAgo(5) },
+        { id: uuid(), name: "Paper Cups & Lids", category: "Packaging", quantity: 1200, unit: "pcs", price: 3, lastUpdated: daysAgo(5) },
+        { id: uuid(), name: "Commercial Espresso Machine", category: "Equipment", quantity: 1, unit: "unit", price: 85000, lastUpdated: daysAgo(5) }
+      ]
+    };
+  } else if (type === 'Salaried') {
+    return {
+      loans: [
+        { id: uuid(), lender: "Salary Quick Advance", amount: 50000, rate: "10.0%", emi: "₹4,395", status: "Active", date: daysAgo(10) }
+      ],
+      skills: [
+        { id: uuid(), name: "Project Management Professional", issuer: "PMI", verified: true },
+        { id: uuid(), name: "Advanced Microsoft Excel", issuer: "Corporate Academy", verified: true },
+        { id: uuid(), name: "Corporate Communications", issuer: "LinkedIn Learning", verified: false }
+      ],
+      inventory: [
+        { id: uuid(), name: "Personal Commute Vehicle", category: "Assets", quantity: 1, unit: "unit", price: 95000, lastUpdated: daysAgo(12) }
+      ]
+    };
+  } else {
+    // Freelancer
+    return {
+      loans: [
+        { id: uuid(), lender: "Samridhi Capital Fund", amount: 75000, rate: "11.5%", emi: "₹2,500", status: "Active", date: daysAgo(30) }
+      ],
+      skills: [
+        { id: uuid(), name: "React Frontend Engineer", issuer: "Meta (Coursera)", verified: true },
+        { id: uuid(), name: "Advanced Financial Analytics", issuer: "Wharton Online", verified: false },
+        { id: uuid(), name: "Professional English Writing", issuer: "British Council", verified: true }
+      ],
+      inventory: [
+        { id: uuid(), name: "High-End MacBook Pro", category: "Equipment", quantity: 1, unit: "unit", price: 150000, lastUpdated: daysAgo(8) },
+        { id: uuid(), name: "Ergonomic Desk & Chair", category: "Equipment", quantity: 1, unit: "set", price: 25000, lastUpdated: daysAgo(8) }
+      ]
+    };
+  }
+};
+
 // --- STARTUP SPLASH SCREEN ---
 function SplashScreen({ onComplete }) {
   const [progress, setProgress] = useState(0);
@@ -793,8 +881,11 @@ function App() {
         // If empty user tables, seed them with beautiful default records
         console.log("Seeding mock ledger details to Supabase tables...");
         
+        const sectorData = getSectorInitialState(activeProfile.type, userId);
+        
         const baseTxs = personalizeTransactions(REDUCER_INITIAL_STATE.transactions, activeProfile.upi_vpa, activeProfile.name);
         const insertTxs = baseTxs.map(t => ({
+          id: window.generateUUID ? window.generateUUID() : undefined,
           user_id: userId,
           date: t.date,
           merchant: t.merchant,
@@ -804,7 +895,8 @@ function App() {
         }));
         await supabaseClient.from('transactions').insert(insertTxs);
 
-        const insertSkills = REDUCER_INITIAL_STATE.skills.map(s => ({
+        const insertSkills = sectorData.skills.map(s => ({
+          id: s.id,
           user_id: userId,
           name: s.name,
           issuer: s.issuer,
@@ -812,7 +904,8 @@ function App() {
         }));
         await supabaseClient.from('skills').insert(insertSkills);
 
-        const insertLoans = REDUCER_INITIAL_STATE.loans.map(l => ({
+        const insertLoans = sectorData.loans.map(l => ({
+          id: l.id,
           user_id: userId,
           lender: l.lender,
           amount: l.amount,
@@ -823,7 +916,8 @@ function App() {
         }));
         await supabaseClient.from('loans').insert(insertLoans);
 
-        const insertInventory = REDUCER_INITIAL_STATE.inventory.map(i => ({
+        const insertInventory = sectorData.inventory.map(i => ({
+          id: i.id,
           user_id: userId,
           name: i.name,
           category: i.category,
@@ -953,9 +1047,11 @@ function App() {
       localStorage.setItem('samridhi_transactions', JSON.stringify(localTxs));
     }
     
+    const sectorData = getSectorInitialState(profile.type, userId);
+
     if (userSkills.length === 0) {
-      const seededSkills = REDUCER_INITIAL_STATE.skills.map((s, idx) => ({
-        id: `s-demo-${userId}-${idx}`,
+      const seededSkills = sectorData.skills.map(s => ({
+        id: s.id,
         user_id: userId,
         name: s.name,
         issuer: s.issuer,
@@ -966,8 +1062,8 @@ function App() {
     }
     
     if (userLoans.length === 0) {
-      const seededLoans = REDUCER_INITIAL_STATE.loans.map((l, idx) => ({
-        id: `l-demo-${userId}-${idx}`,
+      const seededLoans = sectorData.loans.map(l => ({
+        id: l.id,
         user_id: userId,
         lender: l.lender,
         amount: l.amount,
@@ -981,8 +1077,8 @@ function App() {
     }
     
     if (userInventory.length === 0) {
-      const seededInventory = REDUCER_INITIAL_STATE.inventory.map((i, idx) => ({
-        id: `inv-demo-${userId}-${idx}`,
+      const seededInventory = sectorData.inventory.map(i => ({
+        id: i.id,
         user_id: userId,
         name: i.name,
         category: i.category,

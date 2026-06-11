@@ -454,7 +454,7 @@ window.DashboardScoreTab = ({
 
                 const dateStr = new Date().toISOString().split('T')[0];
                 const newCreditTx = {
-                  id: `t-builder-${Date.now()}`,
+                  id: window.generateUUID ? window.generateUUID() : `t-builder-${Date.now()}`,
                   date: dateStr,
                   merchant: "Fiverr Escrow Payout",
                   amount: 35000,

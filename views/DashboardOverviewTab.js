@@ -96,7 +96,7 @@ window.DashboardOverviewTab = ({
     const dateStr = new Date().toISOString().split('T')[0];
     
     const newTx = {
-      id: `t-sim-${Date.now()}`,
+      id: window.generateUUID ? window.generateUUID() : `t-sim-${Date.now()}`,
       date: dateStr,
       merchant: simMerchant,
       amount: simType === 'Credit' ? amt : -amt,

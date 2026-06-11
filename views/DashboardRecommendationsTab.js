@@ -53,7 +53,7 @@ window.DashboardRecommendationsTab = ({
     dispatch({
       type: 'APPLY_LOAN',
       payload: {
-        id: `l-${Date.now()}`,
+        id: window.generateUUID ? window.generateUUID() : `l-${Date.now()}`,
         lender: lenderName,
         amount: amount,
         rate: `${rate}%`,

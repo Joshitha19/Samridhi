@@ -39,6 +39,7 @@ window.DashboardView = ({
   const { useState, useEffect } = React;
 
   const [chatOpen, setChatOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [messages, setMessages] = useState([
     { sender: 'bot', text: "Hi! I'm your Samridhi AI assistant. Ask me anything about your credit score, loan eligibility, or how to improve your score." }
   ]);
@@ -98,8 +99,91 @@ window.DashboardView = ({
   return (
     <div className="flex-1 flex flex-col md:flex-row bg-[#020204] min-h-screen relative font-sans">
       
+      {/* MOBILE SIDEBAR DRAWER OVERLAY */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-40 flex md:hidden">
+          {/* Backdrop overlay */}
+          <div 
+            onClick={() => setMobileMenuOpen(false)}
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300"
+          ></div>
+
+          {/* Sidebar Panel */}
+          <aside className="relative flex flex-col w-72 bg-[#07070C] border-r border-white/[0.05] h-full z-50 animate-fade-in shadow-2xl">
+            {/* Profile Card Header */}
+            <div className="p-6 border-b border-white/[0.03] flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-samridhi-primary to-samridhi-secondary flex items-center justify-center font-black text-xs text-samridhi-bg shadow-md">
+                  {user.name ? user.name[0] : 'U'}
+                </div>
+                <div className="overflow-hidden">
+                  <h4 className="font-extrabold text-xs text-white tracking-wide truncate">{user.name || 'GUEST USER'}</h4>
+                  <p className="text-[9px] text-samridhi-textMuted font-mono truncate">{user.email}</p>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-1.5 text-samridhi-textMuted hover:text-white bg-white/[0.02] border border-white/[0.06] rounded-lg"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Navigation Items */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-1.5">
+              {[
+                { id: 'overview', name: 'Overview', icon: <Icons.Home /> },
+                { id: 'apply', name: 'Apply for Loan', icon: <Icons.Apply /> },
+                { id: 'score', name: 'My Score Factors', icon: <Icons.Score /> },
+                { id: 'simulator', name: 'Score Simulator', icon: <Icons.Simulator /> },
+                { id: 'transactions', name: 'Transaction Analysis', icon: <Icons.Transactions /> },
+                { id: 'inventory', name: 'Asset Ledger', icon: <Icons.Inventory /> },
+                { id: 'recommendations', name: 'Loan Recommendations', icon: <Icons.Offers /> },
+                { id: 'profile', name: 'Profile Settings', icon: <Icons.User /> },
+              ].map((item) => {
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveTab(item.id);
+                      setMobileMenuOpen(false);
+                      setShowNotifications(false);
+                    }}
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-300 ${
+                      isActive
+                        ? 'bg-gradient-to-r from-samridhi-primary/10 via-samridhi-primary/5 to-transparent border-l-2 border-samridhi-primary text-white text-glow-primary'
+                        : 'text-samridhi-textMuted hover:bg-white/[0.02] hover:text-white border-l-2 border-transparent'
+                    }`}
+                  >
+                    <span className={isActive ? 'text-samridhi-primary' : 'text-samridhi-textMuted'}>
+                      {item.icon}
+                    </span>
+                    <span>{item.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Logout Footer button */}
+            <div className="p-4 border-t border-white/[0.03]">
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-bold text-samridhi-danger hover:bg-samridhi-danger/10 transition-all border border-transparent hover:border-samridhi-danger/25"
+              >
+                <Icons.Logout />
+                <span>Logout</span>
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
+
       {/* SIDEBAR */}
-      <aside className="w-full md:w-64 bg-black/40 backdrop-blur-3xl border-r border-white/[0.02] flex flex-col justify-between shrink-0 relative z-20">
+      <aside className="hidden md:flex w-64 bg-black/40 backdrop-blur-3xl border-r border-white/[0.02] flex-col justify-between shrink-0 relative z-20">
         <div>
           {/* Profile Card Header */}
           <div className="p-6 border-b border-white/[0.03]">
@@ -173,7 +257,17 @@ window.DashboardView = ({
         
         {/* TOP BAR */}
         <header className="sticky top-0 z-20 h-16 bg-[#020204]/40 backdrop-blur-md border-b border-white/[0.02] px-6 flex items-center justify-between">
-          <div>
+          <div className="flex items-center space-x-3">
+            {/* Hamburger menu button for mobile */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden p-1.5 bg-white/[0.02] border border-white/[0.06] rounded-lg text-white hover:border-samridhi-primary focus:outline-none transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+              </svg>
+            </button>
+            
             <h2 className="text-[10px] font-extrabold uppercase tracking-widest text-samridhi-textMuted">
               Terminal &gt; <span className="text-white font-black">{activeTab}</span>
             </h2>

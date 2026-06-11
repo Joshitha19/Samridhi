@@ -74,7 +74,9 @@ window.DashboardRecommendationsTab = ({
     });
 
     if (setActiveTab) setActiveTab('overview');
-    return (
+  };
+
+  return (
     <div className="space-y-6 animate-fade-in text-xs">
       
       {/* PROFILE SUMMARY BAR */}

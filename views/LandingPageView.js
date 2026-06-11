@@ -308,8 +308,8 @@ window.LandingPageView = ({ setPage, scrollToSection }) => {
       <section style={{
         position: 'relative', minHeight: '100vh', overflow: 'hidden',
         background: 'radial-gradient(ellipse 120% 100% at 50% 0%, #0c2254 0%, #071333 35%, #040b1e 65%, #020710 100%)',
-        display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-        padding: 'clamp(24px,5vw,80px)'
+        display: 'flex', flexDirection: 'column', justifyContent: 'center',
+        padding: 'clamp(24px,5vw,80px)', paddingTop: '100px'
       }}>
 
         {/* Particle canvas */}

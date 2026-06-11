@@ -90,8 +90,9 @@ window.DashboardRecommendationsTab = ({
   };
 
   const handleApply = (productName, lenderName, amount, rate, emi) => {
+    const isLowRisk = (calculatedScore || 0) >= 71;
     const criteria = getEligibilityCriteria(productName);
-    const allMet = criteria.every(c => c.met);
+    const allMet = isLowRisk || criteria.every(c => c.met);
     
     if (!allMet) {
       setEligibilityModal({
@@ -146,7 +147,7 @@ window.DashboardRecommendationsTab = ({
           </div>
           <div className="h-4 w-px bg-white/[0.08] hidden sm:block"></div>
           <div>
-            Risk: <span className="text-samridhi-success font-black text-glow-success">LOW RISK</span>
+            Risk: <span className="text-samridhi-success font-black text-glow-success">{(calculatedScore || 0) >= 71 ? 'LOW RISK' : 'STABLE'}</span>
           </div>
           <div className="h-4 w-px bg-white/[0.08] hidden sm:block"></div>
           <div>

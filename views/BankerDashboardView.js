@@ -257,8 +257,10 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
   
   // Profile modal inspection state
   const [selectedProfile, setSelectedProfile] = useState(null);
+  const [selectedLoan, setSelectedLoan] = useState(null);
   const [selectedProfileSkills, setSelectedProfileSkills] = useState([]);
   const [selectedProfileTxs, setSelectedProfileTxs] = useState([]);
+  const [selectedProfileInventory, setSelectedProfileInventory] = useState([]);
   const [modalTab, setModalTab] = useState('dossier'); // 'dossier' | 'vault'
 
   // Banker real-time audit logs & refs
@@ -570,17 +572,21 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
   };
 
   // Open modal and fetch alternative telemetry data for the clicked profile (merged from local & DB)
-  const handleInspectProfile = async (profile) => {
+  const handleInspectProfile = async (profile, loan = null) => {
     setSelectedProfile(profile);
+    setSelectedLoan(loan);
     setSelectedProfileSkills([]);
     setSelectedProfileTxs([]);
+    setSelectedProfileInventory([]);
     setModalTab('dossier');
 
     let localSkills = [];
     let localTxs = [];
+    let localInventory = [];
     try {
       localSkills = JSON.parse(localStorage.getItem('samridhi_skills') || '[]').filter(s => s.user_id === profile.id);
       localTxs = JSON.parse(localStorage.getItem('samridhi_transactions') || '[]').filter(t => t.user_id === profile.id);
+      localInventory = JSON.parse(localStorage.getItem('samridhi_inventory') || '[]').filter(i => i.user_id === profile.id);
     } catch (e) {
       console.warn("Failed to read local storage inspect details:", e);
     }
@@ -588,6 +594,7 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
     if (!window.supabaseClient) {
       setSelectedProfileSkills(localSkills);
       setSelectedProfileTxs(localTxs);
+      setSelectedProfileInventory(localInventory);
       return;
     }
 
@@ -602,6 +609,11 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
         .select('*')
         .eq('user_id', profile.id)
         .limit(10);
+
+      const { data: dbInventory } = await window.supabaseClient
+        .from('inventory')
+        .select('*')
+        .eq('user_id', profile.id);
 
       // Merge and deduplicate skills
       const mergedSkillsMap = new Map();
@@ -629,12 +641,27 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
         }));
       }
 
+      // Merge and deduplicate inventory
+      const mergedInventoryMap = new Map();
+      localInventory.forEach(item => mergedInventoryMap.set(item.id || item.name, item));
+      if (dbInventory) {
+        dbInventory.forEach(item => mergedInventoryMap.set(item.id || item.name, {
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          value: parseFloat(item.value),
+          quantity: item.quantity
+        }));
+      }
+
       setSelectedProfileSkills(Array.from(mergedSkillsMap.values()));
       setSelectedProfileTxs(Array.from(mergedTxsMap.values()));
+      setSelectedProfileInventory(Array.from(mergedInventoryMap.values()));
     } catch (e) {
       console.warn("Failed fetching Supabase telemetry inspect logs: ", e);
       setSelectedProfileSkills(localSkills);
       setSelectedProfileTxs(localTxs);
+      setSelectedProfileInventory(localInventory);
     }
   };
 
@@ -845,6 +872,7 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
                         <th className="p-4">Requested Amt</th>
                         <th className="p-4">Tenure / EMI</th>
                         <th className="p-4">Status</th>
+                        <th className="p-4 text-center">Inspect</th>
                         <th className="p-4 text-center">Actions</th>
                       </tr>
                     </thead>
@@ -861,7 +889,7 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
                                 </div>
                                 <div>
                                   <button
-                                    onClick={() => handleInspectProfile(client)}
+                                    onClick={() => handleInspectProfile(client, loan)}
                                     className="text-samridhi-secondary hover:underline font-extrabold text-left block text-xs"
                                   >
                                     {client.name || 'UNKNOWN USER'}
@@ -894,6 +922,14 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
                                  {loan.status}
                                </span>
                              </td>
+                             <td className="p-4 text-center">
+                                <button
+                                  onClick={() => handleInspectProfile(client, loan)}
+                                  className="px-2.5 py-1 bg-samridhi-secondary/15 hover:bg-samridhi-secondary/25 border border-samridhi-secondary/35 text-samridhi-secondary text-[10px] font-black uppercase rounded-lg transition-all active:scale-95 text-glow-secondary"
+                                >
+                                  Inspect Profile
+                                </button>
+                              </td>
                              <td className="p-4">
                                <div className="flex items-center justify-center gap-2">
                                  {loan.status === 'Pending' || loan.status === 'On Hold' ? (
@@ -1057,7 +1093,7 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
 
       {/* PROFILE INSPECTION MODAL OVERLAY */}
       {selectedProfile && (() => {
-        const associatedLoan = loans.find(l => l.user_id === selectedProfile.id);
+        const associatedLoan = selectedLoan || loans.find(l => l.user_id === selectedProfile.id);
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/85 backdrop-blur-md animate-fade-in">
             <div className="w-full max-w-3xl bg-[#090a10] border border-white/[0.08] p-6 rounded-3xl shadow-2xl relative flex flex-col max-h-[90vh] overflow-y-auto">
@@ -1067,7 +1103,7 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-samridhi-secondary/5 to-transparent pointer-events-none"></div>
 
               <button
-                onClick={() => setSelectedProfile(null)}
+                onClick={() => { setSelectedProfile(null); setSelectedLoan(null); }}
                 className="absolute top-6 right-6 text-samridhi-textMuted hover:text-white transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -1167,6 +1203,50 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
                         )}
                       </div>
                     </div>
+
+                    {/* Linked Portfolio Projects */}
+                    {(() => {
+                      const userProjects = selectedProfile.projects 
+                        ? (Array.isArray(selectedProfile.projects) 
+                            ? selectedProfile.projects 
+                            : (() => { try { return JSON.parse(selectedProfile.projects); } catch(e) { return []; } })()
+                          ) 
+                        : [];
+                      return (
+                        <div className="space-y-3">
+                          <h4 className="text-[10px] font-extrabold uppercase text-samridhi-textMuted tracking-wider border-b border-white/[0.04] pb-1.5">
+                            Portfolio Projects ({userProjects.length})
+                          </h4>
+                          <div className="space-y-2 max-h-40 overflow-y-auto">
+                            {userProjects.length === 0 ? (
+                              <div className="text-[10px] text-samridhi-textMuted italic py-2">No developer/academic projects linked.</div>
+                            ) : (
+                              userProjects.map((proj, pIdx) => (
+                                <div key={pIdx} className="p-2.5 bg-white/[0.02] border border-white/[0.04] rounded-xl space-y-1">
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <span className="text-[11px] font-bold text-white block">{proj.name}</span>
+                                      {proj.role && <span className="text-[8px] text-samridhi-secondary font-semibold font-mono block">Role: {proj.role}</span>}
+                                    </div>
+                                    {proj.url && (
+                                      <a
+                                        href={proj.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-[9px] text-[#00E5FF] hover:underline font-mono font-bold flex items-center"
+                                      >
+                                        Link ↗
+                                      </a>
+                                    )}
+                                  </div>
+                                  {proj.description && <p className="text-[9px] text-samridhi-textMuted leading-relaxed">{proj.description}</p>}
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Right Column: Transaction Logs */}
@@ -1200,6 +1280,30 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
                               </div>
                               <span className={`text-xs font-black font-mono ${tx.type?.toLowerCase() === 'credit' ? 'text-samridhi-success' : 'text-white'}`}>
                                 {tx.type?.toLowerCase() === 'credit' ? '+' : '-'}₹{Math.abs(tx.amount).toLocaleString()}
+                              </span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Business Assets & Collateral */}
+                    <div className="space-y-3">
+                      <h4 className="text-[10px] font-extrabold uppercase text-samridhi-textMuted tracking-wider border-b border-white/[0.04] pb-1.5">
+                        Linked Assets & Collateral ({selectedProfileInventory.length})
+                      </h4>
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                        {selectedProfileInventory.length === 0 ? (
+                          <div className="text-[10px] text-samridhi-textMuted italic py-2">No collateral assets or inventory linked yet.</div>
+                        ) : (
+                          selectedProfileInventory.map(item => (
+                            <div key={item.id} className="p-2.5 bg-white/[0.02] border border-white/[0.04] rounded-xl flex items-center justify-between">
+                              <div>
+                                <span className="text-[11px] font-bold text-white block">{item.name}</span>
+                                <span className="text-[9px] text-samridhi-textMuted block font-mono">Category: {item.category} &bull; Qty: {item.quantity}</span>
+                              </div>
+                              <span className="text-[11px] font-mono font-black text-samridhi-success">
+                                ₹{item.value ? item.value.toLocaleString() : '0'}
                               </span>
                             </div>
                           ))
@@ -1544,6 +1648,7 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
                       onClick={() => {
                         handleUpdateStatus(associatedLoan.id, 'Approved');
                         setSelectedProfile(null);
+                        setSelectedLoan(null);
                       }}
                       className="flex-1 py-3 bg-samridhi-success text-samridhi-bg font-extrabold rounded-xl text-[10px] uppercase transition-all hover:bg-samridhi-success/90 active:scale-95 shadow-md"
                     >
@@ -1554,6 +1659,7 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
                         onClick={() => {
                           handleUpdateStatus(associatedLoan.id, 'On Hold');
                           setSelectedProfile(null);
+                          setSelectedLoan(null);
                         }}
                         className="flex-1 py-3 bg-samridhi-warning text-samridhi-bg font-extrabold rounded-xl text-[10px] uppercase transition-all hover:bg-samridhi-warning/90 active:scale-95 shadow-md"
                       >
@@ -1564,6 +1670,7 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
                       onClick={() => {
                         handleUpdateStatus(associatedLoan.id, 'Rejected');
                         setSelectedProfile(null);
+                        setSelectedLoan(null);
                       }}
                       className="flex-1 py-3 bg-[#1e202e] border border-white/10 hover:border-samridhi-danger hover:text-samridhi-danger text-white font-extrabold rounded-xl text-[10px] uppercase transition-all active:scale-95 shadow-md"
                     >
@@ -1572,7 +1679,7 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
                   </div>
                 )}
                 <button
-                  onClick={() => setSelectedProfile(null)}
+                  onClick={() => { setSelectedProfile(null); setSelectedLoan(null); }}
                   className="py-3 px-6 bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] hover:border-white/[0.12] font-black rounded-xl text-[10px] uppercase text-white transition-all active:scale-95 shadow-sm"
                 >
                   Close Inspect

@@ -390,10 +390,10 @@ window.BankerDashboardView = ({ user, handleLogout }) => {
           dbLoans.forEach(l => {
             const existing = mergedLoansMap.get(l.id) || {};
             mergedLoansMap.set(l.id, {
-              // Preserve local-only fields that are not in the Supabase schema
-              video_intent: existing.video_intent || null,
-              intent_language: existing.intent_language || 'English',
-              resolved_at: existing.resolved_at || l.resolved_at || null,
+              // Read from DB field if available, fallback to local memory state
+              video_intent: l.video_intent || existing.video_intent || null,
+              intent_language: l.intent_language || existing.intent_language || 'English',
+              resolved_at: l.resolved_at || existing.resolved_at || null,
               // Overwrite with authoritative DB fields
               id: l.id,
               user_id: l.user_id,

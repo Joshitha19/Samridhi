@@ -188,7 +188,7 @@ window.runIsolationForest = (transactions) => {
 };
 
 // Global hook to compute SHAP attributions and LIME local surrogate equations
-window.calculateXAIExplanations = (user, metrics) => {
+window.calculateXAIExplanations = (user, metrics = {}) => {
   const {
     aadhaarVerified = false,
     panVerified = false,
@@ -326,7 +326,7 @@ window.calculateXAIExplanations = (user, metrics) => {
   };
 };
 
-window.calculateCredibilityScore = (user, metrics) => {
+window.calculateCredibilityScore = (user, metrics = {}) => {
   const {
     aadhaarVerified = false,
     panVerified = false,

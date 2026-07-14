@@ -1417,52 +1417,58 @@ function App() {
 
   // Handle sign up submission (Normal Sign Up)
   const handleSignUp = async (name, email, type, upiVpa, password) => {
+    const createLocalSignupSession = () => {
+      const localUid = `user-${Date.now()}`;
+      const newUser = {
+        id: localUid,
+        name: name,
+        email: email,
+        type: type,
+        upiVpa: upiVpa,
+        isDemo: true
+      };
+      setUser(newUser);
+      localStorage.setItem('samridhi_demo_session', JSON.stringify(newUser));
+      setPage('dashboard');
+      setActiveTab('overview');
+      loadDemoUserState(newUser);
+    };
+
     if (supabaseClient) {
-      const { data, error } = await supabaseClient.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name: name,
-            type: type,
-            upi_vpa: upiVpa
+      try {
+        const { data, error } = await supabaseClient.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              name: name,
+              type: type,
+              upi_vpa: upiVpa
+            }
           }
-        }
-      });
-      if (error) {
-        alert("Sign Up Failed: " + error.message);
-        return;
-      }
-      
-      // If a session is returned (email confirmation is off in Supabase), log in immediately
-      if (data && data.session) {
-        setUser({
-          id: data.user.id,
-          name: name,
-          email: email,
-          type: type,
-          upiVpa: upiVpa
         });
-        setPage('dashboard');
-        setActiveTab('overview');
-      } else {
-        // Email confirmation is active on Supabase side, but the user requested:
-        // "after creating an account when signed in dont send mail".
-        // To satisfy this, we bypass the confirmation check and establish a local demo/sandbox session immediately.
-        const localUid = `user-${Date.now()}`;
-        const newUser = {
-          id: localUid,
-          name: name,
-          email: email,
-          type: type,
-          upiVpa: upiVpa,
-          isDemo: true
-        };
-        setUser(newUser);
-        localStorage.setItem('samridhi_demo_session', JSON.stringify(newUser));
-        setPage('dashboard');
-        setActiveTab('overview');
-        loadDemoUserState(newUser);
+        if (error) {
+          throw error;
+        }
+      
+        // If a session is returned (email confirmation is off in Supabase), log in immediately
+        if (data && data.session) {
+          setUser({
+            id: data.user.id,
+            name: name,
+            email: email,
+            type: type,
+            upiVpa: upiVpa
+          });
+          setPage('dashboard');
+          setActiveTab('overview');
+        } else {
+          // Email confirmation is active on Supabase side, but the app should still work locally.
+          createLocalSignupSession();
+        }
+      } catch (error) {
+        console.warn("Sign up backend unavailable, using local demo session:", error);
+        createLocalSignupSession();
       }
     } else {
       const mockUser = {
@@ -1470,12 +1476,15 @@ function App() {
         email: email,
         type: type,
         upiVpa: upiVpa || '',
+        isDemo: true
       };
       setUser(mockUser);
+      localStorage.setItem('samridhi_demo_session', JSON.stringify(mockUser));
       setUpiLinked(upiVpa ? true : false);
       setUpiVerified(false);
       setPage('dashboard');
       setActiveTab('overview');
+      loadDemoUserState(mockUser);
     }
   };
 

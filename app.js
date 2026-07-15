@@ -694,6 +694,7 @@ function App() {
         supabaseClient
           .from('loans')
           .insert({
+            id: action.payload.id,
             user_id: userId,
             lender: action.payload.lender,
             amount: action.payload.amount,
@@ -739,6 +740,7 @@ function App() {
         supabaseClient
           .from('skills')
           .insert({
+            id: action.payload.id,
             user_id: userId,
             name: action.payload.name,
             issuer: action.payload.issuer,
@@ -758,6 +760,7 @@ function App() {
         supabaseClient
           .from('inventory')
           .insert({
+            id: action.payload.id,
             user_id: userId,
             name: action.payload.name,
             category: action.payload.category,

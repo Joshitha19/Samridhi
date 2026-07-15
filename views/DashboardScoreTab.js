@@ -1100,7 +1100,7 @@ window.DashboardScoreTab = ({
                       dispatch({
                         type: 'ADD_SKILL',
                         payload: {
-                          id: `s-added-${Date.now()}`,
+                          id: window.generateUUID ? window.generateUUID() : `s-added-${Date.now()}`,
                           name: skillTitle,
                           issuer: skillIssuer,
                           verified: true
